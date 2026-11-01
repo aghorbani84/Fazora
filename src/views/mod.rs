@@ -1,0 +1,16 @@
+pub mod album;
+pub mod artist;
+pub mod equalizer;
+pub mod home;
+pub mod library;
+pub mod music;
+pub mod now_playing;
+pub mod playlists;
+pub mod playlist;
+pub mod queue;
+pub mod search;
+pub mod search_results;
+pub mod settings;
+pub mod settings_section;
+pub mod video_library;
+pub mod video_player;

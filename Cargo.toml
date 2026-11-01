@@ -1,0 +1,47 @@
+[package]
+name = "fazora"
+version = "0.1.0"
+edition = "2021"
+description = "FAZORA Media — premium multimedia player. Sound. Motion. Precision."
+authors = ["FAZORA"]
+rust-version = "1.78"
+
+[[bin]]
+name = "fazora"
+path = "src/main.rs"
+
+[features]
+default = ["webview2"]
+# Linux desktop rendering backends.
+linux-webkit = ["dep:webkit2gtk-sys", "dep:gio-sys", "dep:glib-sys", "dep:atk-sys", "dep:gdk-sys", "dep:pango-sys", "dep:cairo-sys", "dep:gdk-pixbuf-sys"]
+# Windows desktop rendering backend.
+windows-webview2 = ["dep:webview2-com-sys"]
+
+[dependencies]
+dioxus = { version = "0.5", features = ["tracing", "hot-reload"] }
+dioxus-desktop = { version = "0.5", default-features = false, features = ["webview2", "webkitgtk", "tracing"] }
+dioxus-router = { version = "0.5" }
+
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["rt", "time", "macros"] }
+once_cell = "1"
+uuid = { version = "1", features = ["v4"] }
+chrono = { version = "0.4", features = ["serde"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+webkit2gtk-sys = { version = "0.19", optional = true }
+gio-sys = { version = "0.20", optional = true }
+glib-sys = { version = "0.20", optional = true }
+atk-sys = { version = "0.14", optional = true }
+gdk-sys = { version = "0.16", optional = true }
+pango-sys = { version = "0.19", optional = true }
+cairo-sys = { version = "0.19", optional = true }
+gdk-pixbuf-sys = { version = "0.16", optional = true }
+
+[target.'cfg(target_os = "windows")'.dependencies]
+webview2-com-sys = { version = "0.17", optional = true }
+
+[workspace]
