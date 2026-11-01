@@ -1,0 +1,33 @@
+name: Build iOS
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build iOS (documentation check)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check iOS support status
+        run: |
+          echo "iOS is not currently a target platform for FAZORA Media."
+          echo "Current target platforms: Linux, Windows, Android."
+          echo ""
+          echo "To add iOS support, the following would be required:"
+          echo "  1. macOS runner with Xcode installed"
+          echo "  2. Rust iOS targets: aarch64-apple-ios, x86_64-ios-sim"
+          echo "  3. Dioxus iOS/mobile toolchain configuration"
+          echo "  4. iOS app bundle / .app packaging"
+          echo ""
+          echo "See: https://dioxuslabs.com/learning/0.5/reference/mobile"
+          exit 0

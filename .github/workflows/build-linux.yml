@@ -1,0 +1,71 @@
+name: Build Linux
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build Linux ${{ matrix.arch }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x86_64, aarch64]
+        include:
+          - arch: x86_64
+            rust_target: x86_64-unknown-linux-gnu
+          - arch: aarch64
+            rust_target: aarch64-unknown-linux-gnu
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.0-dev libgtk-3-dev
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust_target }}
+
+      - name: Cache Cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-linux-${{ matrix.arch }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Build release
+        run: cargo build --release --target ${{ matrix.rust_target }}
+
+      - name: Create portable archive
+        run: |
+          mkdir -p fazora-linux-${{ matrix.arch }}
+          cp target/${{ matrix.rust_target }}/release/fazora fazora-linux-${{ matrix.arch }}/
+          cp README.md fazora-linux-${{ matrix.arch }}/
+          cp LICENSE fazora-linux-${{ matrix.arch }}/ 2>/dev/null || true
+          tar -czf fazora-linux-${{ matrix.arch }}.tar.gz -C fazora-linux-${{ matrix.arch }} .
+
+      - name: Generate SHA-256 checksum
+        run: sha256sum fazora-linux-${{ matrix.arch }}.tar.gz > fazora-linux-${{ matrix.arch }}.tar.gz.sha256
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fazora-linux-${{ matrix.arch }}
+          path: |
+            fazora-linux-${{ matrix.arch }}.tar.gz
+            fazora-linux-${{ matrix.arch }}.tar.gz.sha256
