@@ -1,0 +1,74 @@
+name: Security
+
+on:
+  schedule:
+    - cron: '0 0 * * 1'  # Weekly, every Monday
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cargo-audit:
+    name: cargo audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install cargo-audit
+        run: cargo install cargo-audit --locked
+
+      - name: Run cargo audit
+        run: cargo audit
+
+  cargo-deny:
+    name: cargo deny
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install cargo-deny
+        run: cargo install cargo-deny --locked
+
+      - name: Run cargo deny check
+        run: cargo deny check
+
+  actionlint:
+    name: Lint GitHub Actions workflows
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download actionlint
+        run: |
+          bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+
+      - name: Run actionlint
+        run: ./actionlint -color
+
+  zizmor:
+    name: Zizmor workflow security scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install zizmor
+        run: |
+          pip install zizmor || pipx install zizmor
+
+      - name: Run zizmor
+        run: zizmor .github/workflows/

@@ -1,0 +1,64 @@
+name: Build Windows
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build Windows ${{ matrix.arch }}
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x86_64]
+        include:
+          - arch: x86_64
+            rust_target: x86_64-pc-windows-msvc
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust_target }}
+
+      - name: Cache Cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-windows-${{ matrix.arch }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Build release
+        run: cargo build --release --target ${{ matrix.rust_target }}
+
+      - name: Create portable ZIP package
+        run: |
+          mkdir -p fazora-windows-${{ matrix.arch }}
+          cp target/${{ matrix.rust_target }}/release/fazora.exe fazora-windows-${{ matrix.arch }}/
+          cp README.md fazora-windows-${{ matrix.arch }}/
+          cp LICENSE fazora-windows-${{ matrix.arch }}/ 2>$null || true
+          Compress-Archive -Path fazora-windows-${{ matrix.arch }}/* -DestinationPath fazora-windows-${{ matrix.arch }}.zip
+
+      - name: Generate SHA-256 checksum
+        run: Get-FileHash -Algorithm SHA256 fazora-windows-${{ matrix.arch }}.zip | Format-List -Property Hash | ForEach-Object { $_.Hash } | Out-File -FilePath fazora-windows-${{ matrix.arch }}.zip.sha256 -Encoding ascii
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fazora-windows-${{ matrix.arch }}
+          path: |
+            fazora-windows-${{ matrix.arch }}.zip
+            fazora-windows-${{ matrix.arch }}.zip.sha256

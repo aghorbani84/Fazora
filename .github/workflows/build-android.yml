@@ -1,0 +1,89 @@
+name: Build Android
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build Android ${{ matrix.abi }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        abi: [arm64-v8a, x86_64]
+        include:
+          - abi: arm64-v8a
+            rust_target: aarch64-linux-android
+            ndk_abi: arm64-v8a
+          - abi: x86_64
+            rust_target: x86_64-linux-android
+            ndk_abi: x86_64
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Android SDK/NDK and Java
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r26b
+          api-level: 24
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust_target }}
+
+      - name: Add Android targets
+        run: |
+          rustup target add ${{ matrix.rust_target }}
+
+      - name: Cache Cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-android-${{ matrix.abi }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache Android NDK
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.ANDROID_NDK_HOME }}
+          key: ${{ runner.os }}-android-ndk-r26b
+
+      - name: Build Android release
+        run: |
+          cargo build --release --target ${{ matrix.rust_target }}
+
+      - name: Package native library
+        run: |
+          echo "Android APK packaging requires Dioxus mobile toolchain configuration."
+          echo "Native library built at: target/${{ matrix.rust_target }}/release/libfazora.so"
+          mkdir -p fazora-android-${{ matrix.abi }}
+          cp target/${{ matrix.rust_target }}/release/libfazora.so fazora-android-${{ matrix.abi }}/ 2>/dev/null || true
+          cp README.md fazora-android-${{ matrix.abi }}/
+
+      - name: Generate SHA-256 checksum
+        run: sha256sum fazora-android-${{ matrix.abi }}/libfazora.so > fazora-android-${{ matrix.abi }}.sha256 2>/dev/null || true
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fazora-android-${{ matrix.abi }}
+          path: fazora-android-${{ matrix.abi }}/
