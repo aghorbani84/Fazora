@@ -31,7 +31,7 @@ jobs:
         run: find artifacts -type f | sort
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.version.outputs.tag }}
           name: FAZORA Media ${{ steps.version.outputs.tag }}
