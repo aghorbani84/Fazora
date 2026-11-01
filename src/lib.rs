@@ -9,3 +9,6 @@ pub use models::*;
 pub use playback::PlaybackService;
 pub use queue::QueueService;
 pub use settings::SettingsService;
+
+#[cfg(test)]
+mod tests;
