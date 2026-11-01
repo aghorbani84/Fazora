@@ -8,10 +8,156 @@ permissions:
   contents: write
 
 jobs:
-  release:
-    name: Create release
+  build-linux:
+    name: Build Linux x86_64
     runs-on: ubuntu-latest
-    needs: []
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.0-dev libgtk-3-dev
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-linux-x86_64-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Build release
+        run: cargo build --release
+
+      - name: Create portable archive
+        run: |
+          mkdir -p fazora-linux-x86_64
+          cp target/release/fazora fazora-linux-x86_64/
+          cp README.md fazora-linux-x86_64/
+          cp LICENSE fazora-linux-x86_64/ 2>/dev/null || true
+          tar -czf fazora-linux-x86_64.tar.gz -C fazora-linux-x86_64 .
+
+      - name: Generate SHA-256 checksum
+        run: sha256sum fazora-linux-x86_64.tar.gz > fazora-linux-x86_64.tar.gz.sha256
+
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fazora-linux-x86_64
+          path: |
+            fazora-linux-x86_64.tar.gz
+            fazora-linux-x86_64.tar.gz.sha256
+
+  build-windows:
+    name: Build Windows x86_64
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-windows-x86_64-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Build release
+        run: cargo build --release
+
+      - name: Create portable ZIP package
+        run: |
+          mkdir -p fazora-windows-x86_64
+          cp target/release/fazora.exe fazora-windows-x86_64/
+          cp README.md fazora-windows-x86_64/
+          cp LICENSE fazora-windows-x86_64/ 2>$null || true
+          Compress-Archive -Path fazora-windows-x86_64/* -DestinationPath fazora-windows-x86_64.zip
+
+      - name: Generate SHA-256 checksum
+        run: Get-FileHash -Algorithm SHA256 fazora-windows-x86_64.zip | Format-List -Property Hash | ForEach-Object { $_.Hash } | Out-File -FilePath fazora-windows-x86_64.zip.sha256 -Encoding ascii
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fazora-windows-x86_64
+          path: |
+            fazora-windows-x86_64.zip
+            fazora-windows-x86_64.zip.sha256
+
+  build-android:
+    name: Build Android arm64-v8a
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Android SDK/NDK and Java
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r26b
+          api-level: 24
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android
+
+      - name: Add Android target
+        run: rustup target add aarch64-linux-android
+
+      - name: Cache Cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-android-arm64-v8a-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache Android NDK
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.ANDROID_NDK_HOME }}
+          key: ${{ runner.os }}-android-ndk-r26b
+
+      - name: Build Android release
+        run: cargo build --release --target aarch64-linux-android
+
+      - name: Package native library
+        run: |
+          echo "Android APK packaging requires Dioxus mobile toolchain configuration."
+          echo "Native library built at: target/aarch64-linux-android/release/libfazora.so"
+          mkdir -p fazora-android-arm64-v8a
+          cp target/aarch64-linux-android/release/libfazora.so fazora-android-arm64-v8a/ 2>/dev/null || true
+          cp README.md fazora-android-arm64-v8a/
+
+      - name: Upload Android artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fazora-android-arm64-v8a
+          path: fazora-android-arm64-v8a/
+
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [build-linux, build-windows, build-android]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
