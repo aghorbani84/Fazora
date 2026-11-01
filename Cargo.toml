@@ -11,7 +11,7 @@ name = "fazora"
 path = "src/main.rs"
 
 [dependencies]
-dioxus = { version = "0.5", features = ["tracing", "hot-reload"] }
+dioxus = { version = "0.5", features = ["hot-reload"] }
 dioxus-desktop = { version = "0.5", features = ["webkitgtk", "webview2", "tracing"] }
 dioxus-router = { version = "0.5" }
 
