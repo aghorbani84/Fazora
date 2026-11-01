@@ -10,7 +10,7 @@ permissions:
 jobs:
   build-linux:
     name: Build Linux x86_64
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
