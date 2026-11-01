@@ -1,0 +1,101 @@
+//! Search service tests.
+//!
+//! Uses Dioxus's testing render scope because `SearchService::init()`
+//! creates `Signal`s via `use_signal()` which requires a component scope.
+
+use crate::models::{Album, Artist, SearchResults, Track, Video};
+use crate::search::SearchService;
+
+#[test]
+fn search_initial_state() {
+    let mut scope = dioxus::testing::RenderScope::new();
+    let search = scope.create_service(|| SearchService::init());
+
+    assert_eq!(search.state.read().query, "");
+    assert!(search.state.read().results.tracks.is_empty());
+    assert!(search.state.read().results.albums.is_empty());
+    assert!(search.state.read().results.artists.is_empty());
+    assert!(search.state.read().results.videos.is_empty());
+    assert!(!search.state.read().loading);
+}
+
+#[test]
+fn search_set_query() {
+    let mut scope = dioxus::testing::RenderScope::new();
+    let search = scope.create_service(|| SearchService::init());
+
+    search.set_query("queen".to_string());
+    assert_eq!(search.state.read().query, "queen");
+}
+
+#[test]
+fn search_set_results() {
+    let mut scope = dioxus::testing::RenderScope::new();
+    let search = scope.create_service(|| SearchService::init());
+
+    let results = SearchResults {
+        tracks: vec![Track {
+            id: "t1".to_string(),
+            title: "Bohemian Rhapsody".to_string(),
+            artist: "Queen".to_string(),
+            artist_id: None,
+            album: None,
+            album_id: None,
+            genre: None,
+            year: None,
+            track_number: None,
+            duration_sec: Some(354),
+            path: "/music/queen.mp3".to_string(),
+            artwork: None,
+            play_count: 0,
+            rating: 0,
+            added_at: 0,
+            last_played: None,
+            bitrate: None,
+            sample_rate: None,
+            channels: None,
+            lyrics_synced: None,
+            lyrics: None,
+        }],
+        albums: vec![],
+        artists: vec![],
+        videos: vec![],
+    };
+
+    search.set_loading(true);
+    assert!(search.state.read().loading);
+
+    search.set_results(results.clone());
+    assert!(!search.state.read().loading);
+    assert_eq!(search.state.read().results.tracks.len(), 1);
+    assert_eq!(search.state.read().results.tracks[0].title, "Bohemian Rhapsody");
+}
+
+#[test]
+fn search_set_loading() {
+    let mut scope = dioxus::testing::RenderScope::new();
+    let search = scope.create_service(|| SearchService::init());
+
+    assert!(!search.state.read().loading);
+    search.set_loading(true);
+    assert!(search.state.read().loading);
+    search.set_loading(false);
+    assert!(!search.state.read().loading);
+}
+
+#[test]
+fn search_results_default() {
+    let results = SearchResults::default();
+    assert!(results.tracks.is_empty());
+    assert!(results.albums.is_empty());
+    assert!(results.artists.is_empty());
+    assert!(results.videos.is_empty());
+}
+
+#[test]
+fn search_state_default() {
+    let state = crate::search::SearchState::default();
+    assert_eq!(state.query, "");
+    assert!(state.results.tracks.is_empty());
+    assert!(!state.loading);
+}
