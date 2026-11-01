@@ -11,11 +11,11 @@ name = "fazora"
 path = "src/main.rs"
 
 [features]
-default = ["webview2"]
-# Linux desktop rendering backends.
-linux-webkit = ["dep:webkit2gtk-sys", "dep:gio-sys", "dep:glib-sys", "dep:atk-sys", "dep:gdk-sys", "dep:pango-sys", "dep:cairo-sys", "dep:gdk-pixbuf-sys"]
-# Windows desktop rendering backend.
-windows-webview2 = ["dep:webview2-com-sys"]
+default = []
+# Linux desktop rendering backend (enable with --features linux-webkit).
+linux-webkit = ["dioxus-desktop/webkitgtk", "dep:webkit2gtk-sys", "dep:gio-sys", "dep:glib-sys", "dep:atk-sys", "dep:gdk-sys", "dep:pango-sys", "dep:cairo-sys", "dep:gdk-pixbuf-sys"]
+# Windows desktop rendering backend (enable with --features windows-webview2).
+windows-webview2 = ["dioxus-desktop/webview2", "dep:webview2-com-sys"]
 
 [dependencies]
 dioxus = { version = "0.5", features = ["tracing", "hot-reload"] }
