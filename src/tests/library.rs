@@ -21,9 +21,9 @@ fn library_initial_state() {
     let library = with_service();
 
     assert_eq!(library.track_count(), 0);
-    assert_eq!(library.scan_status.read(), &ScanStatus::Idle);
+    assert_eq!(&*library.scan_status.read(), &ScanStatus::Idle);
     assert!(library.media_dirs.read().is_empty());
-    assert!(!library.indexed.get());
+    assert!(!*library.indexed.read());
     assert!(library.library.read().tracks.is_empty());
 }
 
@@ -53,9 +53,9 @@ fn library_add_remove_media_dir() {
 fn library_request_scan_sets_scanning() {
     let library = with_service();
 
-    assert_eq!(library.scan_status.read(), &ScanStatus::Idle);
+    assert_eq!(&*library.scan_status.read(), &ScanStatus::Idle);
     library.request_scan();
-    assert_eq!(library.scan_status.read(), &ScanStatus::Scanning);
+    assert_eq!(&*library.scan_status.read(), &ScanStatus::Scanning);
 }
 
 #[test]
@@ -138,8 +138,8 @@ fn library_set_library_updates_stats_and_status() {
     assert_eq!(library_service.stats.read().artist_count, 1);
     assert_eq!(library_service.stats.read().video_count, 1);
     assert_eq!(library_service.stats.read().total_duration_sec, 180 + 120);
-    assert!(library_service.indexed.get());
-    assert_eq!(library_service.scan_status.read(), &ScanStatus::Finished);
+    assert!(*library_service.indexed.read());
+    assert_eq!(&*library_service.scan_status.read(), &ScanStatus::Finished);
 }
 
 #[test]
