@@ -42,6 +42,15 @@ considerations:
 - Recursive destructive operations have deliberate safeguards
 - Cancellation and partial failure handling is implemented
 - Temporary files are created securely
+- Media directory paths are validated and canonicalized via `src/security.rs`
+- Settings file reads are size-limited (1 MiB max) to prevent denial of service
+- Allowed media directory roots are restricted per platform (Linux: `/home`, `/mnt`, `/media`, `/run/media`, `/tmp`; Windows: `C:`, `D:`, `E:`)
+
+### Input Validation
+
+- User search queries are truncated to 1,000 characters and null bytes are stripped
+- Recent search queries are capped at 50 entries and sanitized before storage
+- All external input is treated as untrusted and validated before processing
 
 ## Reporting a Vulnerability
 

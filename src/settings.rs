@@ -1,6 +1,7 @@
 //! Settings service — persisted application settings.
 
 use crate::models::Playlist;
+use crate::security::{read_settings_file_limited, validate_settings_path};
 use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -70,33 +71,41 @@ impl SettingsService {
         }
     }
 
-    pub fn load(&mut self) {
+    pub fn load(&mut self) -> Result<(), crate::security::SecurityError> {
         // Read settings.json from the platform config dir if present.
         if let Some(path) = &self.path {
-            if let Ok(text) = std::fs::read_to_string(path) {
-                if let Ok(settings) = serde_json::from_str::<Settings>(&text) {
-                    self.settings.set(settings);
-                }
+            let validated = validate_settings_path(path)?;
+            let text = read_settings_file_limited(&validated)?;
+            if let Ok(settings) = serde_json::from_str::<Settings>(&text) {
+                self.settings.set(settings);
             }
         }
+        Ok(())
     }
 
-    pub fn save(&self) {
+    pub fn save(&self) -> Result<(), crate::security::SecurityError> {
         if let Some(path) = &self.path {
-            if let Some(parent) = path.parent() {
+            let validated = validate_settings_path(path)?;
+            if let Some(parent) = validated.parent() {
                 let _ = std::fs::create_dir_all(parent);
             }
-            if let Ok(text) = serde_json::to_string_pretty(&*self.settings.read()) {
-                let _ = std::fs::write(path, text);
-            }
+            let text = serde_json::to_string_pretty(&*self.settings.read())
+                .map_err(|_| crate::security::SecurityError::InvalidInput)?;
+            std::fs::write(&validated, text)
+                .map_err(|_| crate::security::SecurityError::InvalidInput)?;
         }
+        Ok(())
     }
 
     pub fn add_recent_query(&self, query: String) {
         let mut s = self.settings.write();
-        s.recent_queries.retain(|q| q != &query);
-        s.recent_queries.insert(0, query);
-        s.recent_queries.truncate(10);
+        let sanitized = crate::security::sanitize_query(&query);
+        if sanitized.is_empty() {
+            return;
+        }
+        s.recent_queries.retain(|q| q != &sanitized);
+        s.recent_queries.insert(0, sanitized);
+        s.recent_queries.truncate(crate::security::MAX_RECENT_QUERIES);
     }
 
     pub fn clear_recent_queries(&self) {
