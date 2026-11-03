@@ -3,3 +3,5 @@ pub mod sidebar;
 pub mod topbar;
 pub mod content_area;
 pub mod bottom_navigation;
+
+pub use app_shell::AppShell;
