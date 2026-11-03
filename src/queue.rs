@@ -52,13 +52,15 @@ impl QueueService {
 
     pub fn upcoming(&self) -> Vec<Track> {
         let entries = self.entries.read();
-        let index = (*self.index.read()).unwrap_or(0);
-        entries
-            .get(index.saturating_add(1)..)
-            .unwrap_or(&[])
-            .iter()
-            .map(|entry| entry.track.clone())
-            .collect()
+        match *self.index.read() {
+            Some(index) => entries
+                .get(index.saturating_add(1)..)
+                .unwrap_or(&[])
+                .iter()
+                .map(|entry| entry.track.clone())
+                .collect(),
+            None => entries.iter().map(|entry| entry.track.clone()).collect(),
+        }
     }
 
     pub fn add(&self, track: Track, play_next: bool) {
@@ -187,9 +189,15 @@ impl QueueService {
         if len == 0 {
             return None;
         }
-        let current = (*self.index.read()).unwrap_or(0);
+
+        let next = match *self.index.read() {
+            None => 0,
+            Some(current) if current + 1 < len => current + 1,
+            Some(_) => 0,
+        };
+
         let mut signal = self.index;
-        signal.set(Some(if current + 1 < len { current + 1 } else { 0 }));
+        signal.set(Some(next));
         self.current()
     }
 
@@ -198,9 +206,15 @@ impl QueueService {
         if len == 0 {
             return None;
         }
-        let current = (*self.index.read()).unwrap_or(0);
+
+        let previous = match *self.index.read() {
+            None => len - 1,
+            Some(0) => len - 1,
+            Some(current) => current - 1,
+        };
+
         let mut signal = self.index;
-        signal.set(Some(current.saturating_sub(1)));
+        signal.set(Some(previous));
         self.current()
     }
 }
