@@ -18,7 +18,7 @@ pub fn Music() -> Element {
     let state = use_context::<Signal<AppState>>();
     let app_state = state.read();
     let library_service = app_state.library.clone();
-    let stats = app_state.stats.clone();
+    let stats = library_service.stats.clone();
 
     let display_mode = use_signal(|| DisplayMode::Grid);
     let query = use_signal(|| String::new());
@@ -46,7 +46,7 @@ pub fn Music() -> Element {
                     }
                     p {
                         style: "font-size: var(--text-sm); color: var(--text-secondary); margin-top: var(--space-1);",
-                        format!("{} tracks · {} albums · {} artists", stats.track_count, stats.album_count, stats.artist_count)
+                        format!("{} tracks · {} albums · {} artists", stats.read().track_count, stats.read().album_count, stats.read().artist_count)
                     }
                 }
                 div {

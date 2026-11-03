@@ -39,22 +39,22 @@ pub fn BottomNavigation(props: BottomNavigationProps) -> Element {
             for (dest, route, icon, label) in destinations {
                 button {
                     key: "{route}",
-                    class: if props.selected.read().clone() == *route {
+                    class: if props.selected.read().clone() == route.clone() {
                         "fz-bottom-nav-item active"
                     } else {
                         "fz-bottom-nav-item"
                     },
                     role: "button",
-                    "aria-selected": if props.selected.read().clone() == *route { "true" } else { "false" },
+                    "aria-selected": if props.selected.read().clone() == route.clone() { "true" } else { "false" },
                     tabindex: 0,
-                    onclick: move |_| {
-                        let r = *route;
+                    onclick: |_| {
+                        let r = route.clone();
                         navigator.push(r.clone());
                         props.on_navigate.call(r);
                     },
-                    onkeydown: move |evt: KeyboardEvent| {
+                    onkeydown: |evt: KeyboardEvent| {
                         if matches!(evt.key(), Key::Enter | Key::Space) {
-                            let r = *route;
+                            let r = route.clone();
                             navigator.push(r.clone());
                             props.on_navigate.call(r);
                         }
