@@ -102,7 +102,7 @@ pub fn TrackRow(props: TrackRowProps) -> Element {
                 IconButton {
                     active: false,
                     title: "Add to queue",
-                    onclick: move |evt| {
+                    onclick: move |evt: MouseEvent| {
                         evt.stop_propagation();
                         on_add_queue.call(queue_track.clone());
                     },
