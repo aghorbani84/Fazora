@@ -69,7 +69,7 @@ pub fn TrackRow(props: TrackRowProps) -> Element {
                     role: "checkbox",
                     "aria-checked": selected,
                     tabindex: 0,
-                    onclick: move |evt| {
+                    onclick: move |evt: MouseEvent| {
                         evt.stop_propagation();
                         on_toggle_click.call(index);
                     },
