@@ -43,7 +43,11 @@ pub fn NowPlaying() -> Element {
                     crate::components::primitives::IconButton {
                         active: show_lyrics.cloned(),
                         title: "Lyrics",
-                        onclick: move |_| { let mut signal = show_lyrics; signal.set(!*signal.read()); },
+                        onclick: move |_| {
+                            let mut signal = show_lyrics;
+                            let next = !*signal.read();
+                            signal.set(next);
+                        },
                         svg { class: "fz-icon", width: 18, height: 18, use { href: "#icon-lyrics" } }
                     }
                 }
