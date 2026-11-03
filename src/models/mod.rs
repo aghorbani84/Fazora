@@ -14,3 +14,5 @@ pub use library::{Library, LibraryStats};
 pub use playlist::Playlist;
 pub use track::{LyricLine, Track};
 pub use video::Video;
+
+pub use crate::search::SearchResults;
