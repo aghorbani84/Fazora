@@ -1,45 +1,53 @@
 //! FAZORA Media test suite.
 //!
-//! Tests cover the service layer, data models, and core business logic.
-//! Dioxus 0.7 removed `dioxus::testing::RenderScope`. Because every service
-//! builds its `Signal`s via `use_signal()` (which must run inside a component
-//! scope), each service is exercised through a small `VirtualDom` harness:
-//! the harness mounts the service component, captures a clone of the service
-//! (clones share the same underlying signal state), and the test drives it
-//! directly.
+//! Service signals are created inside a Dioxus component scope. Each test
+//! harness retains its VirtualDom so the scope and its signals remain alive
+//! while the test uses the service. Local Rc/RefCell storage avoids putting
+//! non-Send Dioxus signals in a process-wide Mutex.
+
+use dioxus::prelude::*;
+use std::cell::RefCell;
+use std::ops::Deref;
+use std::rc::Rc;
+
+/// Owns a service and the VirtualDom scope that allocated its signals.
+pub struct ServiceHarness<S> {
+    service: S,
+    _dom: VirtualDom,
+}
+
+impl<S> Deref for ServiceHarness<S> {
+    type Target = S;
+
+    fn deref(&self) -> &Self::Target {
+        &self.service
+    }
+}
 
 /// Generate a per-service test harness.
-///
-/// `$name`  - name of the generated harness component
-/// `$slot`  - name of the static storage slot
-/// `$service` - the service type
-/// `$init`  - service constructor path, e.g. `PlaybackService::init`
 macro_rules! service_harness {
     ($name:ident, $slot:ident, $service:ty, $init:path) => {
-        static $slot: std::sync::OnceLock<std::sync::Mutex<Option<$service>>> =
-            std::sync::OnceLock::new();
-
         #[component]
-        fn $name() -> Element {
+        fn $name(slot: Rc<RefCell<Option<$service>>>) -> Element {
             let service = use_signal($init);
-            let cloned = (*service.read()).clone();
-            *$slot
-                .get_or_init(|| std::sync::Mutex::new(None))
-                .lock()
-                .unwrap() = Some(cloned);
+            *slot.borrow_mut() = Some((*service.read()).clone());
             rsx! { div {} }
         }
 
-        /// Mount the harness in a fresh `VirtualDom` and return the service.
-        pub fn with_service() -> $service {
-            let slot = $slot.get_or_init(|| std::sync::Mutex::new(None));
-            *slot.lock().unwrap() = None;
-            let mut vdom = VirtualDom::new($name);
-            vdom.rebuild();
-            slot.lock()
-                .unwrap()
+        pub fn with_service() -> ServiceHarness<$service> {
+            let slot = Rc::new(RefCell::new(None));
+            let mut dom = VirtualDom::new_with_props($name, slot.clone());
+            dom.rebuild_in_place();
+
+            let service = slot
+                .borrow_mut()
                 .take()
-                .expect("service harness did not run")
+                .expect("service harness component did not mount");
+
+            ServiceHarness {
+                service,
+                _dom: dom,
+            }
         }
     };
 }
