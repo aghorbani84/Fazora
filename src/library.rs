@@ -51,7 +51,8 @@ impl LibraryService {
 
     pub fn add_media_dir(&self, path: PathBuf) -> Result<(), crate::security::SecurityError> {
         let canonical = validate_media_dir(&path)?;
-        self.media_dirs.write().push(MediaDirectory {
+        let mut media_dirs = self.media_dirs;
+        media_dirs.write().push(MediaDirectory {
             path: canonical,
             included: true,
         });
@@ -60,12 +61,14 @@ impl LibraryService {
 
     pub fn remove_media_dir(&self, path: &PathBuf) -> Result<(), crate::security::SecurityError> {
         let canonical = validate_media_dir(path)?;
-        self.media_dirs.write().retain(|d| &d.path != &canonical);
+        let mut media_dirs = self.media_dirs;
+        media_dirs.write().retain(|d| &d.path != &canonical);
         Ok(())
     }
 
     pub fn request_scan(&self) {
-        self.scan_status.set(ScanStatus::Scanning);
+        let mut scan_status = self.scan_status;
+        scan_status.set(ScanStatus::Scanning);
         // engine adapter performs the scan and calls `set_library` when done
     }
 
@@ -85,10 +88,14 @@ impl LibraryService {
             indexed_dirs: self.media_dirs.read().len(),
             last_scan: Some(chrono::Utc::now().timestamp_millis()),
         };
-        self.stats.set(stats);
-        self.library.set(library);
-        self.scan_status.set(ScanStatus::Finished);
-        self.indexed.set(true);
+        let mut stats_signal = self.stats;
+        stats_signal.set(stats);
+        let mut library_signal = self.library;
+        library_signal.set(library);
+        let mut scan_status = self.scan_status;
+        scan_status.set(ScanStatus::Finished);
+        let mut indexed = self.indexed;
+        indexed.set(true);
     }
 
     pub fn set_scan_error(&mut self, message: String) {
