@@ -1,6 +1,7 @@
 //! Search service — global search across the library.
 
 use crate::models::{Album, Artist, Track, Video};
+use crate::security::sanitize_query;
 use dioxus::prelude::*;
 
 #[derive(Debug, Clone, Default)]
@@ -32,7 +33,7 @@ impl SearchService {
 
     pub fn set_query(&self, query: String) {
         let mut s = self.state.write();
-        s.query = query;
+        s.query = sanitize_query(&query);
     }
 
     pub fn set_results(&self, results: SearchResults) {

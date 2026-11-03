@@ -13,6 +13,7 @@ mod playback;
 mod queue;
 mod routing;
 mod search;
+mod security;
 mod settings;
 mod state;
 mod views;

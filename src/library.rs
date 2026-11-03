@@ -4,6 +4,7 @@
 //! signals and resources.
 
 use crate::models::{Library, LibraryStats};
+use crate::security::validate_media_dir;
 use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
@@ -48,15 +49,19 @@ impl LibraryService {
         self.library.read().tracks.len()
     }
 
-    pub fn add_media_dir(&self, path: PathBuf) {
+    pub fn add_media_dir(&self, path: PathBuf) -> Result<(), crate::security::SecurityError> {
+        let canonical = validate_media_dir(&path)?;
         self.media_dirs.write().push(MediaDirectory {
-            path,
+            path: canonical,
             included: true,
         });
+        Ok(())
     }
 
-    pub fn remove_media_dir(&self, path: &PathBuf) {
-        self.media_dirs.write().retain(|d| &d.path != path);
+    pub fn remove_media_dir(&self, path: &PathBuf) -> Result<(), crate::security::SecurityError> {
+        let canonical = validate_media_dir(path)?;
+        self.media_dirs.write().retain(|d| &d.path != &canonical);
+        Ok(())
     }
 
     pub fn request_scan(&self) {
