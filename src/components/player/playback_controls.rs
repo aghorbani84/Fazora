@@ -6,7 +6,7 @@ use crate::queue::QueueService;
 use crate::components::primitives::IconButton;
 use dioxus::prelude::*;
 
-#[derive(Props)]
+#[derive(Props, Clone, PartialEq)]
 pub struct PlaybackControlsProps {
     service: PlaybackService,
     queue: QueueService,

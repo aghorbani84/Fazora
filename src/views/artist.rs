@@ -6,7 +6,7 @@ use crate::components::primitives::Button;
 use crate::state::AppState;
 use dioxus::prelude::*;
 
-#[derive(Props)]
+#[derive(Props, Clone, PartialEq)]
 pub struct ArtistViewProps {
     id: String,
 }

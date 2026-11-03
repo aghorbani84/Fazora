@@ -2,7 +2,7 @@
 
 use dioxus::prelude::*;
 
-#[derive(Props)]
+#[derive(Props, Clone, PartialEq)]
 pub struct SliderProps {
     value: f64,
     min: Option<f64>,

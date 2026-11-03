@@ -2,7 +2,7 @@
 
 use dioxus::prelude::*;
 
-#[derive(Props)]
+#[derive(Props, Clone, PartialEq)]
 pub struct DividerProps {
     #[props(default)]
     class: Option<String>,

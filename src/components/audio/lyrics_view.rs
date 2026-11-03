@@ -4,7 +4,7 @@
 use crate::models::{LyricLine, Track};
 use dioxus::prelude::*;
 
-#[derive(Props)]
+#[derive(Props, Clone, PartialEq)]
 pub struct LyricsViewProps {
     track: Option<Track>,
     position_sec: f64,

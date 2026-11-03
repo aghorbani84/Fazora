@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::models::{Album, Artist, Playlist, Track, Video};
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub struct LibraryStats {
     pub track_count: usize,
     pub album_count: usize,
@@ -16,7 +16,7 @@ pub struct LibraryStats {
     pub last_scan: Option<i64>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub struct Library {
     pub tracks: Vec<Track>,
     pub albums: Vec<Album>,

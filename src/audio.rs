@@ -17,7 +17,7 @@ pub enum EqPreset {
     Custom,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct EqBand {
     pub frequency_hz: f32,
     pub gain_db: f32,

@@ -2,6 +2,7 @@
 
 use crate::components::primitives::Input;
 use dioxus::prelude::*;
+use dioxus_router::prelude::*;
 
 #[component]
 pub fn Search() -> Element {

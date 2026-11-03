@@ -8,12 +8,14 @@ pub enum BadgeVariant {
     Accent,
 }
 
-#[derive(Props)]
+#[derive(Props, Clone, PartialEq)]
 pub struct BadgeProps {
     #[props(default = BadgeVariant::Default)]
     variant: BadgeVariant,
     #[props(default)]
     class: Option<String>,
+    #[props(default)]
+    children: Option<Element>,
 }
 
 #[component]

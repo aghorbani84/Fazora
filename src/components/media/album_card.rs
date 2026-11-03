@@ -6,6 +6,7 @@ use crate::models::Album;
 use crate::routing::Route;
 use crate::state::AppState;
 use dioxus::prelude::*;
+use dioxus_router::prelude::*;
 
 #[derive(Props)]
 pub struct AlbumCardProps {
