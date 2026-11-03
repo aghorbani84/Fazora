@@ -28,6 +28,3 @@ tempfile = "3"
 
 [workspace]
 
-[[test]]
-name = "fazora_tests"
-path = "src/tests/mod.rs"
