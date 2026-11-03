@@ -59,6 +59,7 @@ fn audio_set_band_gain_clamps() {
         .find(|b| b.frequency_hz == 1000.0)
         .unwrap();
     assert_eq!(band.gain_db, 12.0); // clamped to max
+    drop(state);
 
     audio.set_band_gain(1000.0, -20.0); // below min
     let state = audio.state.read();
