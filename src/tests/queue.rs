@@ -41,8 +41,8 @@ fn queue_initial_state_is_empty() {
     let queue = with_service();
 
     assert!(queue.entries.read().is_empty());
-    assert_eq!(queue.index.read(), &None);
-    assert_eq!(queue.mode.read(), &QueueMode::Sequential);
+    assert_eq!(&*queue.index.read(), &None);
+    assert_eq!(&*queue.mode.read(), &QueueMode::Sequential);
     assert!(queue.history.read().is_empty());
     assert!(queue.current().is_none());
     assert!(queue.upcoming().is_empty());
@@ -57,7 +57,7 @@ fn queue_add_tracks() {
     queue.add(test_track("t3", "Track Three"), false);
 
     assert_eq!(queue.entries.read().len(), 3);
-    assert_eq!(queue.index.read(), &None); // index not set on add
+    assert_eq!(&*queue.index.read(), &None); // index not set on add
 }
 
 #[test]
@@ -103,7 +103,7 @@ fn queue_remove_updates_index() {
     queue.remove(0);
 
     // Index should shift from 1 to 0
-    assert_eq!(queue.index.read(), &Some(0));
+    assert_eq!(&*queue.index.read(), &Some(0));
     assert_eq!(queue.entries.read().len(), 2);
     assert_eq!(queue.entries.read()[0].track.id, "t2");
 }
@@ -116,7 +116,7 @@ fn queue_remove_last_element_clears_index() {
     queue.set_index(0);
     queue.remove(0);
 
-    assert_eq!(queue.index.read(), &None);
+    assert_eq!(&*queue.index.read(), &None);
     assert!(queue.entries.read().is_empty());
 }
 
@@ -132,7 +132,7 @@ fn queue_clear() {
     queue.clear();
 
     assert!(queue.entries.read().is_empty());
-    assert_eq!(queue.index.read(), &None);
+    assert_eq!(&*queue.index.read(), &None);
     assert!(queue.history.read().is_empty());
 }
 
@@ -197,7 +197,7 @@ fn queue_move_next_cycles_to_start() {
 
     let next = queue.move_next();
     assert_eq!(next.unwrap().id, "t1"); // wraps to first
-    assert_eq!(queue.index.read(), &Some(0));
+    assert_eq!(&*queue.index.read(), &Some(0));
 }
 
 #[test]
@@ -210,7 +210,7 @@ fn queue_move_next_advances() {
 
     let next = queue.move_next();
     assert_eq!(next.unwrap().id, "t2");
-    assert_eq!(queue.index.read(), &Some(1));
+    assert_eq!(&*queue.index.read(), &Some(1));
 }
 
 #[test]
@@ -224,7 +224,7 @@ fn queue_move_previous_wraps_to_end() {
 
     let prev = queue.move_previous();
     assert_eq!(prev.unwrap().id, "t3"); // wraps to last
-    assert_eq!(queue.index.read(), &Some(2));
+    assert_eq!(&*queue.index.read(), &Some(2));
 }
 
 #[test]
@@ -237,7 +237,7 @@ fn queue_move_previous_goes_back() {
 
     let prev = queue.move_previous();
     assert_eq!(prev.unwrap().id, "t1");
-    assert_eq!(queue.index.read(), &Some(0));
+    assert_eq!(&*queue.index.read(), &Some(0));
 }
 
 #[test]
@@ -259,11 +259,11 @@ fn queue_upcoming_returns_tracks_after_current() {
 fn queue_set_mode_toggle_shuffle() {
     let queue = with_service();
 
-    assert_eq!(queue.mode.read(), &QueueMode::Sequential);
+    assert_eq!(&*queue.mode.read(), &QueueMode::Sequential);
     queue.toggle_shuffle();
-    assert_eq!(queue.mode.read(), &QueueMode::Shuffle);
+    assert_eq!(&*queue.mode.read(), &QueueMode::Shuffle);
     queue.toggle_shuffle();
-    assert_eq!(queue.mode.read(), &QueueMode::Sequential);
+    assert_eq!(&*queue.mode.read(), &QueueMode::Sequential);
 }
 
 #[test]
@@ -278,12 +278,12 @@ fn queue_set_index_out_of_bounds_noop() {
     queue.add(test_track("t1", "Track One"), false);
     queue.set_index(5); // out of bounds
 
-    assert_eq!(queue.index.read(), &None);
+    assert_eq!(&*queue.index.read(), &None);
 }
 
 #[test]
 fn queue_default() {
     let queue = with_service();
     assert!(queue.entries.read().is_empty());
-    assert_eq!(queue.index.read(), &None);
+    assert_eq!(&*queue.index.read(), &None);
 }
