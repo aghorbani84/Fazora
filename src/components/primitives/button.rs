@@ -23,11 +23,12 @@ pub struct ButtonProps {
     #[props(default)]
     style: Option<String>,
     #[props(default)]
-    onclick: Option<EventHandler<MouseEvent>>,
+    onclick: EventHandler<MouseEvent>,
     #[props(default)]
     label: Option<String>,
     #[props(default)]
-    children: Option<Element>,
+    #[props(default)]
+    children: Element,
 }
 
 #[component]
@@ -54,15 +55,13 @@ pub fn Button(props: ButtonProps) -> Element {
             aria_disabled: disabled,
             onclick: move |evt| {
                 if !disabled {
-                    if let Some(h) = props.onclick.as_ref() {
-                        h.call(evt);
-                    }
+                    props.onclick.call(evt);
                 }
             },
             if props.loading {
                 span { class: "fz-spinner", aria_hidden: "true" }
             } else if let Some(label) = &props.label {
-                {label}
+                {label.as_str()}
             } else {
                 {props.children}
             }
@@ -81,9 +80,10 @@ pub struct IconButtonProps {
     #[props(default)]
     class: Option<String>,
     #[props(default)]
-    onclick: Option<EventHandler<MouseEvent>>,
+    onclick: EventHandler<MouseEvent>,
     #[props(default)]
-    children: Option<Element>,
+    #[props(default)]
+    children: Element,
 }
 
 #[component]
@@ -104,9 +104,7 @@ pub fn IconButton(props: IconButtonProps) -> Element {
             title: props.title.as_deref().unwrap_or(""),
             onclick: move |evt| {
                 if !props.disabled {
-                    if let Some(h) = props.onclick.as_ref() {
-                        h.call(evt);
-                    }
+                    props.onclick.call(evt);
                 }
             },
             {props.children}

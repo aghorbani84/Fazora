@@ -51,7 +51,7 @@ impl PlaybackState {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct PlaybackService {
     pub state: Signal<PlaybackState>,
     pub position_sec: Signal<f64>,

@@ -10,7 +10,8 @@ pub struct InputProps {
     placeholder: Option<String>,
     #[props(default)]
     disabled: bool,
-    oninput: Option<EventHandler<FormEvent>>,
+    #[props(default)]
+    oninput: EventHandler<FormEvent>,
     #[props(default)]
     class: Option<String>,
     #[props(default)]
@@ -32,9 +33,7 @@ pub fn Input(props: InputProps) -> Element {
             aria_label: props.aria_label.as_deref().unwrap_or(""),
             tabindex: 0,
             oninput: move |evt| {
-                if let Some(h) = props.oninput.as_ref() {
-                    h.call(evt);
-                }
+                props.oninput.call(evt);
             },
         }
     }

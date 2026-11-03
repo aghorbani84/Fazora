@@ -16,7 +16,7 @@ pub struct LibraryStats {
     pub last_scan: Option<i64>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 pub struct Library {
     pub tracks: Vec<Track>,
     pub albums: Vec<Album>,

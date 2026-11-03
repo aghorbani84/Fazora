@@ -8,14 +8,6 @@
 //! (clones share the same underlying signal state), and the test drives it
 //! directly.
 
-mod models;
-mod playback;
-mod queue;
-mod library;
-mod settings;
-mod search;
-mod audio;
-
 /// Generate a per-service test harness.
 ///
 /// `$name`  - name of the generated harness component
@@ -51,3 +43,11 @@ macro_rules! service_harness {
         }
     };
 }
+
+mod models;
+mod playback;
+mod queue;
+mod library;
+mod settings;
+mod search;
+mod audio;
