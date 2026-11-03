@@ -10,7 +10,7 @@ pub struct AudioDeviceProps {
 
 #[component]
 pub fn AudioDevice(props: AudioDeviceProps) -> Element {
-    let state = props.service.state.read();
+    let state = props.service.state.read().clone();
 
     rsx! {
         div {

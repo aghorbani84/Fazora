@@ -13,15 +13,15 @@ pub fn MiniPlayer() -> Element {
     let navigator = use_navigator();
 
     let track = playback.state.read().current_track().cloned();
+    let title = track.as_ref().map(|track| track.title.clone()).unwrap_or_else(|| "No track".to_string());
+    let artist = track.as_ref().map(|track| track.artist.clone()).unwrap_or_default();
     let is_playing = playback.state.read().is_playing();
 
     let open_now_playing = move |_| {
         navigator.push(Route::NowPlaying {});
     };
-
-    let toggle_play = move |_| {
-        playback.play_toggle();
-    };
+    let play_service = playback.clone();
+    let seek_service = playback.clone();
 
     rsx! {
         div {
@@ -34,12 +34,12 @@ pub fn MiniPlayer() -> Element {
                 style: "cursor: pointer;",
                 div {
                     class: "fz-mini-artwork",
-                    if let Some(t) = &track {
+                    if let Some(track) = &track {
                         Artwork {
-                            src: t.artwork.clone(),
+                            src: track.artwork.clone(),
                             width: 56,
                             height: 56,
-                            alt: t.title.clone(),
+                            alt: track.title.clone(),
                         }
                     } else {
                         div {
@@ -54,20 +54,20 @@ pub fn MiniPlayer() -> Element {
                     min_width: 0,
                     h4 {
                         style: "font-size: var(--text-sm); font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;",
-                        if let Some(t) = &track { &t.title } else { "No track" }
+                        "{title}"
                     }
                     p {
                         style: "font-size: var(--text-xs); color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;",
-                        if let Some(t) = &track { &t.artist } else { "" }
+                        "{artist}"
                     }
                 }
                 div {
                     class: "fz-mini-progress",
                     style: "flex: 1; min-width: 120px;",
                     crate::components::player::timeline::Timeline {
-                        position: playback.position_sec.get(),
-                        duration: playback.duration_sec.get(),
-                        on_seek: move |sec| playback.seek(sec),
+                        position: playback.position_sec.cloned(),
+                        duration: playback.duration_sec.cloned(),
+                        on_seek: move |seconds| seek_service.seek(seconds),
                     }
                 }
                 div {
@@ -76,7 +76,7 @@ pub fn MiniPlayer() -> Element {
                     IconButton {
                         active: false,
                         title: if is_playing { "Pause" } else { "Play" },
-                        onclick: toggle_play,
+                        onclick: move |_| play_service.play_toggle(),
                         svg {
                             class: "fz-icon",
                             width: 18,

@@ -1,7 +1,7 @@
 //! Volume control with mute toggle and slider.
 
-use crate::playback::PlaybackService;
 use crate::components::primitives::{IconButton, Slider};
+use crate::playback::PlaybackService;
 use dioxus::prelude::*;
 
 #[derive(Props, Clone, PartialEq)]
@@ -11,18 +11,17 @@ pub struct VolumeControlProps {
 
 #[component]
 pub fn VolumeControl(props: VolumeControlProps) -> Element {
-    let volume = props.service.volume.cloned();
-    let muted = props.service.muted.cloned();
+    let service = props.service.clone();
+    let volume = *service.volume.read();
+    let muted = *service.muted.read();
     let effective = if muted { 0.0 } else { volume };
     let percent = (effective * 100.0) as u32;
 
-    let toggle_mute = move |_| {
-        props.service.toggle_mute();
-    };
+    let mute_service = service.clone();
+    let toggle_mute = move |_| mute_service.toggle_mute();
 
-    let on_change = move |v: f64| {
-        props.service.set_volume(v as f32);
-    };
+    let volume_service = service.clone();
+    let on_change = move |value: f64| volume_service.set_volume(value as f32);
 
     rsx! {
         div {
@@ -32,12 +31,7 @@ pub fn VolumeControl(props: VolumeControlProps) -> Element {
                 active: muted,
                 title: if muted { "Unmute" } else { "Mute" },
                 onclick: toggle_mute,
-                svg {
-                    class: "fz-icon",
-                    width: 18,
-                    height: 18,
-                    use { href: if muted { "#icon-volume-mute" } else { "#icon-volume" } }
-                }
+                svg { class: "fz-icon", width: 18, height: 18, use { href: if muted { "#icon-volume-mute" } else { "#icon-volume" } } }
             }
             Slider {
                 value: effective as f64,
