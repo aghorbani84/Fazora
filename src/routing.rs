@@ -62,7 +62,7 @@ pub enum Route {
         #[route("/library", Library)]
         Library {},
         #[route("/:..route", not_found)]
-        NotFound {},
+        NotFound { route: Vec<String> },
 }
 
 /// 404 destination shown when the URL matches nothing.
