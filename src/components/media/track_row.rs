@@ -23,7 +23,11 @@ pub fn TrackRow(props: TrackRowProps) -> Element {
     let state = use_context::<Signal<AppState>>();
     let _ = state;
 
-    let duration = props.track.formatted_duration().unwrap_or_else(|| "--:--".to_string());
+    let track = props.track.clone();
+    let duration = track.formatted_duration().unwrap_or_else(|| "--:--".to_string());
+    let on_play = props.on_play;
+    let on_toggle_select = props.on_toggle_select;
+    let on_add_queue = props.on_add_queue;
 
     rsx! {
         tr {
@@ -38,7 +42,7 @@ pub fn TrackRow(props: TrackRowProps) -> Element {
             "aria-selected": props.selected,
             tabindex: 0,
             onclick: move |_| {
-                props.on_play.call(props.track.clone());
+                on_play.call(track.clone());
             },
             onkeydown: move |evt: KeyboardEvent| {
                 if matches!(evt.key(), Key::Enter) {
@@ -59,7 +63,7 @@ pub fn TrackRow(props: TrackRowProps) -> Element {
                     tabindex: 0,
                     onclick: move |evt| {
                         evt.stop_propagation();
-                        props.on_toggle_select.call(props.index);
+                        on_toggle_select.call(props.index);
                     },
                     onkeydown: move |evt: KeyboardEvent| {
                         if matches!(evt.key(), Key::Enter) {
@@ -77,17 +81,17 @@ pub fn TrackRow(props: TrackRowProps) -> Element {
             }
             td {
                 class: "fz-row-title",
-                "{props.track.title}"
+                "{track.title}"
             }
             td {
                 class: "fz-row-artist",
                 style: "color: var(--text-secondary);",
-                "{props.track.artist}"
+                "{track.artist}"
             }
             td {
                 class: "fz-row-album",
                 style: "color: var(--text-secondary);",
-                {props.track.album.as_deref().unwrap_or("")}
+                {track.album.as_deref().unwrap_or("")}
             }
             td {
                 class: "fz-row-duration",
@@ -100,7 +104,7 @@ pub fn TrackRow(props: TrackRowProps) -> Element {
                 IconButton {
                     active: false,
                     title: "Add to queue",
-                    onclick: move |_| props.on_add_queue.call(props.track.clone()),
+                    onclick: move |_| on_add_queue.call(track.clone()),
                     svg { class: "fz-icon", width: 16, height: 16, use { href: "#icon-queue" } }
                 }
             }

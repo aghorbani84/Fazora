@@ -8,14 +8,6 @@ pub fn Search() -> Element {
     let navigator = use_navigator();
     let mut query = use_signal(String::new);
 
-    let submit = move |_| {
-        if !query.cloned().is_empty() {
-            navigator.push(crate::routing::Route::SearchResults {
-                query: query.cloned().clone(),
-            });
-        }
-    };
-
     rsx! {
         div {
             class: "fz-page",
@@ -27,11 +19,16 @@ pub fn Search() -> Element {
                 placeholder: "Search tracks, artists, albums, videos…",
                 aria_label: "Global search",
                 value: query.cloned(),
-                oninput: move |evt| query.set(evt.value()),
+                oninput: move |evt: FormEvent| { let mut signal = query; signal.set(evt.value()); },
             }
             Button {
                 label: "Search",
-                onclick: move |_| submit(()),
+                onclick: move |_| {
+                    let value = query.cloned();
+                    if !value.is_empty() {
+                        navigator.push(crate::routing::Route::SearchResults { query: value });
+                    }
+                },
             }
             div {
                 style: "margin-top: var(--space-6); display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--space-5);",

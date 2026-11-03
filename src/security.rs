@@ -17,7 +17,7 @@ pub const MAX_RECENT_QUERIES: usize = 50;
 /// Allowed media directory root prefixes for path validation.
 /// Paths outside these roots are rejected to prevent access to
 /// sensitive system directories (e.g., /etc, /var, /root).
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "android"))]
 pub const ALLOWED_MEDIA_ROOTS: [&str; 5] = [
     "/home",
     "/mnt",

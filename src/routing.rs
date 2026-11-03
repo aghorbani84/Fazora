@@ -77,7 +77,7 @@ fn not_found(segments: Vec<String>) -> Element {
             p { "The requested destination does not exist." }
             crate::components::primitives::Button {
                 variant: crate::components::primitives::ButtonVariant::Primary,
-                onclick: move |_| navigator.push(Route::Home {}),
+                onclick: move |_| { navigator.push(Route::Home {}); },
                 label: "Return home",
             }
         }

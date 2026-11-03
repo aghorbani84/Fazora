@@ -33,7 +33,7 @@ pub fn BottomNavigation(props: BottomNavigationProps) -> Element {
                 BottomNavItem {
                     key: "{label}",
                     destination,
-                    route,
+                    route: route.clone(),
                     icon,
                     label,
                     selected: selected == route,

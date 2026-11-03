@@ -175,7 +175,6 @@ fn RecentlyAdded(library: crate::models::Library) -> Element {
     library_section("Recently added")
 }
 
-#[component]
 fn library_section(title: &'static str) -> Element {
     rsx! {
         div {
