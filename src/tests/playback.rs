@@ -46,18 +46,18 @@ fn playback_initial_state_is_idle() {
     let playback = with_service();
 
     assert!(matches!(
-        playback.state.read().as_ref(),
+        &*playback.state.read(),
         PlaybackState::Idle
     ));
     assert!(!playback.is_playing());
     assert!(!playback.state.read().is_error());
-    assert_eq!(playback.position_sec.get(), 0.0);
-    assert_eq!(playback.duration_sec.get(), 0.0);
-    assert_eq!(playback.volume.get(), 1.0);
-    assert!(!playback.muted.get());
-    assert_eq!(playback.repeat.get(), RepeatMode::All);
-    assert!(!playback.shuffle.get());
-    assert!(playback.engine_available.get());
+    assert_eq!(*playback.position_sec.read(), 0.0);
+    assert_eq!(*playback.duration_sec.read(), 0.0);
+    assert_eq!(*playback.volume.read(), 1.0);
+    assert!(!*playback.muted.read());
+    assert_eq!(*playback.repeat.read(), RepeatMode::All);
+    assert!(!*playback.shuffle.read());
+    assert!(*playback.engine_available.read());
 }
 
 #[test]
@@ -68,8 +68,8 @@ fn playback_load_sets_loading_state() {
     playback.load(track.clone());
 
     assert!(matches!(
-        playback.state.read().as_ref(),
-        PlaybackState::Loading { ref t } if t.id == "t1"
+        &*playback.state.read(),
+        PlaybackState::Loading { track } if track.id == "t1"
     ));
     assert_eq!(playback.current_track().unwrap().id, "t1");
 }
@@ -81,7 +81,7 @@ fn playback_play_toggle_from_idle_does_nothing() {
     playback.play_toggle();
 
     assert!(matches!(
-        playback.state.read().as_ref(),
+        &*playback.state.read(),
         PlaybackState::Idle
     ));
     assert!(!playback.is_playing());
@@ -98,8 +98,8 @@ fn playback_play_toggle_from_paused_starts_playing() {
     playback.play_toggle();
 
     assert!(matches!(
-        playback.state.read().as_ref(),
-        PlaybackState::Playing { ref t } if t.id == "t1"
+        &*playback.state.read(),
+        PlaybackState::Playing { track } if track.id == "t1"
     ));
     assert!(playback.is_playing());
 }
@@ -115,8 +115,8 @@ fn playback_play_toggle_from_playing_pauses() {
     playback.play_toggle();
 
     assert!(matches!(
-        playback.state.read().as_ref(),
-        PlaybackState::Paused { ref t } if t.id == "t1"
+        &*playback.state.read(),
+        PlaybackState::Paused { track } if track.id == "t1"
     ));
     assert!(!playback.is_playing());
 }
@@ -132,8 +132,8 @@ fn playback_play_toggle_from_ended_restarts() {
     playback.play_toggle();
 
     assert!(matches!(
-        playback.state.read().as_ref(),
-        PlaybackState::Playing { ref t } if t.id == "t1"
+        &*playback.state.read(),
+        PlaybackState::Playing { track } if track.id == "t1"
     ));
     assert!(playback.is_playing());
 }
@@ -149,8 +149,8 @@ fn playback_pause_from_playing_sets_paused() {
     playback.pause();
 
     assert!(matches!(
-        playback.state.read().as_ref(),
-        PlaybackState::Paused { ref t } if t.id == "t1"
+        &*playback.state.read(),
+        PlaybackState::Paused { track } if track.id == "t1"
     ));
     assert!(!playback.is_playing());
 }
@@ -162,7 +162,7 @@ fn playback_pause_from_idle_does_nothing() {
     playback.pause();
 
     assert!(matches!(
-        playback.state.read().as_ref(),
+        &*playback.state.read(),
         PlaybackState::Idle
     ));
 }
@@ -178,8 +178,8 @@ fn playback_seek_sets_seeking_state() {
     playback.seek(45.5);
 
     assert!(matches!(
-        playback.state.read().as_ref(),
-        PlaybackState::Seeking { ref t, to_sec } if t.id == "t1" && *to_sec == 45.5
+        &*playback.state.read(),
+        PlaybackState::Seeking { track, to_sec } if track.id == "t1" && *to_sec == 45.5
     ));
 }
 
@@ -190,7 +190,7 @@ fn playback_seek_without_track_does_nothing() {
     playback.seek(45.5);
 
     assert!(matches!(
-        playback.state.read().as_ref(),
+        &*playback.state.read(),
         PlaybackState::Idle
     ));
 }
@@ -200,25 +200,25 @@ fn playback_set_volume_clamps() {
     let playback = with_service();
 
     playback.set_volume(1.5);
-    assert_eq!(playback.volume.get(), 1.0);
-    assert!(!playback.muted.get());
+    assert_eq!(*playback.volume.read(), 1.0);
+    assert!(!*playback.muted.read());
 
     playback.set_volume(-0.5);
-    assert_eq!(playback.volume.get(), 0.0);
+    assert_eq!(*playback.volume.read(), 0.0);
 
     playback.set_volume(0.5);
-    assert_eq!(playback.volume.get(), 0.5);
+    assert_eq!(*playback.volume.read(), 0.5);
 }
 
 #[test]
 fn playback_toggle_mute() {
     let playback = with_service();
 
-    assert!(!playback.muted.get());
+    assert!(!*playback.muted.read());
     playback.toggle_mute();
-    assert!(playback.muted.get());
+    assert!(*playback.muted.read());
     playback.toggle_mute();
-    assert!(!playback.muted.get());
+    assert!(!*playback.muted.read());
 }
 
 #[test]
@@ -232,7 +232,7 @@ fn playback_stop_sets_idle() {
     playback.stop();
 
     assert!(matches!(
-        playback.state.read().as_ref(),
+        &*playback.state.read(),
         PlaybackState::Idle
     ));
 }
@@ -241,22 +241,22 @@ fn playback_stop_sets_idle() {
 fn playback_set_repeat_cycles() {
     let playback = with_service();
 
-    assert_eq!(playback.repeat.get(), RepeatMode::All);
+    assert_eq!(*playback.repeat.read(), RepeatMode::All);
     playback.set_repeat(RepeatMode::One);
-    assert_eq!(playback.repeat.get(), RepeatMode::One);
+    assert_eq!(*playback.repeat.read(), RepeatMode::One);
     playback.set_repeat(RepeatMode::Off);
-    assert_eq!(playback.repeat.get(), RepeatMode::Off);
+    assert_eq!(*playback.repeat.read(), RepeatMode::Off);
 }
 
 #[test]
 fn playback_toggle_shuffle() {
     let playback = with_service();
 
-    assert!(!playback.shuffle.get());
+    assert!(!*playback.shuffle.read());
     playback.toggle_shuffle();
-    assert!(playback.shuffle.get());
+    assert!(*playback.shuffle.read());
     playback.toggle_shuffle();
-    assert!(!playback.shuffle.get());
+    assert!(!*playback.shuffle.read());
 }
 
 #[test]
