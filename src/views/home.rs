@@ -177,6 +177,21 @@ fn RecentlyAdded(library: crate::models::Library) -> Element {
 
 #[component]
 fn library_section(title: &'static str, _tracks: &[crate::models::Track]) -> Element {
+    rsx! {
+        div {
+            class: "fz-section-header",
+            h3 {
+                style: "font-size: var(--text-lg); font-weight: 700; color: var(--text-primary);",
+                "{title}"
+            }
+        }
+        div {
+            class: "fz-empty",
+            style: "height: auto; padding: var(--space-6);",
+            p { "No media yet." }
+        }
+    }
+}
 
 #[component]
 fn Favorites(playlists: Vec<Playlist>) -> Element {
@@ -212,23 +227,6 @@ fn Favorites(playlists: Vec<Playlist>) -> Element {
                     }
                 }
             }
-        }
-    }
-}
-
-fn library_section(title: &'static str, _tracks: &[crate::models::Track]) -> Element {
-    rsx! {
-        div {
-            class: "fz-section-header",
-            h3 {
-                style: "font-size: var(--text-lg); font-weight: 700; color: var(--text-primary);",
-                "{title}"
-            }
-        }
-        div {
-            class: "fz-empty",
-            style: "height: auto; padding: var(--space-6);",
-            p { "No media yet." }
         }
     }
 }
