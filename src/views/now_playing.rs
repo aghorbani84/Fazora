@@ -83,7 +83,7 @@ pub fn NowPlaying() -> Element {
                         }
                         p {
                             style: "font-size: var(--text-sm); color: var(--text-muted); margin-top: var(--space-2); font-family: var(--font-mono);",
-                            "{t.album.as_deref().unwrap_or("")} · {t.year.map(|y| y.to_string()).unwrap_or_else(|| "—".to_string())}"
+                            {format!("{} · {}", t.album.as_deref().unwrap_or(""), t.year.map(|y| y.to_string()).unwrap_or_else(|| "—".to_string()))}
                         }
                     } else {
                         div {
