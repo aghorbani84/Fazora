@@ -29,12 +29,8 @@ pub fn AudioDevice(props: AudioDeviceProps) -> Element {
                 for device in &state.devices {
                     option {
                         value: "{device.id}",
-                        selected: state.output_device.as_deref() == Some(&device.id),
-                        "{device.name}" {
-                            if device.is_default {
-                                span { style: "color: var(--text-muted); font-size: var(--text-xs);", " (default)" }
-                            }
-                        }
+                        selected: state.output_device.as_deref() == Some(device.id.as_str()),
+                        {format!("{}{}", device.name, if device.is_default { " (default)" } else { "" })}
                     }
                 }
             }

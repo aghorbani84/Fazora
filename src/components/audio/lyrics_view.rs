@@ -21,7 +21,7 @@ pub fn LyricsView(props: LyricsViewProps) -> Element {
 
     use_effect(move || {
         if props.follow {
-            let adjusted = props.position_sec + manual_offset.get();
+            let adjusted = props.position_sec + manual_offset.cloned();
             let mut best: Option<usize> = None;
             if let Some(ls) = lines {
                 for (i, line) in ls.iter().enumerate() {

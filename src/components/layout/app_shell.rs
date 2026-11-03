@@ -20,7 +20,7 @@ pub fn AppShell() -> Element {
     let selected_route = use_signal(|| Route::Home {});
 
     let toggle_sidebar = move |_| {
-        sidebar_open.set(!sidebar_open.get());
+        sidebar_open.set(!sidebar_open.cloned());
     };
 
     let navigate = move |route: Route| {
@@ -37,7 +37,7 @@ pub fn AppShell() -> Element {
                 selected: selected_route,
                 on_navigate: navigate,
             }
-            if sidebar_open.get() {
+            if sidebar_open.cloned() {
                 div {
                     class: "fz-sidebar-overlay open",
                     onclick: move |_| sidebar_open.set(false),
@@ -56,7 +56,7 @@ pub fn AppShell() -> Element {
                         Outlet::<Route> {}
                     }
                 }
-                if secondary_open.get() {
+                if secondary_open.cloned() {
                     QueuePanel { open: secondary_open, on_close: move |_| secondary_open.set(false) }
                 }
             }

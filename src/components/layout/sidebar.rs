@@ -49,7 +49,7 @@ pub fn Sidebar(props: SidebarProps) -> Element {
         (NavItem::Settings, Route::Settings {}, "icon-settings", "Settings"),
     ];
 
-    let compact = !props.open.get();
+    let compact = !props.open.cloned();
 
     rsx! {
         nav {
