@@ -95,7 +95,7 @@ pub fn Album(props: AlbumProps) -> Element {
                             th { "#" }
                             th { "Title" }
                             th { "Duration" }
-                            th style: "width: 60px;", ""
+                            th { style: "width: 60px;", "" }
                         }
                     }
                     tbody {

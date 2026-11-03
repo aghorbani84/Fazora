@@ -114,7 +114,7 @@ pub fn Artist(props: ArtistViewProps) -> Element {
                             th { "#" }
                             th { "Title" }
                             th { "Album" }
-                            th style: "text-align: right;", "Duration" }
+                            th { style: "text-align: right;", "Duration" }
                         }
                     }
                     tbody {

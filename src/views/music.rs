@@ -107,7 +107,7 @@ pub fn Music() -> Element {
                             th { "Artist" }
                             th { "Album" }
                             th { "Year" }
-                            th style: "text-align: right;", "Duration" }
+                            th { style: "text-align: right;", "Duration" }
                         }
                     }
                     tbody {

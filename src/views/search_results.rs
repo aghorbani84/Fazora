@@ -80,7 +80,7 @@ pub fn SearchResults(props: SearchResultsProps) -> Element {
                                     th { "Title" }
                                     th { "Artist" }
                                     th { "Album" }
-                                    th style: "text-align: right; width: 60px;", "Duration" }
+                                    th { style: "text-align: right; width: 60px;", "Duration" }
                                 }
                             }
                             tbody {
