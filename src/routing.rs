@@ -14,7 +14,6 @@ use crate::views::{
     video_library::VideoLibrary, video_player::VideoPlayer,
 };
 use dioxus::prelude::*;
-use dioxus_router::prelude::*;
 
 #[rustfmt::skip]
 #[derive(Clone, Debug, PartialEq, Routable)]

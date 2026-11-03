@@ -84,7 +84,7 @@ pub fn Sidebar(props: SidebarProps) -> Element {
                     class: "fz-nav-list",
                     for (item, route, icon, label) in items {
                         li {
-                            key: "{route}",
+                            key: "{label}",
                             NavLink {
                                 item,
                                 route,
@@ -122,7 +122,7 @@ fn NavLink(
             tabindex: 0,
             onclick: move |_| on_click.call(()),
             onkeydown: move |evt: KeyboardEvent| {
-                if matches!(evt.key(), Key::Enter | Key::Space) {
+                if matches!(evt.key(), Key::Enter) {
                     on_click.call(());
                 }
             },

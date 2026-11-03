@@ -6,9 +6,8 @@ use crate::models::Album;
 use crate::routing::Route;
 use crate::state::AppState;
 use dioxus::prelude::*;
-use dioxus_router::prelude::*;
 
-#[derive(Props)]
+#[derive(Props, Clone, PartialEq)]
 pub struct AlbumCardProps {
     album: Album,
     on_play: Option<EventHandler<Album>>,
@@ -41,7 +40,7 @@ pub fn AlbumCard(props: AlbumCardProps) -> Element {
             "aria-label": format!("Album {} by {}", props.album.title, props.album.artist),
             onclick: open_album,
             onkeydown: move |evt: KeyboardEvent| {
-                if matches!(evt.key(), Key::Enter | Key::Space) {
+                if matches!(evt.key(), Key::Enter) {
                     open_album(());
                 }
             },

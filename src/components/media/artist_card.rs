@@ -3,9 +3,8 @@
 use crate::models::Artist;
 use crate::routing::Route;
 use dioxus::prelude::*;
-use dioxus_router::prelude::*;
 
-#[derive(Props)]
+#[derive(Props, Clone, PartialEq)]
 pub struct ArtistCardProps {
     artist: Artist,
 }
@@ -28,7 +27,7 @@ pub fn ArtistCard(props: ArtistCardProps) -> Element {
             "aria-label": format!("Artist {}", props.artist.name),
             onclick: open_artist,
             onkeydown: move |evt: KeyboardEvent| {
-                if matches!(evt.key(), Key::Enter | Key::Space) {
+                if matches!(evt.key(), Key::Enter) {
                     open_artist(());
                 }
             },

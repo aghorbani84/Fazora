@@ -44,10 +44,10 @@ pub fn Music() -> Element {
                         style: "font-size: var(--text-3xl); font-weight: 700; color: var(--text-primary);",
                         "Music library"
                     }
-                    p {
-                        style: "font-size: var(--text-sm); color: var(--text-secondary); margin-top: var(--space-1);",
-                        format!("{} tracks · {} albums · {} artists", stats.read().track_count, stats.read().album_count, stats.read().artist_count)
-                    }
+                        p {
+                            style: "font-size: var(--text-sm); color: var(--text-secondary); margin-top: var(--space-1);",
+                            {format!("{} tracks · {} albums · {} artists", stats.read().track_count, stats.read().album_count, stats.read().artist_count)}
+                        }
                 }
                 div {
                     style: "display: flex; gap: var(--space-2);",

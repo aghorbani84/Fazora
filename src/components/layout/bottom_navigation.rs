@@ -3,7 +3,6 @@
 
 use crate::routing::Route;
 use dioxus::prelude::*;
-use dioxus_router::prelude::*;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum BottomDestination {
@@ -14,7 +13,7 @@ enum BottomDestination {
     Settings,
 }
 
-#[derive(Props)]
+#[derive(Props, Clone, PartialEq)]
 pub struct BottomNavigationProps {
     selected: Signal<Route>,
     on_navigate: EventHandler<Route>,
@@ -39,7 +38,7 @@ pub fn BottomNavigation(props: BottomNavigationProps) -> Element {
             aria_label: "Bottom navigation",
             for (dest, route, icon, label) in destinations {
                 button {
-                    key: "{route}",
+                    key: "{label}",
                     class: if props.selected.read().clone() == route.clone() {
                         "fz-bottom-nav-item active"
                     } else {
@@ -54,7 +53,7 @@ pub fn BottomNavigation(props: BottomNavigationProps) -> Element {
                         props.on_navigate.call(r);
                     },
                     onkeydown: |evt: KeyboardEvent| {
-                        if matches!(evt.key(), Key::Enter | Key::Space) {
+                        if matches!(evt.key(), Key::Enter) {
                             let r = route.clone();
                             navigator.push(r.clone());
                             props.on_navigate.call(r);

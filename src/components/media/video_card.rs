@@ -3,9 +3,8 @@
 use crate::models::Video;
 use crate::routing::Route;
 use dioxus::prelude::*;
-use dioxus_router::prelude::*;
 
-#[derive(Props)]
+#[derive(Props, Clone, PartialEq)]
 pub struct VideoCardProps {
     video: Video,
 }
@@ -33,7 +32,7 @@ pub fn VideoCard(props: VideoCardProps) -> Element {
             "aria-label": format!("Video {}", props.video.title),
             onclick: open_video,
             onkeydown: move |evt: KeyboardEvent| {
-                if matches!(evt.key(), Key::Enter | Key::Space) {
+                if matches!(evt.key(), Key::Enter) {
                     open_video(());
                 }
             },

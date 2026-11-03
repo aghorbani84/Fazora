@@ -57,7 +57,7 @@ pub fn Library() -> Element {
                 }
                 p {
                     style: "font-size: var(--text-sm); color: var(--text-secondary);",
-                    "{} tracks indexed", library_service.stats.read().track_count
+                    {format!("{} tracks indexed", library_service.stats.read().track_count)}
                 }
             }
         }

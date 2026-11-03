@@ -9,7 +9,6 @@ use crate::components::player::QueuePanel;
 use crate::routing::Route;
 use crate::state::AppState;
 use dioxus::prelude::*;
-use dioxus_router::prelude::*;
 
 #[component]
 pub fn AppShell() -> Element {
