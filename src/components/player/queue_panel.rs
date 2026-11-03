@@ -98,7 +98,9 @@ struct QueueRowProps {
 
 #[component]
 fn QueueRow(props: QueueRowProps) -> Element {
-    let track = &props.entry.track;
+    let track = props.entry.track.clone();
+    let on_play = props.on_play;
+    let on_remove = props.on_remove;
     let duration = track.formatted_duration().unwrap_or_else(|| "--:--".to_string());
     let (bg, border) = if props.current {
         ("rgba(216, 181, 106, 0.10)", "rgba(216, 181, 106, 0.35)")
@@ -112,7 +114,7 @@ fn QueueRow(props: QueueRowProps) -> Element {
                 "display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--space-3); background: {}; border-radius: var(--radius-medium); border: 1px solid {}; cursor: pointer;",
                 bg, border
             ),
-            onclick: move |_| props.on_play.call(()),
+            onclick: move |_| on_play.call(()),
             div {
                 style: "font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-muted); min-width: 16px; text-align: center;",
                 "{props.entry.id.chars().take(2).collect::<String>()}"
@@ -135,7 +137,7 @@ fn QueueRow(props: QueueRowProps) -> Element {
             IconButton {
                 active: false,
                 title: "Remove from queue",
-                onclick: move |_| props.on_remove.call(()),
+                onclick: move |_| on_remove.call(()),
                 svg { class: "fz-icon", width: 16, height: 16, use { href: "#icon-chevron-down" } }
             }
         }
