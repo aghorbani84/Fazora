@@ -9,9 +9,9 @@ pub fn Search() -> Element {
     let query = use_signal(|| String::new());
 
     let submit = move |_| {
-        if !query.get().is_empty() {
+        if !query.cloned().is_empty() {
             navigator.push(crate::routing::Route::SearchResults {
-                query: query.get().clone(),
+                query: query.cloned().clone(),
             });
         }
     };
@@ -26,7 +26,7 @@ pub fn Search() -> Element {
             Input {
                 placeholder: "Search tracks, artists, albums, videos…",
                 aria_label: "Global search",
-                value: query.get(),
+                value: query.cloned(),
                 oninput: Some(move |evt| query.set(evt.value())),
                 onchange: Some(move |_| submit(())),
             }

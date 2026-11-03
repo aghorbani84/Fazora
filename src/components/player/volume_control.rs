@@ -11,8 +11,8 @@ pub struct VolumeControlProps {
 
 #[component]
 pub fn VolumeControl(props: VolumeControlProps) -> Element {
-    let volume = props.service.volume.get();
-    let muted = props.service.muted.get();
+    let volume = props.service.volume.cloned();
+    let muted = props.service.muted.cloned();
     let effective = if muted { 0.0 } else { volume };
     let percent = (effective * 100.0) as u32;
 

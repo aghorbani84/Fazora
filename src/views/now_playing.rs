@@ -36,15 +36,15 @@ pub fn NowPlaying() -> Element {
                 div {
                     style: "display: flex; gap: var(--space-2);",
                     crate::components::primitives::IconButton {
-                        active: show_queue.get(),
+                        active: show_queue.cloned(),
                         title: "Queue",
-                        onclick: move |_| show_queue.set(!show_queue.get()),
+                        onclick: move |_| show_queue.set(!show_queue.cloned()),
                         svg { class: "fz-icon", width: 18, height: 18, use { href: "#icon-queue" } }
                     }
                     crate::components::primitives::IconButton {
-                        active: show_lyrics.get(),
+                        active: show_lyrics.cloned(),
                         title: "Lyrics",
-                        onclick: move |_| show_lyrics.set(!show_lyrics.get()),
+                        onclick: move |_| show_lyrics.set(!show_lyrics.cloned()),
                         svg { class: "fz-icon", width: 18, height: 18, use { href: "#icon-lyrics" } }
                     }
                 }
@@ -99,8 +99,8 @@ pub fn NowPlaying() -> Element {
                     width: "100%",
                     max_width: 700px,
                     Timeline {
-                        position: playback.position_sec.get(),
-                        duration: playback.duration_sec.get(),
+                        position: playback.position_sec.cloned(),
+                        duration: playback.duration_sec.cloned(),
                         on_seek: move |sec| playback.seek(sec),
                     }
                 }
@@ -144,13 +144,13 @@ pub fn NowPlaying() -> Element {
                 }
             }
             // Lyrics panel (overlay slot)
-            if show_lyrics.get() {
+            if show_lyrics.cloned() {
                 div {
                     class: "fz-lyrics-panel",
                     style: "position: fixed; inset: 0; background: var(--fazora-obsidian); z-index: 60; display: flex; flex-direction: column;",
                     LyricsView {
                         track: track.clone(),
-                        position_sec: playback.position_sec.get(),
+                        position_sec: playback.position_sec.cloned(),
                         follow: true,
                         on_sync_adjust: None,
                     }

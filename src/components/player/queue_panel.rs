@@ -19,7 +19,7 @@ pub fn QueuePanel(props: QueuePanelProps) -> Element {
     rsx! {
         div {
             class: "fz-secondary-panel",
-            style: if props.open.get() { "display: flex;" } else { "display: none;" },
+            style: if props.open.cloned() { "display: flex;" } else { "display: none;" },
             div {
                 class: "fz-panel-header",
                 style: "padding: var(--space-4); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;",

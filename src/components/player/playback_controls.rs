@@ -49,7 +49,7 @@ pub fn PlaybackControls(props: PlaybackControlsProps) -> Element {
             style: "display: flex; align-items: center; justify-content: center; gap: var(--space-3);",
             if props.show_shuffle {
                 IconButton {
-                    active: matches!(props.queue.mode.get(), crate::queue::QueueMode::Shuffle),
+                    active: matches!(props.queue.mode.cloned(), crate::queue::QueueMode::Shuffle),
                     title: "Shuffle",
                     onclick: toggle_shuffle,
                     svg { class: "fz-icon", width: 22, height: 22, use { href: "#icon-shuffle" } }
@@ -80,10 +80,10 @@ pub fn PlaybackControls(props: PlaybackControlsProps) -> Element {
             }
             if props.show_repeat {
                 IconButton {
-                    active: matches!(props.service.repeat.get(), crate::playback::RepeatMode::All),
+                    active: matches!(props.service.repeat.cloned(), crate::playback::RepeatMode::All),
                     title: "Repeat",
                     onclick: move |_| {
-                        let next_mode = match props.service.repeat.get() {
+                        let next_mode = match props.service.repeat.cloned() {
                             crate::playback::RepeatMode::Off => crate::playback::RepeatMode::One,
                             crate::playback::RepeatMode::One => crate::playback::RepeatMode::All,
                             crate::playback::RepeatMode::All => crate::playback::RepeatMode::Off,
