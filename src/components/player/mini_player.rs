@@ -5,7 +5,6 @@ use crate::components::primitives::IconButton;
 use crate::routing::Route;
 use crate::state::AppState;
 use dioxus::prelude::*;
-use dioxus_router::prelude::*;
 
 #[component]
 pub fn MiniPlayer() -> Element {
@@ -17,7 +16,7 @@ pub fn MiniPlayer() -> Element {
     let is_playing = playback.state.read().is_playing();
 
     let open_now_playing = move |_| {
-        navigator.push(Route::NowPlaying);
+        navigator.push(Route::NowPlaying {});
     };
 
     let toggle_play = move |_| {

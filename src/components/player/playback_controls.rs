@@ -43,11 +43,6 @@ pub fn PlaybackControls(props: PlaybackControlsProps) -> Element {
         props.queue.toggle_shuffle();
     };
 
-    let toggle_repeat = move |_| {
-        let mode = match state.repeat() ... 
-    };
-    // repeat handling below uses signal directly
-
     rsx! {
         div {
             class: "fz-playback-controls",
@@ -85,10 +80,10 @@ pub fn PlaybackControls(props: PlaybackControlsProps) -> Element {
             }
             if props.show_repeat {
                 IconButton {
-                    active: matches!(state.repeat(), crate::playback::RepeatMode::All),
+                    active: matches!(props.service.repeat.get(), crate::playback::RepeatMode::All),
                     title: "Repeat",
                     onclick: move |_| {
-                        let next_mode = match state.repeat() {
+                        let next_mode = match props.service.repeat.get() {
                             crate::playback::RepeatMode::Off => crate::playback::RepeatMode::One,
                             crate::playback::RepeatMode::One => crate::playback::RepeatMode::All,
                             crate::playback::RepeatMode::All => crate::playback::RepeatMode::Off,

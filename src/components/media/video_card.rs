@@ -3,7 +3,6 @@
 use crate::models::Video;
 use crate::routing::Route;
 use dioxus::prelude::*;
-use dioxus_router::prelude::*;
 
 #[derive(Props)]
 pub struct VideoCardProps {

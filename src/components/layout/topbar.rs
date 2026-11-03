@@ -4,7 +4,6 @@ use crate::components::branding::FazoraLogo;
 use crate::components::primitives::{Button, IconButton, Input};
 use crate::routing::Route;
 use dioxus::prelude::*;
-use dioxus_router::prelude::*;
 
 #[derive(Props)]
 pub struct TopbarProps {
@@ -16,9 +15,9 @@ pub struct TopbarProps {
 pub fn Topbar(props: TopbarProps) -> Element {
     let navigator = use_navigator();
 
-    let go_home = move |_| navigator.push(Route::Home);
-    let go_search = move |_| navigator.push(Route::Search);
-    let go_settings = move |_| navigator.push(Route::Settings);
+    let go_home = move |_| navigator.push(Route::Home {});
+    let go_search = move |_| navigator.push(Route::Search {});
+    let go_settings = move |_| navigator.push(Route::Settings {});
 
     rsx! {
         header {

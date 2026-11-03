@@ -3,7 +3,6 @@
 use crate::components::primitives::Button;
 use crate::state::AppState;
 use dioxus::prelude::*;
-use dioxus_router::prelude::*;
 
 #[component]
 pub fn Settings() -> Element {

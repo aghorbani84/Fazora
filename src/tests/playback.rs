@@ -1,11 +1,19 @@
 //! Playback service tests.
 //!
-//! Uses Dioxus's testing render scope because `PlaybackService::init()`
-//! creates `Signal`s via `use_signal()` which requires a component scope.
+//! `PlaybackService::init()` creates `Signal`s via `use_signal()`, which must
+//! run inside a component scope, so each test mounts the service through the
+//! `VirtualDom` harness defined in `mod.rs`.
 
 use crate::models::Track;
 use crate::playback::{PlaybackService, PlaybackState, RepeatMode};
 use dioxus::prelude::*;
+
+service_harness!(
+    PlaybackHarness,
+    PLAYBACK_SLOT,
+    PlaybackService,
+    PlaybackService::init
+);
 
 fn test_track() -> Track {
     Track {
@@ -35,8 +43,7 @@ fn test_track() -> Track {
 
 #[test]
 fn playback_initial_state_is_idle() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let playback = scope.create_service(|| PlaybackService::init());
+    let playback = with_service();
 
     assert!(matches!(playback.state.read().as_ref(), PlaybackState::Idle));
     assert!(!playback.is_playing());
@@ -52,8 +59,7 @@ fn playback_initial_state_is_idle() {
 
 #[test]
 fn playback_load_sets_loading_state() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let playback = scope.create_service(|| PlaybackService::init());
+    let playback = with_service();
 
     let track = test_track();
     playback.load(track.clone());
@@ -67,8 +73,7 @@ fn playback_load_sets_loading_state() {
 
 #[test]
 fn playback_play_toggle_from_idle_does_nothing() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let playback = scope.create_service(|| PlaybackService::init());
+    let playback = with_service();
 
     playback.play_toggle();
 
@@ -78,8 +83,7 @@ fn playback_play_toggle_from_idle_does_nothing() {
 
 #[test]
 fn playback_play_toggle_from_paused_starts_playing() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let playback = scope.create_service(|| PlaybackService::init());
+    let playback = with_service();
 
     let track = test_track();
     playback.set_state(PlaybackState::Paused {
@@ -96,8 +100,7 @@ fn playback_play_toggle_from_paused_starts_playing() {
 
 #[test]
 fn playback_play_toggle_from_playing_pauses() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let playback = scope.create_service(|| PlaybackService::init());
+    let playback = with_service();
 
     let track = test_track();
     playback.set_state(PlaybackState::Playing {
@@ -114,8 +117,7 @@ fn playback_play_toggle_from_playing_pauses() {
 
 #[test]
 fn playback_play_toggle_from_ended_restarts() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let playback = scope.create_service(|| PlaybackService::init());
+    let playback = with_service();
 
     let track = test_track();
     playback.set_state(PlaybackState::Ended {
@@ -132,8 +134,7 @@ fn playback_play_toggle_from_ended_restarts() {
 
 #[test]
 fn playback_pause_from_playing_sets_paused() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let playback = scope.create_service(|| PlaybackService::init());
+    let playback = with_service();
 
     let track = test_track();
     playback.set_state(PlaybackState::Playing {
@@ -150,8 +151,7 @@ fn playback_pause_from_playing_sets_paused() {
 
 #[test]
 fn playback_pause_from_idle_does_nothing() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let playback = scope.create_service(|| PlaybackService::init());
+    let playback = with_service();
 
     playback.pause();
 
@@ -160,8 +160,7 @@ fn playback_pause_from_idle_does_nothing() {
 
 #[test]
 fn playback_seek_sets_seeking_state() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let playback = scope.create_service(|| PlaybackService::init());
+    let playback = with_service();
 
     let track = test_track();
     playback.set_state(PlaybackState::Playing {
@@ -177,8 +176,7 @@ fn playback_seek_sets_seeking_state() {
 
 #[test]
 fn playback_seek_without_track_does_nothing() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let playback = scope.create_service(|| PlaybackService::init());
+    let playback = with_service();
 
     playback.seek(45.5);
 
@@ -187,8 +185,7 @@ fn playback_seek_without_track_does_nothing() {
 
 #[test]
 fn playback_set_volume_clamps() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let playback = scope.create_service(|| PlaybackService::init());
+    let playback = with_service();
 
     playback.set_volume(1.5);
     assert_eq!(playback.volume.get(), 1.0);
@@ -203,8 +200,7 @@ fn playback_set_volume_clamps() {
 
 #[test]
 fn playback_toggle_mute() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let playback = scope.create_service(|| PlaybackService::init());
+    let playback = with_service();
 
     assert!(!playback.muted.get());
     playback.toggle_mute();
@@ -215,8 +211,7 @@ fn playback_toggle_mute() {
 
 #[test]
 fn playback_stop_sets_idle() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let playback = scope.create_service(|| PlaybackService::init());
+    let playback = with_service();
 
     let track = test_track();
     playback.set_state(PlaybackState::Playing {
@@ -229,8 +224,7 @@ fn playback_stop_sets_idle() {
 
 #[test]
 fn playback_set_repeat_cycles() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let playback = scope.create_service(|| PlaybackService::init());
+    let playback = with_service();
 
     assert_eq!(playback.repeat.get(), RepeatMode::All);
     playback.set_repeat(RepeatMode::One);
@@ -241,8 +235,7 @@ fn playback_set_repeat_cycles() {
 
 #[test]
 fn playback_toggle_shuffle() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let playback = scope.create_service(|| PlaybackService::init());
+    let playback = with_service();
 
     assert!(!playback.shuffle.get());
     playback.toggle_shuffle();
@@ -253,8 +246,7 @@ fn playback_toggle_shuffle() {
 
 #[test]
 fn playback_progress_ratio() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let playback = scope.create_service(|| PlaybackService::init());
+    let playback = with_service();
 
     // No duration set -> ratio is 0
     assert_eq!(playback.progress_ratio(), 0.0);

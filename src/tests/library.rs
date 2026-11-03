@@ -1,16 +1,24 @@
 //! Library service tests.
 //!
-//! Uses Dioxus's testing render scope because `LibraryService::init()`
-//! creates `Signal`s via `use_signal()` which requires a component scope.
+//! `LibraryService::init()` creates `Signal`s via `use_signal()`, which must
+//! run inside a component scope, so each test mounts the service through the
+//! `VirtualDom` harness defined in `mod.rs`.
 
 use crate::library::{LibraryService, MediaDirectory, ScanStatus};
 use crate::models::{Album, Artist, Library, LibraryStats, Track, Video};
+use dioxus::prelude::*;
 use std::path::PathBuf;
+
+service_harness!(
+    LibraryHarness,
+    LIBRARY_SLOT,
+    LibraryService,
+    LibraryService::init
+);
 
 #[test]
 fn library_initial_state() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let library = scope.create_service(|| LibraryService::init());
+    let library = with_service();
 
     assert_eq!(library.track_count(), 0);
     assert_eq!(library.scan_status.read(), &ScanStatus::Idle);
@@ -21,8 +29,7 @@ fn library_initial_state() {
 
 #[test]
 fn library_add_remove_media_dir() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let library = scope.create_service(|| LibraryService::init());
+    let library = with_service();
 
     let dir1 = PathBuf::from("/music");
     let dir2 = PathBuf::from("/video");
@@ -44,8 +51,7 @@ fn library_add_remove_media_dir() {
 
 #[test]
 fn library_request_scan_sets_scanning() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let library = scope.create_service(|| LibraryService::init());
+    let library = with_service();
 
     assert_eq!(library.scan_status.read(), &ScanStatus::Idle);
     library.request_scan();
@@ -54,8 +60,7 @@ fn library_request_scan_sets_scanning() {
 
 #[test]
 fn library_set_library_updates_stats_and_status() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let library_service = scope.create_service(|| LibraryService::init());
+    let library_service = with_service();
 
     let lib = Library {
         tracks: vec![Track {
@@ -139,8 +144,7 @@ fn library_set_library_updates_stats_and_status() {
 
 #[test]
 fn library_set_scan_error() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let library = scope.create_service(|| LibraryService::init());
+    let library = with_service();
 
     library.set_scan_error("Permission denied".to_string());
 

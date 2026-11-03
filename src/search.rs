@@ -31,17 +31,18 @@ impl SearchService {
     }
 
     pub fn set_query(&self, query: String) {
-        self.state.write().with(|s| s.query = query);
+        let mut s = self.state.write();
+        s.query = query;
     }
 
     pub fn set_results(&self, results: SearchResults) {
-        self.state.write().with(|s| {
-            s.results = results;
-            s.loading = false;
-        });
+        let mut s = self.state.write();
+        s.results = results;
+        s.loading = false;
     }
 
     pub fn set_loading(&self, loading: bool) {
-        self.state.write().with(|s| s.loading = loading);
+        let mut s = self.state.write();
+        s.loading = loading;
     }
 }

@@ -19,14 +19,21 @@ pub struct AppState {
 }
 
 impl AppState {
-    pub fn new() -> Signal<Self> {
-        use_signal(|| Self {
-            playback: PlaybackService::init(),
-            queue: QueueService::new(),
-            library: LibraryService::init(),
-            settings: SettingsService::init(),
-            audio: AudioService::init(),
-            search: SearchService::init(),
-        })
+    pub fn new(
+        playback: PlaybackService,
+        queue: QueueService,
+        library: LibraryService,
+        settings: SettingsService,
+        audio: AudioService,
+        search: SearchService,
+    ) -> Self {
+        Self {
+            playback,
+            queue,
+            library,
+            settings,
+            audio,
+            search,
+        }
     }
 }

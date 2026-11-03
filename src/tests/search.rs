@@ -1,15 +1,18 @@
 //! Search service tests.
 //!
-//! Uses Dioxus's testing render scope because `SearchService::init()`
-//! creates `Signal`s via `use_signal()` which requires a component scope.
+//! `SearchService::init()` creates `Signal`s via `use_signal()`, which must
+//! run inside a component scope, so each test mounts the service through the
+//! `VirtualDom` harness defined in `mod.rs`.
 
 use crate::models::{Album, Artist, SearchResults, Track, Video};
 use crate::search::SearchService;
+use dioxus::prelude::*;
+
+service_harness!(SearchHarness, SEARCH_SLOT, SearchService, SearchService::init);
 
 #[test]
 fn search_initial_state() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let search = scope.create_service(|| SearchService::init());
+    let search = with_service();
 
     assert_eq!(search.state.read().query, "");
     assert!(search.state.read().results.tracks.is_empty());
@@ -21,8 +24,7 @@ fn search_initial_state() {
 
 #[test]
 fn search_set_query() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let search = scope.create_service(|| SearchService::init());
+    let search = with_service();
 
     search.set_query("queen".to_string());
     assert_eq!(search.state.read().query, "queen");
@@ -30,8 +32,7 @@ fn search_set_query() {
 
 #[test]
 fn search_set_results() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let search = scope.create_service(|| SearchService::init());
+    let search = with_service();
 
     let results = SearchResults {
         tracks: vec![Track {
@@ -73,8 +74,7 @@ fn search_set_results() {
 
 #[test]
 fn search_set_loading() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let search = scope.create_service(|| SearchService::init());
+    let search = with_service();
 
     assert!(!search.state.read().loading);
     search.set_loading(true);

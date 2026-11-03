@@ -68,43 +68,40 @@ impl QueueService {
             track,
             queued_at: chrono::Utc::now().timestamp_millis(),
         };
-        self.entries.write().with(|entries| {
-            if play_next {
-                let insert_at = self.index.read().map(|i| i + 1).unwrap_or(0);
-                entries.insert(insert_at.clamp(0, entries.len()), entry);
-            } else {
-                entries.push(entry);
-            }
-        });
+        let mut entries = self.entries.write();
+        if play_next {
+            let insert_at = self.index.read().map(|i| i + 1).unwrap_or(0);
+            entries.insert(insert_at.clamp(0, entries.len()), entry);
+        } else {
+            entries.push(entry);
+        }
     }
 
     pub fn add_many(&self, tracks: Vec<Track>) {
-        self.entries.write().with(|entries| {
-            for track in tracks {
-                entries.push(QueueEntry {
-                    id: uuid::Uuid::new_v4().to_string(),
-                    track,
-                    queued_at: chrono::Utc::now().timestamp_millis(),
-                });
-            }
-        });
+        let mut entries = self.entries.write();
+        for track in tracks {
+            entries.push(QueueEntry {
+                id: uuid::Uuid::new_v4().to_string(),
+                track,
+                queued_at: chrono::Utc::now().timestamp_millis(),
+            });
+        }
     }
 
     pub fn remove(&self, position: usize) {
-        self.entries.write().with(|entries| {
-            if position < entries.len() {
-                entries.remove(position);
-                // Clamp index if it pointed at or past the removed entry.
-                let mut idx = self.index.write();
-                if let Some(i) = *idx {
-                    if i >= position && !entries.is_empty() {
-                        *idx = Some((i - 1).min(entries.len() - 1));
-                    } else if entries.is_empty() {
-                        *idx = None;
-                    }
+        let mut entries = self.entries.write();
+        if position < entries.len() {
+            entries.remove(position);
+            // Clamp index if it pointed at or past the removed entry.
+            let mut idx = self.index.write();
+            if let Some(i) = *idx {
+                if i >= position && !entries.is_empty() {
+                    *idx = Some((i - 1).min(entries.len() - 1));
+                } else if entries.is_empty() {
+                    *idx = None;
                 }
             }
-        });
+        }
     }
 
     pub fn clear(&self) {
@@ -114,13 +111,12 @@ impl QueueService {
     }
 
     pub fn reorder(&self, from: usize, to: usize) {
-        self.entries.write().with(|entries| {
-            if from >= entries.len() || to >= entries.len() {
-                return;
-            }
-            let entry = entries.remove(from);
-            entries.insert(to, entry);
-        });
+        let mut entries = self.entries.write();
+        if from >= entries.len() || to >= entries.len() {
+            return;
+        }
+        let entry = entries.remove(from);
+        entries.insert(to, entry);
     }
 
     pub fn save_as_playlist(&self, title: String) -> crate::models::Playlist {
