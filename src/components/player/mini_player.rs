@@ -5,7 +5,6 @@ use crate::components::primitives::IconButton;
 use crate::routing::Route;
 use crate::state::AppState;
 use dioxus::prelude::*;
-use dioxus_router::prelude::*;
 
 #[component]
 pub fn MiniPlayer() -> Element {

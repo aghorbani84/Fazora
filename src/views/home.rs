@@ -222,7 +222,7 @@ fn Favorites(playlists: Vec<Playlist>) -> Element {
                         }
                         p {
                             style: "font-size: var(--text-sm); color: var(--text-secondary); margin-top: var(--space-1);",
-                            "{} tracks", playlist.track_count()
+                            {format!("{} tracks", playlist.track_count())}
                         }
                     }
                 }

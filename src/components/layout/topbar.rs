@@ -4,9 +4,8 @@ use crate::components::branding::FazoraLogo;
 use crate::components::primitives::{Button, IconButton, Input};
 use crate::routing::Route;
 use dioxus::prelude::*;
-use dioxus_router::prelude::*;
 
-#[derive(Props)]
+#[derive(Props, Clone, PartialEq)]
 pub struct TopbarProps {
     on_toggle_sidebar: EventHandler<MouseEvent>,
     on_open_queue: EventHandler<MouseEvent>,

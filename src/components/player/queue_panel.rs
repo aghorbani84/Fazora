@@ -4,7 +4,7 @@
 use crate::queue::{QueueEntry, QueueService};
 use dioxus::prelude::*;
 
-#[derive(Props)]
+#[derive(Props, Clone, PartialEq)]
 pub struct QueuePanelProps {
     queue: QueueService,
     open: Signal<bool>,

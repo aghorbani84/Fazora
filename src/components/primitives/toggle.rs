@@ -16,7 +16,7 @@ pub struct ToggleProps {
 pub fn Toggle(props: ToggleProps) -> Element {
     rsx! {
         label {
-            class: if let Some(c) = &props.class { c } else { "fz-toggle-group".to_string() },
+            class: if let Some(c) = &props.class { c.clone() } else { "fz-toggle-group".to_string() },
             span {
                 class: "fz-toggle",
                 role: "switch",
@@ -24,7 +24,7 @@ pub fn Toggle(props: ToggleProps) -> Element {
                 tabindex: 0,
                 onclick: move |_| props.onchange.call(!props.checked),
                 onkeydown: move |evt: KeyboardEvent| {
-                    if matches!(evt.key(), Key::Enter | Key::Space) {
+                    if matches!(evt.key(), Key::Enter) {
                         props.onchange.call(!props.checked);
                     }
                 },

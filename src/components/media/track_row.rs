@@ -44,7 +44,7 @@ pub fn TrackRow(props: TrackRowProps) -> Element {
                 if matches!(evt.key(), Key::Enter) {
                     props.on_play.call(props.track.clone());
                 }
-                if evt.key() == Key::Space {
+                if false {
                     evt.prevent_default();
                     props.on_play.call(props.track.clone());
                 }
@@ -62,7 +62,7 @@ pub fn TrackRow(props: TrackRowProps) -> Element {
                         props.on_toggle_select.call(props.index);
                     },
                     onkeydown: move |evt: KeyboardEvent| {
-                        if matches!(evt.key(), Key::Enter | Key::Space) {
+                        if matches!(evt.key(), Key::Enter) {
                             evt.prevent_default();
                             props.on_toggle_select.call(props.index);
                         }
