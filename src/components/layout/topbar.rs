@@ -29,7 +29,7 @@ pub fn Topbar(props: TopbarProps) -> Element {
                 Input {
                     placeholder: "Search artists, albums, tracks…",
                     aria_label: "Global search",
-                    oninput: Some(move |_| go_search.call(Default::default())),
+                    oninput: Some(move |_| go_search(())),
                 }
             }
             div {

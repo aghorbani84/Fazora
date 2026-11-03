@@ -1,5 +1,6 @@
 //! Track list row with multi-selection, playback actions and metadata.
 
+use crate::components::primitives::IconButton;
 use crate::models::Track;
 use crate::state::AppState;
 use dioxus::prelude::*;

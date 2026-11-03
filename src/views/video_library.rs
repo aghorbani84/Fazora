@@ -8,7 +8,8 @@ use dioxus::prelude::*;
 #[component]
 pub fn VideoLibrary() -> Element {
     let state = use_context::<Signal<AppState>>();
-    let videos = state.read().library.read().videos.clone();
+    let library = state.read().library.clone();
+    let videos = library.library.read().videos.clone();
 
     let continue_watching: Vec<Video> = videos.iter()
         .filter(|v| v.watched_position_sec.unwrap_or(0) > 0 && !v.watched)

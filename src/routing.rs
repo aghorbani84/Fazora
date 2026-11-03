@@ -62,7 +62,7 @@ pub enum Route {
         #[route("/library", Library)]
         Library {},
         #[route("/:..route", not_found)]
-        NotFound { route: Vec<String> },
+        NotFound {},
     #[end_layout]
 }
 

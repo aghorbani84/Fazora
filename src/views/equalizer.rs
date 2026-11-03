@@ -7,7 +7,7 @@ use dioxus::prelude::*;
 #[component]
 pub fn EqualizerView() -> Element {
     let state = use_context::<Signal<AppState>>();
-    let audio = state.read().audio;
+    let audio = state.read().audio.clone();
 
     rsx! {
         div {

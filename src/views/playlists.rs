@@ -8,7 +8,8 @@ use dioxus::prelude::*;
 #[component]
 pub fn Playlists() -> Element {
     let state = use_context::<Signal<AppState>>();
-    let playlists = state.read().library.read().playlists.clone();
+    let library = state.read().library.clone();
+    let playlists = library.library.read().playlists.clone();
 
     rsx! {
         div {

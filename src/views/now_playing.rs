@@ -13,8 +13,8 @@ use dioxus::prelude::*;
 #[component]
 pub fn NowPlaying() -> Element {
     let state = use_context::<Signal<AppState>>();
-    let playback = state.read().playback;
-    let queue = state.read().queue;
+    let playback = state.read().playback.clone();
+    let queue = state.read().queue.clone();
 
     let track = playback.state.read().current_track().cloned();
     let is_playing = playback.state.read().is_playing();

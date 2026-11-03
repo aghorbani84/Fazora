@@ -9,7 +9,7 @@ use dioxus::prelude::*;
 #[component]
 pub fn MiniPlayer() -> Element {
     let state = use_context::<Signal<AppState>>();
-    let playback = state.read().playback;
+    let playback = state.read().playback.clone();
     let navigator = use_navigator();
 
     let track = playback.state.read().current_track().cloned();
