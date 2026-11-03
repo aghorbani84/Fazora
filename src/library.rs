@@ -100,7 +100,8 @@ impl LibraryService {
         indexed.set(true);
     }
 
-    pub fn set_scan_error(&mut self, message: String) {
-        self.scan_status.set(ScanStatus::Error { message });
+    pub fn set_scan_error(&self, message: String) {
+        let mut scan_status = self.scan_status;
+        scan_status.set(ScanStatus::Error { message });
     }
 }
