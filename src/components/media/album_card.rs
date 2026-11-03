@@ -21,13 +21,14 @@ pub struct AlbumCardProps {
 #[component]
 pub fn AlbumCard(props: AlbumCardProps) -> Element {
     let navigator = use_navigator();
-    let target = Route::Album {
+    let click_target = Route::Album {
         id: props.album.id.clone(),
     };
+    let keyboard_target = click_target.clone();
     let click_navigator = navigator.clone();
     let keyboard_navigator = navigator;
     let open_album = move |_| {
-        click_navigator.push(target.clone());
+        click_navigator.push(click_target.clone());
     };
 
     rsx! {
@@ -39,7 +40,7 @@ pub fn AlbumCard(props: AlbumCardProps) -> Element {
             onclick: open_album,
             onkeydown: move |evt: KeyboardEvent| {
                 if matches!(evt.key(), Key::Enter) {
-                    keyboard_navigator.push(target.clone());;
+                    keyboard_navigator.push(keyboard_target.clone());
                 }
             },
             div {

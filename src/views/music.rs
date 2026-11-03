@@ -1,9 +1,8 @@
-//! Music library destination: statistics, search, filters, sorting,
-//! display modes, album grid and track list.
+//! Music library destination: statistics, search, display modes and media lists.
 
-use crate::components::media::{AlbumCard, ArtistCard, TrackRow};
+use crate::components::media::{AlbumCard, TrackRow};
 use crate::components::primitives::{Badge, Button, Input};
-use crate::models::{Album, Artist, Track};
+use crate::models::{Album, Track};
 use crate::state::AppState;
 use dioxus::prelude::*;
 
@@ -16,21 +15,22 @@ enum DisplayMode {
 #[component]
 pub fn Music() -> Element {
     let state = use_context::<Signal<AppState>>();
-    let app_state = state.read();
-    let library_service = app_state.library.clone();
-    let stats = library_service.stats.clone();
+    let library_service = state.read().library.clone();
+    let stats = library_service.stats.read().clone();
+    let albums = library_service.library.read().albums.clone();
+    let tracks = library_service.library.read().tracks.clone();
 
-    let display_mode = use_signal(|| DisplayMode::Grid);
-    let query = use_signal(|| String::new());
-    let selected_tracks = use_signal(|| std::collections::HashSet::<String>::new());
+    let mut display_mode = use_signal(|| DisplayMode::Grid);
+    let mut query = use_signal(String::new);
+    let query_value = query.cloned().to_lowercase();
 
-    let filtered_albums: Vec<Album> = library_service.library.read()
-        .albums.iter()
-        .filter(|a| {
-            let q = query.get().to_lowercase();
-            q.is_empty() || a.title.to_lowercase().contains(&q) || a.artist.to_lowercase().contains(&q)
+    let filtered_albums: Vec<Album> = albums
+        .into_iter()
+        .filter(|album| {
+            query_value.is_empty()
+                || album.title.to_lowercase().contains(&query_value)
+                || album.artist.to_lowercase().contains(&query_value)
         })
-        .cloned()
         .collect();
 
     rsx! {
@@ -40,14 +40,11 @@ pub fn Music() -> Element {
                 class: "fz-section-header",
                 style: "display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-6); flex-wrap: wrap; gap: var(--space-3);",
                 div {
-                    h1 {
-                        style: "font-size: var(--text-3xl); font-weight: 700; color: var(--text-primary);",
-                        "Music library"
+                    h1 { style: "font-size: var(--text-3xl); font-weight: 700; color: var(--text-primary);", "Music library" }
+                    p {
+                        style: "font-size: var(--text-sm); color: var(--text-secondary); margin-top: var(--space-1);",
+                        "{stats.track_count} tracks · {stats.album_count} albums · {stats.artist_count} artists"
                     }
-                        p {
-                            style: "font-size: var(--text-sm); color: var(--text-secondary); margin-top: var(--space-1);",
-                            {format!("{} tracks · {} albums · {} artists", stats.read().track_count, stats.read().album_count, stats.read().artist_count)}
-                        }
                 }
                 div {
                     style: "display: flex; gap: var(--space-2);",
@@ -55,7 +52,11 @@ pub fn Music() -> Element {
                     Input {
                         placeholder: "Search albums, artists…",
                         aria_label: "Library search",
-                        oninput: Some(move |evt| query.set(evt.value())),
+                        value: query.cloned(),
+                        oninput: move |event| {
+                            let mut signal = query;
+                            signal.set(event.value());
+                        },
                     }
                 }
             }
@@ -65,36 +66,42 @@ pub fn Music() -> Element {
                 div {
                     style: "display: flex; gap: var(--space-2);",
                     Button {
-                        variant: if display_mode.read() == &DisplayMode::Grid {
+                        variant: if *display_mode.read() == DisplayMode::Grid {
                             crate::components::primitives::ButtonVariant::Primary
                         } else {
                             crate::components::primitives::ButtonVariant::Surface
                         },
-                        onclick: move |_| display_mode.set(DisplayMode::Grid),
+                        onclick: move |_| {
+                            let mut signal = display_mode;
+                            signal.set(DisplayMode::Grid);
+                        },
                         label: "Grid",
                     }
                     Button {
-                        variant: if display_mode.read() == &DisplayMode::List {
+                        variant: if *display_mode.read() == DisplayMode::List {
                             crate::components::primitives::ButtonVariant::Primary
                         } else {
                             crate::components::primitives::ButtonVariant::Surface
                         },
-                        onclick: move |_| display_mode.set(DisplayMode::List),
+                        onclick: move |_| {
+                            let mut signal = display_mode;
+                            signal.set(DisplayMode::List);
+                        },
                         label: "List",
                     }
                 }
             }
 
-            if display_mode.read() == &DisplayMode::Grid {
+            if *display_mode.read() == DisplayMode::Grid {
                 div {
                     class: "fz-grid",
                     for album in filtered_albums {
                         AlbumCard {
                             key: "{album.id}",
                             album,
-                            on_play: Some(move |_| {}),
-                            on_shuffle: Some(move |_| {}),
-                            on_add_queue: Some(move |_| {}),
+                            on_play: move |_| {},
+                            on_shuffle: move |_| {},
+                            on_add_queue: move |_| {},
                         }
                     }
                 }
@@ -106,16 +113,15 @@ pub fn Music() -> Element {
                             th { "Title" }
                             th { "Artist" }
                             th { "Album" }
-                            th { "Year" }
-                            th { style: "text-align: right;", "Duration" }
+                            th { "Duration" }
                         }
                     }
                     tbody {
-                        for track in &library_service.library.read().tracks {
+                        for (index, track) in tracks {
                             TrackRow {
                                 key: "{track.id}",
-                                track: track.clone(),
-                                index: 0,
+                                track,
+                                index,
                                 selected: false,
                                 playing: false,
                                 on_select: move |_| {},
@@ -129,12 +135,5 @@ pub fn Music() -> Element {
                 }
             }
         }
-    }
-}
-
-#[component]
-fn ArtistGridItem(artist: Artist) -> Element {
-    rsx! {
-        ArtistCard { artist }
     }
 }

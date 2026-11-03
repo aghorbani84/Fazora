@@ -15,7 +15,8 @@ pub fn SearchResults(props: SearchResultsProps) -> Element {
     let app_state = state.read();
     let library = app_state.library.clone();
 
-    let q = props.query.to_lowercase();
+    let query = props.query.clone();
+    let q = query.to_lowercase();
 
     let tracks: Vec<Track> = library.library.read()
         .tracks.iter()

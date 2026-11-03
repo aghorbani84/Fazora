@@ -12,13 +12,14 @@ pub struct VideoCardProps {
 #[component]
 pub fn VideoCard(props: VideoCardProps) -> Element {
     let navigator = use_navigator();
-    let target = Route::Video {
+    let click_target = Route::Video {
         id: props.video.id.clone(),
     };
+    let keyboard_target = click_target.clone();
     let click_navigator = navigator.clone();
     let keyboard_navigator = navigator;
     let open_video = move |_| {
-        click_navigator.push(target.clone());
+        click_navigator.push(click_target.clone());
     };
 
     rsx! {
@@ -30,7 +31,7 @@ pub fn VideoCard(props: VideoCardProps) -> Element {
             onclick: open_video,
             onkeydown: move |evt: KeyboardEvent| {
                 if matches!(evt.key(), Key::Enter) {
-                    keyboard_navigator.push(target.clone());;
+                    keyboard_navigator.push(keyboard_target.clone());
                 }
             },
             div {
