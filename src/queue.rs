@@ -3,13 +3,11 @@
 use crate::models::Track;
 use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
-use std::cmp::Ordering;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct QueueEntry {
     pub id: String,
     pub track: Track,
-    /// When this entry was added to the queue (epoch ms), for stable ordering.
     pub queued_at: i64,
 }
 
@@ -20,7 +18,7 @@ pub enum QueueMode {
     Shuffle,
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct QueueService {
     pub entries: Signal<Vec<QueueEntry>>,
     pub index: Signal<Option<usize>>,
@@ -29,37 +27,30 @@ pub struct QueueService {
 }
 
 impl Default for QueueService {
-    fn default() -> Self {
-        Self::new()
-    }
+    fn default() -> Self { Self::new() }
 }
 
 impl QueueService {
     pub fn new() -> Self {
         Self {
-            entries: use_signal(|| Vec::new()),
+            entries: use_signal(Vec::new),
             index: use_signal(|| None),
             mode: use_signal(|| QueueMode::Sequential),
-            history: use_signal(|| Vec::new()),
+            history: use_signal(Vec::new),
         }
     }
 
     pub fn current(&self) -> Option<Track> {
-        self.index
-            .read()
-            .and_then(|i| self.entries.read().get(i))
-            .map(|e| e.track.clone())
+        let index = *self.index.read();
+        let entries = self.entries.read();
+        index.and_then(|i| entries.get(i)).map(|entry| entry.track.clone())
     }
 
     pub fn upcoming(&self) -> Vec<Track> {
         let entries = self.entries.read();
-        let idx = self.index.read().unwrap_or(0);
-        entries
-            .get(idx + 1..)
-            .unwrap_or(&[])
-            .iter()
-            .map(|e| e.track.clone())
-            .collect()
+        let index = (*self.index.read()).unwrap_or(0);
+        entries.get(index.saturating_add(1)..).unwrap_or(&[])
+            .iter().map(|entry| entry.track.clone()).collect()
     }
 
     pub fn add(&self, track: Track, play_next: bool) {
@@ -68,17 +59,21 @@ impl QueueService {
             track,
             queued_at: chrono::Utc::now().timestamp_millis(),
         };
-        let mut entries = self.entries.write();
+        let mut entries_signal = self.entries;
+        let mut entries = entries_signal.write();
         if play_next {
-            let insert_at = self.index.read().map(|i| i + 1).unwrap_or(0);
-            entries.insert(insert_at.clamp(0, entries.len()), entry);
+            let current_index = *self.index.read();
+            let insert_at = current_index.map(|i| i.saturating_add(1)).unwrap_or(0);
+            let len = entries.len();
+            entries.insert(insert_at.min(len), entry);
         } else {
             entries.push(entry);
         }
     }
 
     pub fn add_many(&self, tracks: Vec<Track>) {
-        let mut entries = self.entries.write();
+        let mut entries_signal = self.entries;
+        let mut entries = entries_signal.write();
         for track in tracks {
             entries.push(QueueEntry {
                 id: uuid::Uuid::new_v4().to_string(),
@@ -89,39 +84,58 @@ impl QueueService {
     }
 
     pub fn remove(&self, position: usize) {
-        let mut entries = self.entries.write();
-        if position < entries.len() {
-            entries.remove(position);
-            // Clamp index if it pointed at or past the removed entry.
-            let mut idx = self.index.write();
-            if let Some(i) = *idx {
-                if i >= position && !entries.is_empty() {
-                    *idx = Some((i - 1).min(entries.len() - 1));
-                } else if entries.is_empty() {
-                    *idx = None;
-                }
-            }
-        }
+        let mut entries_signal = self.entries;
+        let mut entries = entries_signal.write();
+        if position >= entries.len() { return; }
+        entries.remove(position);
+        let new_len = entries.len();
+        drop(entries);
+
+        let mut index_signal = self.index;
+        let mut index = index_signal.write();
+        *index = match *index {
+            Some(_) if new_len == 0 => None,
+            Some(i) if i > position => Some(i - 1),
+            Some(i) if i == position => (position < new_len).then_some(position),
+            other => other,
+        };
     }
 
     pub fn clear(&self) {
-        self.entries.write().clear();
-        self.index.set(None);
-        self.history.write().clear();
+        let mut entries = self.entries;
+        entries.write().clear();
+        let mut index = self.index;
+        index.set(None);
+        let mut history = self.history;
+        history.write().clear();
     }
 
     pub fn reorder(&self, from: usize, to: usize) {
-        let mut entries = self.entries.write();
-        if from >= entries.len() || to >= entries.len() {
-            return;
-        }
+        let mut entries_signal = self.entries;
+        let mut entries = entries_signal.write();
+        if from >= entries.len() || to >= entries.len() || from == to { return; }
         let entry = entries.remove(from);
         entries.insert(to, entry);
+        drop(entries);
+
+        let mut index_signal = self.index;
+        let mut index = index_signal.write();
+        if let Some(current) = *index {
+            *index = Some(if current == from {
+                to
+            } else if from < current && current <= to {
+                current - 1
+            } else if to <= current && current < from {
+                current + 1
+            } else {
+                current
+            });
+        }
     }
 
     pub fn save_as_playlist(&self, title: String) -> crate::models::Playlist {
         let entries = self.entries.read();
-        let track_ids: Vec<String> = entries.iter().map(|e| e.track.id.clone()).collect();
+        let track_ids = entries.iter().map(|entry| entry.track.id.clone()).collect();
         crate::models::Playlist {
             id: uuid::Uuid::new_v4().to_string(),
             title,
@@ -135,36 +149,41 @@ impl QueueService {
     }
 
     pub fn set_mode(&self, mode: QueueMode) {
-        self.mode.set(mode);
+        let mut signal = self.mode;
+        signal.set(mode);
     }
 
     pub fn toggle_shuffle(&self) {
-        self.mode.set(match self.mode.get() {
+        let mut signal = self.mode;
+        signal.set(match *signal.read() {
             QueueMode::Sequential => QueueMode::Shuffle,
             QueueMode::Shuffle => QueueMode::Sequential,
         });
     }
 
     pub fn set_index(&self, index: usize) {
-        let entries_len = self.entries.read().len();
-        if index < entries_len {
-            self.index.set(Some(index));
+        let len = self.entries.read().len();
+        if index < len {
+            let mut signal = self.index;
+            signal.set(Some(index));
         }
     }
 
     pub fn move_next(&self) -> Option<Track> {
-        let entries = self.entries.read();
-        let idx = self.index.read().unwrap_or(0);
-        let next = if idx + 1 < entries.len() { idx + 1 } else { 0 };
-        drop(entries);
-        self.index.set(Some(next));
+        let len = self.entries.read().len();
+        if len == 0 { return None; }
+        let current = (*self.index.read()).unwrap_or(0);
+        let mut signal = self.index;
+        signal.set(Some(if current + 1 < len { current + 1 } else { 0 }));
         self.current()
     }
 
     pub fn move_previous(&self) -> Option<Track> {
-        let idx = self.index.read().unwrap_or(0);
-        let prev = if idx == 0 { 0 } else { idx - 1 };
-        self.index.set(Some(prev));
+        let len = self.entries.read().len();
+        if len == 0 { return None; }
+        let current = (*self.index.read()).unwrap_or(0);
+        let mut signal = self.index;
+        signal.set(Some(current.saturating_sub(1)));
         self.current()
     }
 }
