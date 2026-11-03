@@ -149,7 +149,7 @@ fn library_set_scan_error() {
     library.set_scan_error("Permission denied".to_string());
 
     assert_eq!(
-        library.scan_status.read(),
+        &*library.scan_status.read(),
         &ScanStatus::Error {
             message: "Permission denied".to_string()
         }
