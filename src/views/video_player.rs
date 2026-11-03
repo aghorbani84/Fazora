@@ -71,7 +71,7 @@ pub fn VideoPlayer(props: VideoPlayerProps) -> Element {
                         Button {
                             variant: crate::components::primitives::ButtonVariant::Ghost,
                             label: "Settings",
-                            onclick: move |_| { let mut signal = showing_settings; signal.set(!*signal.read()); },
+                            onclick: move |_| { let mut signal = showing_settings; let next = !*signal.read(); signal.set(next); },
                         }
                     }
                 }

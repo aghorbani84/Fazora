@@ -59,14 +59,13 @@ pub fn Sidebar(props: SidebarProps) -> Element {
                 ul {
                     class: "fz-nav-list",
                     for (item, route, icon, label) in items {
-                        let is_selected = selected_route == route;
                         NavLink {
                             key: "{label}",
                             item,
                             icon,
                             label,
                             compact,
-                            selected: is_selected,
+                            selected: selected_route == route.clone(),
                             on_click: move |_| on_navigate.call(route.clone()),
                         }
                     }

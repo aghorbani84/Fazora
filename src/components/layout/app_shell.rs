@@ -18,7 +18,8 @@ pub fn AppShell() -> Element {
 
     let toggle_sidebar = move |_| {
         let mut open = sidebar_open;
-        open.set(!*open.read());
+        let next = !*open.read();
+        open.set(next);
     };
 
     let navigate = move |route: Route| {

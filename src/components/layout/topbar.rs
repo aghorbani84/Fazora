@@ -36,7 +36,7 @@ pub fn Topbar(props: TopbarProps) -> Element {
                     placeholder: "Search artists, albums, tracks…",
                     aria_label: "Global search",
                     value: query.cloned(),
-                    oninput: move |event| {
+                    oninput: move |event: FormEvent| {
                         let mut signal = query;
                         signal.set(event.value());
                     },

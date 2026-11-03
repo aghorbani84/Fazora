@@ -49,7 +49,7 @@ pub fn Button(props: ButtonProps) -> Element {
     rsx! {
         button {
             class: "{full_class}",
-            style: if let Some(s) = &props.style { s } else { "" },
+            style: props.style.as_deref().unwrap_or(""),
             disabled: disabled,
             aria_disabled: disabled,
             onclick: move |evt| {

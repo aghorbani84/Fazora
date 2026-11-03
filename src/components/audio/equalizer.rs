@@ -51,13 +51,11 @@ pub fn Equalizer(props: EqualizerProps) -> Element {
             div {
                 style: "display: flex; gap: var(--space-3); align-items: flex-end; height: 180px;",
                 for band in state.bands.clone() {
-                    let frequency = band.frequency_hz;
-                    let band_service = service.clone();
                     EqBandControl {
-                        key: "{frequency}",
+                        key: "{band.frequency_hz}",
                         band,
                         enabled,
-                        on_change: move |gain| band_service.set_band_gain(frequency, gain),
+                        service: service.clone(),
                     }
                 }
             }
@@ -147,12 +145,15 @@ pub fn Equalizer(props: EqualizerProps) -> Element {
 struct EqBandControlProps {
     band: EqBand,
     enabled: bool,
-    on_change: EventHandler<f32>,
+    service: AudioService,
 }
 
 #[component]
 fn EqBandControl(props: EqBandControlProps) -> Element {
     let gain = props.band.gain_db;
+    let frequency = props.band.frequency_hz;
+    let service = props.service.clone();
+    let on_change = move |value| service.set_band_gain(frequency, value);
     let normalized = ((gain + 12.0) / 24.0).clamp(0.0, 1.0);
 
     rsx! {
@@ -173,7 +174,7 @@ fn EqBandControl(props: EqBandControlProps) -> Element {
                 min: 0.0,
                 max: 1.0,
                 step: 0.01,
-                onchange: move |value| props.on_change.call(((value - 0.5) * 24.0) as f32),
+                onchange: on_change,
                 aria_label: format!("{} Hz band", props.band.frequency_hz),
             }
             div { style: "writing-mode: vertical-rl; text-orientation: mixed; font-size: var(--text-xs); color: var(--text-muted); font-family: var(--font-mono);", "{props.band.frequency_hz}Hz" }
