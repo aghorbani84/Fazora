@@ -4,7 +4,13 @@ use crate::routing::Route;
 use dioxus::prelude::*;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
-enum BottomDestination { Home, Music, Videos, Library, Settings }
+enum BottomDestination {
+    Home,
+    Music,
+    Videos,
+    Library,
+    Settings,
+}
 
 #[derive(Props, Clone, PartialEq)]
 pub struct BottomNavigationProps {
@@ -18,10 +24,30 @@ pub fn BottomNavigation(props: BottomNavigationProps) -> Element {
     let on_navigate = props.on_navigate;
     let destinations = [
         (BottomDestination::Home, Route::Home {}, "icon-home", "Home"),
-        (BottomDestination::Music, Route::Music {}, "icon-music", "Music"),
-        (BottomDestination::Videos, Route::Videos {}, "icon-video", "Videos"),
-        (BottomDestination::Library, Route::Library {}, "icon-folder", "Library"),
-        (BottomDestination::Settings, Route::Settings {}, "icon-settings", "Settings"),
+        (
+            BottomDestination::Music,
+            Route::Music {},
+            "icon-music",
+            "Music",
+        ),
+        (
+            BottomDestination::Videos,
+            Route::Videos {},
+            "icon-video",
+            "Videos",
+        ),
+        (
+            BottomDestination::Library,
+            Route::Library {},
+            "icon-folder",
+            "Library",
+        ),
+        (
+            BottomDestination::Settings,
+            Route::Settings {},
+            "icon-settings",
+            "Settings",
+        ),
     ];
 
     rsx! {

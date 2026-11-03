@@ -45,7 +45,10 @@ fn test_track() -> Track {
 fn playback_initial_state_is_idle() {
     let playback = with_service();
 
-    assert!(matches!(playback.state.read().as_ref(), PlaybackState::Idle));
+    assert!(matches!(
+        playback.state.read().as_ref(),
+        PlaybackState::Idle
+    ));
     assert!(!playback.is_playing());
     assert!(!playback.state.read().is_error());
     assert_eq!(playback.position_sec.get(), 0.0);
@@ -77,7 +80,10 @@ fn playback_play_toggle_from_idle_does_nothing() {
 
     playback.play_toggle();
 
-    assert!(matches!(playback.state.read().as_ref(), PlaybackState::Idle));
+    assert!(matches!(
+        playback.state.read().as_ref(),
+        PlaybackState::Idle
+    ));
     assert!(!playback.is_playing());
 }
 
@@ -155,7 +161,10 @@ fn playback_pause_from_idle_does_nothing() {
 
     playback.pause();
 
-    assert!(matches!(playback.state.read().as_ref(), PlaybackState::Idle));
+    assert!(matches!(
+        playback.state.read().as_ref(),
+        PlaybackState::Idle
+    ));
 }
 
 #[test]
@@ -180,7 +189,10 @@ fn playback_seek_without_track_does_nothing() {
 
     playback.seek(45.5);
 
-    assert!(matches!(playback.state.read().as_ref(), PlaybackState::Idle));
+    assert!(matches!(
+        playback.state.read().as_ref(),
+        PlaybackState::Idle
+    ));
 }
 
 #[test]
@@ -219,7 +231,10 @@ fn playback_stop_sets_idle() {
     });
     playback.stop();
 
-    assert!(matches!(playback.state.read().as_ref(), PlaybackState::Idle));
+    assert!(matches!(
+        playback.state.read().as_ref(),
+        PlaybackState::Idle
+    ));
 }
 
 #[test]

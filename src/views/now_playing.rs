@@ -1,11 +1,11 @@
 //! Expanded Now Playing — full-window experience with artwork as the main
 //! visual focus, waveform seekbar, queue and lyrics panels.
 
+use crate::components::audio::lyrics_view::LyricsView;
 use crate::components::media::Artwork;
 use crate::components::player::playback_controls::PlaybackControls;
-use crate::components::player::volume_control::VolumeControl;
 use crate::components::player::timeline::Timeline;
-use crate::components::audio::lyrics_view::LyricsView;
+use crate::components::player::volume_control::VolumeControl;
 use crate::state::AppState;
 use dioxus::prelude::*;
 

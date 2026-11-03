@@ -8,7 +8,12 @@ use crate::models::{Album, Artist, SearchResults, Track, Video};
 use crate::search::SearchService;
 use dioxus::prelude::*;
 
-service_harness!(SearchHarness, SEARCH_SLOT, SearchService, SearchService::init);
+service_harness!(
+    SearchHarness,
+    SEARCH_SLOT,
+    SearchService,
+    SearchService::init
+);
 
 #[test]
 fn search_initial_state() {
@@ -69,7 +74,10 @@ fn search_set_results() {
     search.set_results(results.clone());
     assert!(!search.state.read().loading);
     assert_eq!(search.state.read().results.tracks.len(), 1);
-    assert_eq!(search.state.read().results.tracks[0].title, "Bohemian Rhapsody");
+    assert_eq!(
+        search.state.read().results.tracks[0].title,
+        "Bohemian Rhapsody"
+    );
 }
 
 #[test]

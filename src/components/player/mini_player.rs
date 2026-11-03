@@ -13,8 +13,14 @@ pub fn MiniPlayer() -> Element {
     let navigator = use_navigator();
 
     let track = playback.state.read().current_track().cloned();
-    let title = track.as_ref().map(|track| track.title.clone()).unwrap_or_else(|| "No track".to_string());
-    let artist = track.as_ref().map(|track| track.artist.clone()).unwrap_or_default();
+    let title = track
+        .as_ref()
+        .map(|track| track.title.clone())
+        .unwrap_or_else(|| "No track".to_string());
+    let artist = track
+        .as_ref()
+        .map(|track| track.artist.clone())
+        .unwrap_or_default();
     let is_playing = playback.state.read().is_playing();
 
     let open_now_playing = move |_| {

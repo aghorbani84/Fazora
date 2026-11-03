@@ -1,8 +1,8 @@
 //! Artist page: artwork, name, album/track counts, top tracks, albums.
 
-use crate::models::{Album, Artist, Track};
 use crate::components::media::{Artwork, Metadata};
 use crate::components::primitives::Button;
+use crate::models::{Album, Artist, Track};
 use crate::state::AppState;
 use dioxus::prelude::*;
 
@@ -17,20 +17,32 @@ pub fn Artist(props: ArtistViewProps) -> Element {
     let app_state = state.read();
     let library = app_state.library.clone();
 
-    let artist = library.library.read().artists.iter().find(|a| a.id == props.id).cloned();
+    let artist = library
+        .library
+        .read()
+        .artists
+        .iter()
+        .find(|a| a.id == props.id)
+        .cloned();
     let artist = match artist {
         Some(a) => a,
         None => return rsx! { div { class: "fz-empty", h2 { "Artist not found" } } },
     };
 
-    let artist_albums: Vec<Album> = library.library.read()
-        .albums.iter()
+    let artist_albums: Vec<Album> = library
+        .library
+        .read()
+        .albums
+        .iter()
         .filter(|a| a.artist_id.as_deref() == Some(&props.id) || a.artist == artist.name)
         .cloned()
         .collect();
 
-    let artist_tracks: Vec<Track> = library.library.read()
-        .tracks.iter()
+    let artist_tracks: Vec<Track> = library
+        .library
+        .read()
+        .tracks
+        .iter()
         .filter(|t| t.artist_id.as_deref() == Some(&props.id) || t.artist == artist.name)
         .cloned()
         .collect();

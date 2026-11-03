@@ -19,7 +19,10 @@ pub fn VideoCard(props: VideoCardProps) -> Element {
     let click_navigator = navigator.clone();
     let keyboard_navigator = navigator;
     let progress = props.video.progress_ratio().clamp(0.0, 1.0);
-    let duration = props.video.formatted_duration().unwrap_or_else(|| "--:--".to_string());
+    let duration = props
+        .video
+        .formatted_duration()
+        .unwrap_or_else(|| "--:--".to_string());
     let open_video = move |_| {
         click_navigator.push(click_target.clone());
     };

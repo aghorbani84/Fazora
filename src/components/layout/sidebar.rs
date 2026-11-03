@@ -7,7 +7,17 @@ use dioxus::prelude::*;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum NavItem {
-    Home, Music, Albums, Artists, Tracks, Playlists, Videos, Favorites, Recent, Search, Settings,
+    Home,
+    Music,
+    Albums,
+    Artists,
+    Tracks,
+    Playlists,
+    Videos,
+    Favorites,
+    Recent,
+    Search,
+    Settings,
 }
 
 #[derive(Props, Clone, PartialEq)]
@@ -23,14 +33,39 @@ pub fn Sidebar(props: SidebarProps) -> Element {
         (NavItem::Home, Route::Home {}, "icon-home", "Home"),
         (NavItem::Music, Route::Music {}, "icon-music", "Music"),
         (NavItem::Albums, Route::Albums {}, "icon-album", "Albums"),
-        (NavItem::Artists, Route::Artists {}, "icon-artist", "Artists"),
+        (
+            NavItem::Artists,
+            Route::Artists {},
+            "icon-artist",
+            "Artists",
+        ),
         (NavItem::Tracks, Route::Tracks {}, "icon-track", "Tracks"),
-        (NavItem::Playlists, Route::Playlists {}, "icon-playlist", "Playlists"),
+        (
+            NavItem::Playlists,
+            Route::Playlists {},
+            "icon-playlist",
+            "Playlists",
+        ),
         (NavItem::Videos, Route::Videos {}, "icon-video", "Videos"),
-        (NavItem::Favorites, Route::Favorites {}, "icon-star", "Favorites"),
-        (NavItem::Recent, Route::Recent {}, "icon-clock", "Recently Played"),
+        (
+            NavItem::Favorites,
+            Route::Favorites {},
+            "icon-star",
+            "Favorites",
+        ),
+        (
+            NavItem::Recent,
+            Route::Recent {},
+            "icon-clock",
+            "Recently Played",
+        ),
         (NavItem::Search, Route::Search {}, "icon-search", "Search"),
-        (NavItem::Settings, Route::Settings {}, "icon-settings", "Settings"),
+        (
+            NavItem::Settings,
+            Route::Settings {},
+            "icon-settings",
+            "Settings",
+        ),
     ];
     let compact = !props.open.cloned();
     let selected_route = props.selected.cloned();

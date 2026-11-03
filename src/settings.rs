@@ -104,7 +104,9 @@ impl SettingsService {
         let mut current = settings.write();
         current.recent_queries.retain(|q| q != &sanitized);
         current.recent_queries.insert(0, sanitized);
-        current.recent_queries.truncate(crate::security::MAX_RECENT_QUERIES);
+        current
+            .recent_queries
+            .truncate(crate::security::MAX_RECENT_QUERIES);
     }
 
     pub fn clear_recent_queries(&self) {

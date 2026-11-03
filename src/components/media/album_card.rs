@@ -105,12 +105,7 @@ pub fn AlbumCard(props: AlbumCardProps) -> Element {
 }
 
 #[component]
-fn Artwork(
-    src: Option<String>,
-    width: u32,
-    height: u32,
-    alt: String,
-) -> Element {
+fn Artwork(src: Option<String>, width: u32, height: u32, alt: String) -> Element {
     rsx! {
         div {
             style: "width: 100%; height: 100%; background: var(--surface-tertiary); border: 1px solid var(--border); border-radius: var(--radius-medium); overflow: hidden; position: relative;",

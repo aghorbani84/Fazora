@@ -44,10 +44,10 @@ macro_rules! service_harness {
     };
 }
 
+mod audio;
+mod library;
 mod models;
 mod playback;
 mod queue;
-mod library;
-mod settings;
 mod search;
-mod audio;
+mod settings;

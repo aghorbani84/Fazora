@@ -27,7 +27,9 @@ pub struct QueueService {
 }
 
 impl Default for QueueService {
-    fn default() -> Self { Self::new() }
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl QueueService {
@@ -43,14 +45,20 @@ impl QueueService {
     pub fn current(&self) -> Option<Track> {
         let index = *self.index.read();
         let entries = self.entries.read();
-        index.and_then(|i| entries.get(i)).map(|entry| entry.track.clone())
+        index
+            .and_then(|i| entries.get(i))
+            .map(|entry| entry.track.clone())
     }
 
     pub fn upcoming(&self) -> Vec<Track> {
         let entries = self.entries.read();
         let index = (*self.index.read()).unwrap_or(0);
-        entries.get(index.saturating_add(1)..).unwrap_or(&[])
-            .iter().map(|entry| entry.track.clone()).collect()
+        entries
+            .get(index.saturating_add(1)..)
+            .unwrap_or(&[])
+            .iter()
+            .map(|entry| entry.track.clone())
+            .collect()
     }
 
     pub fn add(&self, track: Track, play_next: bool) {
@@ -86,7 +94,9 @@ impl QueueService {
     pub fn remove(&self, position: usize) {
         let mut entries_signal = self.entries;
         let mut entries = entries_signal.write();
-        if position >= entries.len() { return; }
+        if position >= entries.len() {
+            return;
+        }
         entries.remove(position);
         let new_len = entries.len();
         drop(entries);
@@ -113,7 +123,9 @@ impl QueueService {
     pub fn reorder(&self, from: usize, to: usize) {
         let mut entries_signal = self.entries;
         let mut entries = entries_signal.write();
-        if from >= entries.len() || to >= entries.len() || from == to { return; }
+        if from >= entries.len() || to >= entries.len() || from == to {
+            return;
+        }
         let entry = entries.remove(from);
         entries.insert(to, entry);
         drop(entries);
@@ -172,7 +184,9 @@ impl QueueService {
 
     pub fn move_next(&self) -> Option<Track> {
         let len = self.entries.read().len();
-        if len == 0 { return None; }
+        if len == 0 {
+            return None;
+        }
         let current = (*self.index.read()).unwrap_or(0);
         let mut signal = self.index;
         signal.set(Some(if current + 1 < len { current + 1 } else { 0 }));
@@ -181,7 +195,9 @@ impl QueueService {
 
     pub fn move_previous(&self) -> Option<Track> {
         let len = self.entries.read().len();
-        if len == 0 { return None; }
+        if len == 0 {
+            return None;
+        }
         let current = (*self.index.read()).unwrap_or(0);
         let mut signal = self.index;
         signal.set(Some(current.saturating_sub(1)));

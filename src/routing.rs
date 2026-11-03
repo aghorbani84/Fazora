@@ -7,11 +7,20 @@
 
 use crate::components::layout::AppShell;
 use crate::views::{
-    album::Album, artist::Artist, equalizer::EqualizerView, home::Home,
-    library::Library, music::Music, now_playing::NowPlaying,
-    playlists::{Playlists, Playlist}, queue::Queue, search::Search,
-    search_results::SearchResults, settings::{Settings, SettingsSection},
-    video_library::VideoLibrary, video_player::VideoPlayer,
+    album::Album,
+    artist::Artist,
+    equalizer::EqualizerView,
+    home::Home,
+    library::Library,
+    music::Music,
+    now_playing::NowPlaying,
+    playlists::{Playlist, Playlists},
+    queue::Queue,
+    search::Search,
+    search_results::SearchResults,
+    settings::{Settings, SettingsSection},
+    video_library::VideoLibrary,
+    video_player::VideoPlayer,
 };
 use dioxus::prelude::*;
 

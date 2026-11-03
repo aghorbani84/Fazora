@@ -1,12 +1,12 @@
 //! Media domain models.
 //! Track, Album, Artist, Video, Playlist and library aggregates.
 
-pub mod track;
 pub mod album;
 pub mod artist;
-pub mod video;
-pub mod playlist;
 pub mod library;
+pub mod playlist;
+pub mod track;
+pub mod video;
 
 pub use album::Album;
 pub use artist::Artist;

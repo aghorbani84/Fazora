@@ -5,7 +5,7 @@
 //! `VirtualDom` harness defined in `mod.rs`.
 
 use crate::models::Track;
-use crate::queue::{QueueService, QueueMode};
+use crate::queue::{QueueMode, QueueService};
 use dioxus::prelude::*;
 
 service_harness!(QueueHarness, QUEUE_SLOT, QueueService, QueueService::new);

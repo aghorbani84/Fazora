@@ -18,26 +18,38 @@ pub fn SearchResults(props: SearchResultsProps) -> Element {
     let query = props.query.clone();
     let q = query.to_lowercase();
 
-    let tracks: Vec<Track> = library.library.read()
-        .tracks.iter()
+    let tracks: Vec<Track> = library
+        .library
+        .read()
+        .tracks
+        .iter()
         .filter(|t| t.title.to_lowercase().contains(&q) || t.artist.to_lowercase().contains(&q))
         .cloned()
         .collect();
 
-    let albums: Vec<Album> = library.library.read()
-        .albums.iter()
+    let albums: Vec<Album> = library
+        .library
+        .read()
+        .albums
+        .iter()
         .filter(|a| a.title.to_lowercase().contains(&q) || a.artist.to_lowercase().contains(&q))
         .cloned()
         .collect();
 
-    let artists: Vec<Artist> = library.library.read()
-        .artists.iter()
+    let artists: Vec<Artist> = library
+        .library
+        .read()
+        .artists
+        .iter()
         .filter(|a| a.name.to_lowercase().contains(&q))
         .cloned()
         .collect();
 
-    let videos: Vec<Video> = library.library.read()
-        .videos.iter()
+    let videos: Vec<Video> = library
+        .library
+        .read()
+        .videos
+        .iter()
         .filter(|v| v.title.to_lowercase().contains(&q))
         .cloned()
         .collect();

@@ -23,7 +23,9 @@ pub fn TrackRow(props: TrackRowProps) -> Element {
     let index = props.index;
     let selected = props.selected;
     let playing = props.playing;
-    let duration = track.formatted_duration().unwrap_or_else(|| "--:--".to_string());
+    let duration = track
+        .formatted_duration()
+        .unwrap_or_else(|| "--:--".to_string());
     let on_play_click = props.on_play;
     let on_play_key = props.on_play;
     let on_select_click = props.on_select;

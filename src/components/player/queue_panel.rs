@@ -101,7 +101,9 @@ fn QueueRow(props: QueueRowProps) -> Element {
     let track = props.entry.track.clone();
     let on_play = props.on_play;
     let on_remove = props.on_remove;
-    let duration = track.formatted_duration().unwrap_or_else(|| "--:--".to_string());
+    let duration = track
+        .formatted_duration()
+        .unwrap_or_else(|| "--:--".to_string());
     let (bg, border) = if props.current {
         ("rgba(216, 181, 106, 0.10)", "rgba(216, 181, 106, 0.35)")
     } else {

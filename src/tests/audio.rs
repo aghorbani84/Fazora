@@ -7,12 +7,7 @@
 use crate::audio::{AudioDevice, AudioService, DeviceKind, EqBand, EqPreset};
 use dioxus::prelude::*;
 
-service_harness!(
-    AudioHarness,
-    AUDIO_SLOT,
-    AudioService,
-    AudioService::init
-);
+service_harness!(AudioHarness, AUDIO_SLOT, AudioService, AudioService::init);
 
 #[test]
 fn audio_initial_state() {

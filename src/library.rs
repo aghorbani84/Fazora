@@ -16,7 +16,9 @@ pub enum ScanStatus {
     Scanning,
     Indexing,
     Finished,
-    Error { message: String },
+    Error {
+        message: String,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

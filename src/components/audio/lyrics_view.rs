@@ -15,7 +15,10 @@ pub struct LyricsViewProps {
 
 #[component]
 pub fn LyricsView(props: LyricsViewProps) -> Element {
-    let lines = props.track.as_ref().and_then(|track| track.lyrics_synced.clone());
+    let lines = props
+        .track
+        .as_ref()
+        .and_then(|track| track.lyrics_synced.clone());
     let position_sec = props.position_sec;
     let mut manual_offset = use_signal(|| 0.0_f64);
     let mut highlighted = use_signal(|| None::<usize>);
@@ -70,7 +73,6 @@ pub fn LyricsView(props: LyricsViewProps) -> Element {
         }
     }
 }
-
 
 #[derive(Props, Clone, PartialEq)]
 struct LyricLineRowProps {

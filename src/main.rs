@@ -41,9 +41,5 @@ fn main() {
             .with_maximized(false),
     );
 
-    launch(
-        || rsx! { App {} },
-        vec![],
-        vec![Box::new(config)],
-    );
+    launch(|| rsx! { App {} }, vec![], vec![Box::new(config)]);
 }

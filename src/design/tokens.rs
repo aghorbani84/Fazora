@@ -4,11 +4,11 @@
 
 /// Brand colours (premultiplied sRGB, 0..=1).
 pub const FAZORA_OBSIDIAN: (f32, f32, f32) = (0.043, 0.051, 0.063); // #0B0D10
-pub const FAZORA_CARBON: (f32, f32, f32) = (0.082, 0.098, 0.122);   // #15191F
-pub const FAZORA_GOLD: (f32, f32, f32) = (0.847, 0.710, 0.416);     // #D8B56A
-pub const FAZORA_IVORY: (f32, f32, f32) = (0.957, 0.945, 0.914);    // #F4F1E9
-pub const FAZORA_STEEL: (f32, f32, f32) = (0.537, 0.569, 0.616);    // #89919D
-pub const FAZORA_TEAL: (f32, f32, f32) = (0.471, 0.812, 0.757);     // #78CFC1
+pub const FAZORA_CARBON: (f32, f32, f32) = (0.082, 0.098, 0.122); // #15191F
+pub const FAZORA_GOLD: (f32, f32, f32) = (0.847, 0.710, 0.416); // #D8B56A
+pub const FAZORA_IVORY: (f32, f32, f32) = (0.957, 0.945, 0.914); // #F4F1E9
+pub const FAZORA_STEEL: (f32, f32, f32) = (0.537, 0.569, 0.616); // #89919D
+pub const FAZORA_TEAL: (f32, f32, f32) = (0.471, 0.812, 0.757); // #78CFC1
 
 /// Layout metrics (logical pixels).
 pub const SIDEBAR_WIDTH: f32 = 260.0;

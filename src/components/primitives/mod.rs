@@ -11,9 +11,9 @@ pub mod tooltip;
 
 pub use badge::{Badge, BadgeVariant};
 pub use button::{Button, ButtonVariant, IconButton};
+pub use card::Card;
+pub use divider::Divider;
 pub use input::Input;
 pub use slider::Slider;
 pub use toggle::Toggle;
-pub use card::Card;
-pub use divider::Divider;
 pub use tooltip::Tooltip;

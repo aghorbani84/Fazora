@@ -1,8 +1,8 @@
 //! Album page: large artwork, metadata, track listing, playback actions.
 
-use crate::models::{Album, Track};
 use crate::components::media::{Artwork, Metadata};
 use crate::components::primitives::{Badge, Button};
+use crate::models::{Album, Track};
 use crate::state::AppState;
 use dioxus::prelude::*;
 
@@ -17,15 +17,26 @@ pub fn Album(props: AlbumProps) -> Element {
     let app_state = state.read();
     let library = app_state.library.clone();
 
-    let album = library.library.read().albums.iter().find(|a| a.id == props.id).cloned();
+    let album = library
+        .library
+        .read()
+        .albums
+        .iter()
+        .find(|a| a.id == props.id)
+        .cloned();
     let album = match album {
         Some(a) => a,
         None => return rsx! { div { class: "fz-empty", h2 { "Album not found" } } },
     };
 
-    let tracks: Vec<Track> = library.library.read()
-        .tracks.iter()
-        .filter(|t| t.album_id.as_deref() == Some(&props.id) || t.album.as_deref() == Some(&album.title))
+    let tracks: Vec<Track> = library
+        .library
+        .read()
+        .tracks
+        .iter()
+        .filter(|t| {
+            t.album_id.as_deref() == Some(&props.id) || t.album.as_deref() == Some(&album.title)
+        })
         .cloned()
         .collect();
 

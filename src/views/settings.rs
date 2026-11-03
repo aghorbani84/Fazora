@@ -9,14 +9,46 @@ pub fn Settings() -> Element {
     let navigator = use_navigator();
 
     let sections = [
-        ("General", "Language, theme, startup behavior, UI density", "general"),
-        ("Appearance", "Light/dark/system, accent color, typography, layout", "appearance"),
-        ("Audio", "Playback engine, output device, equalizer, DSP", "audio"),
-        ("Video", "Hardware decoding, subtitles, aspect ratio, filters", "video"),
-        ("Library", "Media directories, indexing, metadata, artwork", "library"),
-        ("Playback", "Resume position, autoplay, repeat, shuffle, sleep timer", "playback"),
-        ("Advanced", "Engine diagnostics, cache, performance, logs", "advanced"),
-        ("About", "Version, build information, licenses, credits", "about"),
+        (
+            "General",
+            "Language, theme, startup behavior, UI density",
+            "general",
+        ),
+        (
+            "Appearance",
+            "Light/dark/system, accent color, typography, layout",
+            "appearance",
+        ),
+        (
+            "Audio",
+            "Playback engine, output device, equalizer, DSP",
+            "audio",
+        ),
+        (
+            "Video",
+            "Hardware decoding, subtitles, aspect ratio, filters",
+            "video",
+        ),
+        (
+            "Library",
+            "Media directories, indexing, metadata, artwork",
+            "library",
+        ),
+        (
+            "Playback",
+            "Resume position, autoplay, repeat, shuffle, sleep timer",
+            "playback",
+        ),
+        (
+            "Advanced",
+            "Engine diagnostics, cache, performance, logs",
+            "advanced",
+        ),
+        (
+            "About",
+            "Version, build information, licenses, credits",
+            "about",
+        ),
     ];
 
     rsx! {

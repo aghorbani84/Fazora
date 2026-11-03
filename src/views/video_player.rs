@@ -16,7 +16,13 @@ pub fn VideoPlayer(props: VideoPlayerProps) -> Element {
     let state = use_context::<Signal<AppState>>();
     let library = state.read().library.clone();
 
-    let video = library.library.read().videos.iter().find(|v| v.id == props.id).cloned();
+    let video = library
+        .library
+        .read()
+        .videos
+        .iter()
+        .find(|v| v.id == props.id)
+        .cloned();
     let video = match video {
         Some(v) => v,
         None => return rsx! { div { class: "fz-empty", h2 { "Video not found" } } },
