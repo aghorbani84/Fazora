@@ -2,7 +2,7 @@
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Video {
     pub id: String,
     pub title: String,
@@ -22,7 +22,6 @@ pub struct Video {
 impl Video {
     pub fn formatted_duration(&self) -> Option<String> {
         let secs = self.duration_sec?;
-
         let minutes = secs / 60;
         let seconds = secs % 60;
         Some(format!("{}:{:02}", minutes, seconds))
