@@ -12,11 +12,13 @@ pub struct ArtistCardProps {
 #[component]
 pub fn ArtistCard(props: ArtistCardProps) -> Element {
     let navigator = use_navigator();
-
+    let target = Route::Artist {
+        id: props.artist.id.clone(),
+    };
+    let click_navigator = navigator.clone();
+    let keyboard_navigator = navigator;
     let open_artist = move |_| {
-        navigator.push(Route::Artist {
-            id: props.artist.id.clone(),
-        });
+        click_navigator.push(target.clone());
     };
 
     rsx! {
@@ -28,7 +30,7 @@ pub fn ArtistCard(props: ArtistCardProps) -> Element {
             onclick: open_artist,
             onkeydown: move |evt: KeyboardEvent| {
                 if matches!(evt.key(), Key::Enter) {
-                    open_artist(());
+                    keyboard_navigator.push(target.clone());;
                 }
             },
             div {

@@ -20,7 +20,6 @@ pub fn NowPlaying() -> Element {
     let mut show_queue = use_signal(|| false);
     let mut show_lyrics = use_signal(|| false);
     let seek_service = playback.clone();
-    let seek_service = playback.clone();
 
     rsx! {
         div {
@@ -107,7 +106,7 @@ pub fn NowPlaying() -> Element {
                 div {
                     class: "fz-controls-panel",
                     width: "100%",
-                    max_width: 700px,
+                    max_width: "700px",
                     PlaybackControls {
                         service: playback.clone(),
                         queue: queue.clone(),
