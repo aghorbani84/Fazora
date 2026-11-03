@@ -81,6 +81,22 @@ pub fn Equalizer(props: EqualizerProps) -> Element {
                     span { style: "font-size: var(--text-xs); color: var(--text-secondary);", "{preset_label}" }
                     select {
                         style: "background: var(--surface-tertiary); border: 1px solid var(--border); color: var(--text-primary); border-radius: var(--radius-medium); padding: 4px 8px; font-size: var(--text-xs); width: 200px;",
+                        onchange: {
+                            let service = service.clone();
+                            move |event: FormEvent| {
+                                let selected = match event.value().as_str() {
+                                    "BassBoost" => EqPreset::BassBoost,
+                                    "Vocal" => EqPreset::Vocal,
+                                    "Classical" => EqPreset::Classical,
+                                    "Electronic" => EqPreset::Electronic,
+                                    "Jazz" => EqPreset::Jazz,
+                                    "Rock" => EqPreset::Rock,
+                                    "Custom" => EqPreset::Custom,
+                                    _ => EqPreset::Flat,
+                                };
+                                service.set_preset(selected);
+                            }
+                        },
                         for preset_name in [
                             EqPreset::Flat, EqPreset::BassBoost, EqPreset::Vocal,
                             EqPreset::Classical, EqPreset::Electronic, EqPreset::Jazz,
@@ -99,22 +115,6 @@ pub fn Equalizer(props: EqualizerProps) -> Element {
                                     EqPreset::Rock => "Rock",
                                     EqPreset::Custom => "Custom",
                                 }}
-                            }
-                        }
-                        onchange: {
-                            let service = service.clone();
-                            move |event: FormEvent| {
-                                let selected = match event.value().as_str() {
-                                    "BassBoost" => EqPreset::BassBoost,
-                                    "Vocal" => EqPreset::Vocal,
-                                    "Classical" => EqPreset::Classical,
-                                    "Electronic" => EqPreset::Electronic,
-                                    "Jazz" => EqPreset::Jazz,
-                                    "Rock" => EqPreset::Rock,
-                                    "Custom" => EqPreset::Custom,
-                                    _ => EqPreset::Flat,
-                                };
-                                service.set_preset(selected);
                             }
                         }
                     }
@@ -153,7 +153,9 @@ fn EqBandControl(props: EqBandControlProps) -> Element {
     let gain = props.band.gain_db;
     let frequency = props.band.frequency_hz;
     let service = props.service.clone();
-    let on_change = move |value| service.set_band_gain(frequency, value);
+    let on_change = move |value: f64| {
+        service.set_band_gain(frequency, ((value - 0.5) * 24.0) as f32);
+    };
     let normalized = ((gain + 12.0) / 24.0).clamp(0.0, 1.0);
 
     rsx! {
