@@ -3,6 +3,10 @@
 [advisories]
 unmaintained = "workspace"
 unsound = "all"
+ignore = [
+  { id = "RUSTSEC-2024-0429", reason = "glib 0.18 is transitively required by Dioxus Desktop's GTK3/WebKitGTK 0.18 stack; glib 0.20 is not compatible with this gtk-rs stack. FAZORA does not call VariantStrIter. Revisit when Dioxus Desktop upgrades to a compatible patched GTK stack." },
+  { id = "RUSTSEC-2026-0097", reason = "rand 0.7.3 is build-time transitive through kuchikiki/selectors/phf_codegen. The advisory requires a custom logger to call rand thread_rng during reseeding; FAZORA does not implement such a logger or use rand directly. Revisit after upstream dependency removal/update." },
+]
 
 [licenses]
 allow = [
