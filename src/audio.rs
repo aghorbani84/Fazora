@@ -24,7 +24,7 @@ pub struct EqBand {
     pub q: f32,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 pub struct AudioState {
     pub preset: EqPreset,
     pub preamp_db: f32,
@@ -36,7 +36,7 @@ pub struct AudioState {
     pub gapless: bool,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct AudioDevice {
     pub id: String,
     pub name: String,

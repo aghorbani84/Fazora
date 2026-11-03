@@ -4,7 +4,7 @@ use crate::models::{Album, Artist, Track, Video};
 use crate::security::sanitize_query;
 use dioxus::prelude::*;
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, PartialEq, Default)]
 pub struct SearchResults {
     pub tracks: Vec<Track>,
     pub albums: Vec<Album>,
@@ -12,14 +12,14 @@ pub struct SearchResults {
     pub videos: Vec<Video>,
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, PartialEq, Default)]
 pub struct SearchState {
     pub query: String,
     pub results: SearchResults,
     pub loading: bool,
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct SearchService {
     pub state: Signal<SearchState>,
 }

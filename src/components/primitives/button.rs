@@ -27,7 +27,6 @@ pub struct ButtonProps {
     #[props(default)]
     label: Option<String>,
     #[props(default)]
-    #[props(default)]
     children: Element,
 }
 
@@ -81,7 +80,6 @@ pub struct IconButtonProps {
     class: Option<String>,
     #[props(default)]
     onclick: EventHandler<MouseEvent>,
-    #[props(default)]
     #[props(default)]
     children: Element,
 }

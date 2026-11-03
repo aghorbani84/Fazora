@@ -19,13 +19,13 @@ pub enum ScanStatus {
     Error { message: String },
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct MediaDirectory {
     pub path: PathBuf,
     pub included: bool,
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct LibraryService {
     pub library: Signal<Library>,
     pub stats: Signal<LibraryStats>,

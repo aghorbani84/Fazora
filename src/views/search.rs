@@ -1,12 +1,12 @@
 //! Global search entry.
 
-use crate::components::primitives::Input;
+use crate::components::primitives::{Button, Input};
 use dioxus::prelude::*;
 
 #[component]
 pub fn Search() -> Element {
     let navigator = use_navigator();
-    let query = use_signal(|| String::new());
+    let mut query = use_signal(String::new);
 
     let submit = move |_| {
         if !query.cloned().is_empty() {
@@ -27,8 +27,11 @@ pub fn Search() -> Element {
                 placeholder: "Search tracks, artists, albums, videos…",
                 aria_label: "Global search",
                 value: query.cloned(),
-                oninput: Some(move |evt| query.set(evt.value())),
-                onchange: Some(move |_| submit(())),
+                oninput: move |evt| query.set(evt.value()),
+            }
+            Button {
+                label: "Search",
+                onclick: move |_| submit(()),
             }
             div {
                 style: "margin-top: var(--space-6); display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--space-5);",

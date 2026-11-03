@@ -67,7 +67,8 @@ pub enum Route {
 
 /// 404 destination shown when the URL matches nothing.
 #[component]
-fn not_found() -> Element {
+fn not_found(route: Vec<String>) -> Element {
+    let _ = route;
     let navigator = use_navigator();
 
     rsx! {
