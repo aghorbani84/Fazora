@@ -32,18 +32,19 @@ impl SearchService {
     }
 
     pub fn set_query(&self, query: String) {
-        let mut s = self.state.write();
-        s.query = sanitize_query(&query);
+        let mut state = self.state;
+        state.write().query = sanitize_query(&query);
     }
 
     pub fn set_results(&self, results: SearchResults) {
-        let mut s = self.state.write();
-        s.results = results;
-        s.loading = false;
+        let mut state = self.state;
+        let mut current = state.write();
+        current.results = results;
+        current.loading = false;
     }
 
     pub fn set_loading(&self, loading: bool) {
-        let mut s = self.state.write();
-        s.loading = loading;
+        let mut state = self.state;
+        state.write().loading = loading;
     }
 }
