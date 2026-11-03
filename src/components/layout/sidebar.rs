@@ -91,8 +91,8 @@ pub fn Sidebar(props: SidebarProps) -> Element {
                                 icon,
                                 label,
                                 compact,
-                                selected: props.selected.read().clone() == *route,
-                                on_click: move |_| props.on_navigate.call(*route),
+                                selected: props.selected.read().clone() == route.clone(),
+                                on_click: move |_| props.on_navigate.call(route.clone()),
                             }
                         }
                     }

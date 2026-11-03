@@ -12,7 +12,7 @@ pub fn Home() -> Element {
     let state = use_context::<Signal<AppState>>();
     let app_state = state.read();
     let library_service = app_state.library.clone();
-    let stats = app_state.stats.clone();
+    let stats = library_service.stats.clone();
 
     rsx! {
         div {
@@ -48,22 +48,22 @@ pub fn Home() -> Element {
                 style: "display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-4); margin-bottom: var(--space-10);",
                 StatCard {
                     label: "Tracks",
-                    value: stats.track_count.to_string(),
+                    value: stats.read().track_count.to_string(),
                     icon: "#icon-track",
                 }
                 StatCard {
                     label: "Albums",
-                    value: stats.album_count.to_string(),
+                    value: stats.read().album_count.to_string(),
                     icon: "#icon-album",
                 }
                 StatCard {
                     label: "Artists",
-                    value: stats.artist_count.to_string(),
+                    value: stats.read().artist_count.to_string(),
                     icon: "#icon-artist",
                 }
                 StatCard {
                     label: "Videos",
-                    value: stats.video_count.to_string(),
+                    value: stats.read().video_count.to_string(),
                     icon: "#icon-video",
                 }
             }
