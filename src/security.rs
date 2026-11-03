@@ -17,13 +17,24 @@ pub const MAX_RECENT_QUERIES: usize = 50;
 /// Allowed media directory root prefixes for path validation.
 /// Paths outside these roots are rejected to prevent access to
 /// sensitive system directories (e.g., /etc, /var, /root).
-#[cfg(any(target_os = "linux", target_os = "android"))]
+#[cfg(target_os = "linux")]
 pub const ALLOWED_MEDIA_ROOTS: [&str; 5] = [
-    "/home",
-    "/mnt",
-    "/media",
-    "/run/media",
-    "/tmp",
+    "/home", "/mnt", "/media", "/run/media", "/tmp",
+];
+
+#[cfg(target_os = "android")]
+pub const ALLOWED_MEDIA_ROOTS: [&str; 4] = [
+    "/storage/emulated/0", "/sdcard", "/data/user/0", "/data/data",
+];
+
+#[cfg(target_os = "macos")]
+pub const ALLOWED_MEDIA_ROOTS: [&str; 3] = [
+    "/Users", "/Volumes", "/tmp",
+];
+
+#[cfg(target_os = "ios")]
+pub const ALLOWED_MEDIA_ROOTS: [&str; 2] = [
+    "/var/mobile/Media", "/private/var/mobile/Media",
 ];
 
 #[cfg(target_os = "windows")]
@@ -65,10 +76,9 @@ pub fn validate_media_dir(path: &Path) -> Result<PathBuf, SecurityError> {
     }
 
     // Reject paths outside allowed roots
-    let canonical_str = canonical.to_string_lossy();
-    let allowed = ALLOWED_MEDIA_ROOTS.iter().any(|root| {
-        canonical_str.starts_with(*root)
-    });
+    let allowed = ALLOWED_MEDIA_ROOTS
+        .iter()
+        .any(|root| canonical.starts_with(Path::new(root)));
 
     if !allowed {
         return Err(SecurityError::PathOutsideAllowedRoot);

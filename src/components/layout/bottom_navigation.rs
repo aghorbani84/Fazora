@@ -36,7 +36,7 @@ pub fn BottomNavigation(props: BottomNavigationProps) -> Element {
                     route: route.clone(),
                     icon,
                     label,
-                    selected: selected == route,
+                    selected: selected == route.clone(),
                     on_navigate,
                 }
             }
