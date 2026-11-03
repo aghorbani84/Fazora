@@ -51,8 +51,6 @@ impl PlaybackState {
     }
 }
 
-/// UI-facing playback service. Initialise with `PlaybackService::init()` inside
-/// a component scope, then provide it via context.
 #[derive(Clone)]
 pub struct PlaybackService {
     pub state: Signal<PlaybackState>,
@@ -79,78 +77,81 @@ impl PlaybackService {
         }
     }
 
-    /// Called by the native engine adapter when state changes externally.
-    pub fn set_state(&self, state: PlaybackState) {
-        self.state.set(state);
+    pub fn set_state(&self, value: PlaybackState) {
+        let mut signal = self.state;
+        signal.set(value);
     }
 
     pub fn set_position(&self, sec: f64) {
-        self.position_sec.set(sec);
+        let mut signal = self.position_sec;
+        signal.set(sec);
     }
 
     pub fn set_duration(&self, sec: f64) {
-        self.duration_sec.set(sec);
+        let mut signal = self.duration_sec;
+        signal.set(sec);
     }
 
     pub fn load(&self, track: Track) {
-        self.state.set(PlaybackState::Loading {
-            track: track.clone(),
-        });
+        self.set_state(PlaybackState::Loading { track });
     }
 
     pub fn play_toggle(&self) {
-        match &*self.state.read() {
-            PlaybackState::Paused { track }
-            | PlaybackState::Ended { track } => {
-                self.state.set(PlaybackState::Playing {
-                    track: track.clone(),
-                });
+        let current = self.state.read().clone();
+        let next = match current {
+            PlaybackState::Paused { track } | PlaybackState::Ended { track } => {
+                Some(PlaybackState::Playing { track })
             }
-            PlaybackState::Playing { track } => {
-                self.state.set(PlaybackState::Paused {
-                    track: track.clone(),
-                });
-            }
-            _ => {}
+            PlaybackState::Playing { track } => Some(PlaybackState::Paused { track }),
+            _ => None,
+        };
+        if let Some(next) = next {
+            self.set_state(next);
         }
     }
 
     pub fn pause(&self) {
-        if let PlaybackState::Playing { track } = &*self.state.read() {
-            self.state.set(PlaybackState::Paused {
-                track: track.clone(),
-            });
+        let current = self.state.read().clone();
+        if let PlaybackState::Playing { track } = current {
+            self.set_state(PlaybackState::Paused { track });
         }
     }
 
     pub fn seek(&self, to_sec: f64) {
-        if let Some(track) = self.state.current_track().cloned() {
-            self.state.set(PlaybackState::Seeking {
+        if let Some(track) = self.current_track() {
+            self.set_state(PlaybackState::Seeking {
                 track,
-                to_sec,
+                to_sec: to_sec.max(0.0),
             });
         }
     }
 
     pub fn set_volume(&self, volume: f32) {
-        self.volume.set(volume.clamp(0.0, 1.0));
-        self.muted.set(false);
+        let mut volume_signal = self.volume;
+        volume_signal.set(volume.clamp(0.0, 1.0));
+        let mut muted_signal = self.muted;
+        muted_signal.set(false);
     }
 
     pub fn toggle_mute(&self) {
-        self.muted.set(!self.muted.get());
+        let mut muted = self.muted;
+        let next = !*muted.read();
+        muted.set(next);
     }
 
     pub fn stop(&self) {
-        self.state.set(PlaybackState::Idle);
+        self.set_state(PlaybackState::Idle);
     }
 
     pub fn set_repeat(&self, mode: RepeatMode) {
-        self.repeat.set(mode);
+        let mut repeat = self.repeat;
+        repeat.set(mode);
     }
 
     pub fn toggle_shuffle(&self) {
-        self.shuffle.set(!self.shuffle.get());
+        let mut shuffle = self.shuffle;
+        let next = !*shuffle.read();
+        shuffle.set(next);
     }
 
     pub fn current_track(&self) -> Option<Track> {
@@ -162,8 +163,8 @@ impl PlaybackService {
     }
 
     pub fn progress_ratio(&self) -> f64 {
-        let pos = self.position_sec.get();
-        let dur = self.duration_sec.get();
+        let pos = *self.position_sec.read();
+        let dur = *self.duration_sec.read();
         if dur > 0.0 {
             (pos / dur).clamp(0.0, 1.0)
         } else {
