@@ -1,29 +1,13 @@
-//! Navigation sidebar — collapsible, with icon-only compact mode, active
-//! destination indicator and tooltips.
+//! Navigation sidebar — collapsible, with active destination indicator.
 
 use crate::components::branding::BrandMark;
 use crate::components::primitives::IconButton;
 use crate::routing::Route;
-use crate::state::AppState;
 use dioxus::prelude::*;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum NavItem {
-    Home,
-    Music,
-    Albums,
-    Artists,
-    Tracks,
-    Genres,
-    Playlists,
-    Videos,
-    Folders,
-    Favorites,
-    Recent,
-    History,
-    Statistics,
-    Search,
-    Settings,
+    Home, Music, Albums, Artists, Tracks, Playlists, Videos, Favorites, Recent, Search, Settings,
 }
 
 #[derive(Props, Clone, PartialEq)]
@@ -48,16 +32,13 @@ pub fn Sidebar(props: SidebarProps) -> Element {
         (NavItem::Search, Route::Search {}, "icon-search", "Search"),
         (NavItem::Settings, Route::Settings {}, "icon-settings", "Settings"),
     ];
-
     let compact = !props.open.cloned();
+    let selected_route = props.selected.cloned();
+    let on_navigate = props.on_navigate;
 
     rsx! {
         nav {
-            class: if compact {
-                "fz-sidebar collapsed"
-            } else {
-                "fz-sidebar"
-            },
+            class: if compact { "fz-sidebar collapsed" } else { "fz-sidebar" },
             aria_label: "Main navigation",
             div {
                 class: "fz-sidebar-brand",
@@ -67,12 +48,7 @@ pub fn Sidebar(props: SidebarProps) -> Element {
                 gap: "var(--space-3)",
                 BrandMark { size: 32 }
                 if !compact {
-                    span {
-                        class: "fz-sidebar-wordmark",
-                        font_weight: "700",
-                        letter_spacing: "-0.02em",
-                        "FAZORA"
-                    }
+                    span { class: "fz-sidebar-wordmark", font_weight: "700", letter_spacing: "-0.02em", "FAZORA" }
                 }
             }
             Divider {}
@@ -83,17 +59,15 @@ pub fn Sidebar(props: SidebarProps) -> Element {
                 ul {
                     class: "fz-nav-list",
                     for (item, route, icon, label) in items {
-                        li {
+                        let is_selected = selected_route == route;
+                        NavLink {
                             key: "{label}",
-                            NavLink {
-                                item,
-                                route,
-                                icon,
-                                label,
-                                compact,
-                                selected: props.selected.read().clone() == route.clone(),
-                                on_click: move |_| props.on_navigate.call(route.clone()),
-                            }
+                            item,
+                            icon,
+                            label,
+                            compact,
+                            selected: is_selected,
+                            on_click: move |_| on_navigate.call(route.clone()),
                         }
                     }
                 }
@@ -102,41 +76,38 @@ pub fn Sidebar(props: SidebarProps) -> Element {
     }
 }
 
-#[component]
-fn NavLink(
+#[derive(Props, Clone, PartialEq)]
+struct NavLinkProps {
     item: NavItem,
-    route: Route,
     icon: &'static str,
     label: &'static str,
     compact: bool,
     selected: bool,
     on_click: EventHandler<()>,
-) -> Element {
-    let active_class = if selected { " fz-nav-active" } else { "" };
+}
 
+#[component]
+fn NavLink(props: NavLinkProps) -> Element {
+    let _item = props.item;
+    let active_class = if props.selected { " fz-nav-active" } else { "" };
     rsx! {
         button {
             class: format!("fz-nav-link{}", active_class),
             role: "menuitem",
-            "aria-selected": selected,
+            "aria-selected": props.selected,
             tabindex: 0,
-            onclick: move |_| on_click.call(()),
-            onkeydown: move |evt: KeyboardEvent| {
-                if matches!(evt.key(), Key::Enter) {
-                    on_click.call(());
+            onclick: move |_| props.on_click.call(()),
+            onkeydown: move |event: KeyboardEvent| {
+                if matches!(event.key(), Key::Enter) {
+                    props.on_click.call(());
                 }
             },
             div {
                 class: "fz-nav-icon",
-                svg {
-                    class: "fz-icon",
-                    width: 20,
-                    height: 20,
-                    use { href: format!("#{}", icon) }
-                }
+                svg { class: "fz-icon", width: 20, height: 20, use { href: format!("#{}", props.icon) } }
             }
-            if !compact {
-                span { class: "fz-nav-label", "{label}" }
+            if !props.compact {
+                span { class: "fz-nav-label", "{props.label}" }
             }
         }
     }
@@ -145,9 +116,6 @@ fn NavLink(
 #[component]
 fn Divider() -> Element {
     rsx! {
-        hr {
-            class: "fz-divider",
-            style: "margin: var(--space-4) 0; border-color: var(--border);",
-        }
+        hr { class: "fz-divider", style: "margin: var(--space-4) 0; border-color: var(--border);" }
     }
 }

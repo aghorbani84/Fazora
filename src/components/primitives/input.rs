@@ -16,6 +16,8 @@ pub struct InputProps {
     class: Option<String>,
     #[props(default)]
     aria_label: Option<String>,
+    #[props(default)]
+    onkeydown: EventHandler<KeyboardEvent>,
 }
 
 #[component]
@@ -34,6 +36,9 @@ pub fn Input(props: InputProps) -> Element {
             tabindex: 0,
             oninput: move |evt| {
                 props.oninput.call(evt);
+            },
+            onkeydown: move |evt| {
+                props.onkeydown.call(evt);
             },
         }
     }

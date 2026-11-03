@@ -1,6 +1,7 @@
 //! Queue panel — current track, upcoming tracks, reorder, remove, save as
 //! playlist. Queue changes update the real playback service.
 
+use crate::components::primitives::IconButton;
 use crate::queue::{QueueEntry, QueueService};
 use dioxus::prelude::*;
 
@@ -13,13 +14,15 @@ pub struct QueuePanelProps {
 
 #[component]
 pub fn QueuePanel(props: QueuePanelProps) -> Element {
-    let entries = props.queue.entries.read();
-    let index = props.queue.index.read();
+    let queue = props.queue.clone();
+    let entries = queue.entries.read().clone();
+    let current_index = *queue.index.read();
+    let is_open = props.open.cloned();
 
     rsx! {
         div {
             class: "fz-secondary-panel",
-            style: if props.open.cloned() { "display: flex;" } else { "display: none;" },
+            style: if is_open { "display: flex;" } else { "display: none;" },
             div {
                 class: "fz-panel-header",
                 style: "padding: var(--space-4); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;",
@@ -48,9 +51,15 @@ pub fn QueuePanel(props: QueuePanelProps) -> Element {
                         QueueRow {
                             key: "{entry.id}",
                             entry: entry.clone(),
-                            current: index.map_or(false, |cur| cur == i),
-                            on_remove: move |_| props.queue.remove(i),
-                            on_play: move |_| props.queue.set_index(i),
+                            current: current_index == Some(i),
+                            on_remove: {
+                                let queue = queue.clone();
+                                move |_| queue.remove(i)
+                            },
+                            on_play: {
+                                let queue = queue.clone();
+                                move |_| queue.set_index(i)
+                            },
                         }
                     }
                     div {
@@ -58,14 +67,17 @@ pub fn QueuePanel(props: QueuePanelProps) -> Element {
                         crate::components::primitives::Button {
                             variant: crate::components::primitives::ButtonVariant::Surface,
                             onclick: move |_| {
-                                let playlist = props.queue.save_as_playlist("Saved queue".to_string());
+                                let playlist = queue.save_as_playlist("Saved queue".to_string());
                                 let _ = playlist;
                             },
                             label: "Save as playlist",
                         }
                         crate::components::primitives::Button {
                             variant: crate::components::primitives::ButtonVariant::Danger,
-                            onclick: move |_| props.queue.clear(),
+                            onclick: {
+                                let queue = queue.clone();
+                                move |_| queue.clear()
+                            },
                             label: "Clear",
                         }
                     }
@@ -92,8 +104,6 @@ fn QueueRow(props: QueueRowProps) -> Element {
     } else {
         ("transparent", "var(--border)")
     };
-
-    use crate::components::primitives::IconButton;
 
     rsx! {
         div {

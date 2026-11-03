@@ -155,10 +155,11 @@ impl QueueService {
 
     pub fn toggle_shuffle(&self) {
         let mut signal = self.mode;
-        signal.set(match *signal.read() {
+        let next_mode = match *signal.read() {
             QueueMode::Sequential => QueueMode::Shuffle,
             QueueMode::Shuffle => QueueMode::Sequential,
-        });
+        };
+        signal.set(next_mode);
     }
 
     pub fn set_index(&self, index: usize) {
