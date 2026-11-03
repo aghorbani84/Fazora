@@ -31,8 +31,11 @@ fn library_initial_state() {
 fn library_add_remove_media_dir() {
     let library = with_service();
 
-    let dir1 = PathBuf::from("/music");
-    let dir2 = PathBuf::from("/video");
+    let root = tempfile::tempdir().expect("create temporary media root");
+    let dir1 = root.path().join("music");
+    let dir2 = root.path().join("video");
+    std::fs::create_dir(&dir1).expect("create music test directory");
+    std::fs::create_dir(&dir2).expect("create video test directory");
 
     library.add_media_dir(dir1.clone());
     library.add_media_dir(dir2.clone());
