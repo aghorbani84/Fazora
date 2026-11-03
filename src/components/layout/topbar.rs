@@ -14,6 +14,8 @@ pub struct TopbarProps {
 #[component]
 pub fn Topbar(props: TopbarProps) -> Element {
     let navigator = use_navigator();
+    let search_navigator = navigator.clone();
+    let settings_navigator = navigator;
     let mut query = use_signal(String::new);
     let toggle_sidebar = props.on_toggle_sidebar;
     let open_queue = props.on_open_queue;
@@ -35,11 +37,12 @@ pub fn Topbar(props: TopbarProps) -> Element {
                     aria_label: "Global search",
                     value: query.cloned(),
                     oninput: move |event| {
-                        query.set(event.value());
+                        let mut signal = query;
+                        signal.set(event.value());
                     },
                     onkeydown: move |event: KeyboardEvent| {
                         if matches!(event.key(), Key::Enter) && !query.cloned().trim().is_empty() {
-                            navigator.push(Route::SearchResults { query: query.cloned() });
+                            search_navigator.push(Route::SearchResults { query: query.cloned() });
                         }
                     },
                 }
@@ -56,7 +59,7 @@ pub fn Topbar(props: TopbarProps) -> Element {
                 Button {
                     variant: crate::components::primitives::ButtonVariant::Ghost,
                     onclick: move |_| {
-                        navigator.push(Route::Settings {});
+                        settings_navigator.push(Route::Settings {});
                     },
                     label: "Settings",
                 }

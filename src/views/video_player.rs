@@ -30,7 +30,7 @@ pub fn VideoPlayer(props: VideoPlayerProps) -> Element {
             class: "fz-video-player",
             style: "width: 100%; height: 100%; background: var(--fazora-obsidian); color: var(--fazora-ivory); position: relative; display: flex; flex-direction: column;",
             onmousemove: move |_| {
-                showing_controls.set(true);
+                { let mut signal = showing_controls; signal.set(true); }
             },
             // Video surface — real native rendering, never a fake image.
             div {
@@ -71,7 +71,7 @@ pub fn VideoPlayer(props: VideoPlayerProps) -> Element {
                         Button {
                             variant: crate::components::primitives::ButtonVariant::Ghost,
                             label: "Settings",
-                            onclick: move |_| showing_settings.set(!showing_settings.cloned()),
+                            onclick: move |_| { let mut signal = showing_settings; signal.set(!*signal.read()); },
                         }
                     }
                 }
@@ -136,7 +136,7 @@ pub fn VideoPlayer(props: VideoPlayerProps) -> Element {
                         Button {
                             variant: crate::components::primitives::ButtonVariant::Ghost,
                             label: "Done",
-                            onclick: move |_| showing_settings.set(false),
+                            onclick: move |_| { let mut signal = showing_settings; signal.set(false); },
                         }
                     }
                     div {

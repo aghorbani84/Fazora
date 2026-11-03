@@ -1,7 +1,6 @@
 //! Playlists index.
 
 use crate::components::primitives::Button;
-use crate::models::Playlist;
 use crate::state::AppState;
 use dioxus::prelude::*;
 

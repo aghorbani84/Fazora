@@ -18,6 +18,8 @@ pub fn QueuePanel(props: QueuePanelProps) -> Element {
     let entries = queue.entries.read().clone();
     let current_index = *queue.index.read();
     let is_open = props.open.cloned();
+    let queue_for_save = queue.clone();
+    let queue_for_clear = queue.clone();
 
     rsx! {
         div {
@@ -67,7 +69,7 @@ pub fn QueuePanel(props: QueuePanelProps) -> Element {
                         crate::components::primitives::Button {
                             variant: crate::components::primitives::ButtonVariant::Surface,
                             onclick: move |_| {
-                                let playlist = queue.save_as_playlist("Saved queue".to_string());
+                                let playlist = queue_for_save.save_as_playlist("Saved queue".to_string());
                                 let _ = playlist;
                             },
                             label: "Save as playlist",
@@ -75,8 +77,7 @@ pub fn QueuePanel(props: QueuePanelProps) -> Element {
                         crate::components::primitives::Button {
                             variant: crate::components::primitives::ButtonVariant::Danger,
                             onclick: {
-                                let queue = queue.clone();
-                                move |_| queue.clear()
+                                move |_| queue_for_clear.clear()
                             },
                             label: "Clear",
                         }

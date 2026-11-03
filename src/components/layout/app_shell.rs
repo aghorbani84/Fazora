@@ -10,6 +10,7 @@ use dioxus::prelude::*;
 #[component]
 pub fn AppShell() -> Element {
     let state = use_context::<Signal<AppState>>();
+    let navigator = use_navigator();
     let queue = state.read().queue.clone();
     let mut sidebar_open = use_signal(|| false);
     let mut secondary_open = use_signal(|| false);
@@ -21,6 +22,7 @@ pub fn AppShell() -> Element {
     };
 
     let navigate = move |route: Route| {
+        navigator.push(route.clone());
         let mut selected = selected_route;
         selected.set(route.clone());
         let mut open = sidebar_open;

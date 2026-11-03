@@ -61,14 +61,14 @@ pub enum Route {
         SettingsSection { section: String },
         #[route("/library", Library)]
         Library {},
-        #[route("/:..route", not_found)]
-        NotFound { route: Vec<String> },
+        #[route("/:..segments", not_found)]
+        NotFound { segments: Vec<String> },
 }
 
 /// 404 destination shown when the URL matches nothing.
 #[component]
-fn not_found(route: Vec<String>) -> Element {
-    let _ = route;
+fn not_found(segments: Vec<String>) -> Element {
+    let _ = segments;
     let navigator = use_navigator();
 
     rsx! {

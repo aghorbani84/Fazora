@@ -41,7 +41,7 @@ pub fn Library() -> Element {
                 Input {
                     placeholder: "Add media directory…",
                     aria_label: "Media directory",
-                    oninput: Some(move |_| {}),
+                    oninput: move |_| {},
                 }
                 Button {
                     variant: crate::components::primitives::ButtonVariant::Primary,

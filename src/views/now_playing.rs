@@ -6,7 +6,6 @@ use crate::components::player::playback_controls::PlaybackControls;
 use crate::components::player::volume_control::VolumeControl;
 use crate::components::player::timeline::Timeline;
 use crate::components::audio::lyrics_view::LyricsView;
-use crate::models::Track;
 use crate::state::AppState;
 use dioxus::prelude::*;
 
@@ -17,10 +16,10 @@ pub fn NowPlaying() -> Element {
     let queue = state.read().queue.clone();
 
     let track = playback.state.read().current_track().cloned();
-    let is_playing = playback.state.read().is_playing();
 
     let show_queue = use_signal(|| false);
     let show_lyrics = use_signal(|| false);
+    let seek_service = playback.clone();
 
     rsx! {
         div {
@@ -38,13 +37,13 @@ pub fn NowPlaying() -> Element {
                     crate::components::primitives::IconButton {
                         active: show_queue.cloned(),
                         title: "Queue",
-                        onclick: move |_| show_queue.set(!show_queue.cloned()),
+                        onclick: move |_| { let mut signal = show_queue; signal.set(!*signal.read()); },
                         svg { class: "fz-icon", width: 18, height: 18, use { href: "#icon-queue" } }
                     }
                     crate::components::primitives::IconButton {
                         active: show_lyrics.cloned(),
                         title: "Lyrics",
-                        onclick: move |_| show_lyrics.set(!show_lyrics.cloned()),
+                        onclick: move |_| { let mut signal = show_lyrics; signal.set(!*signal.read()); },
                         svg { class: "fz-icon", width: 18, height: 18, use { href: "#icon-lyrics" } }
                     }
                 }
@@ -97,11 +96,11 @@ pub fn NowPlaying() -> Element {
                 div {
                     class: "fz-progress-panel",
                     width: "100%",
-                    max_width: 700px,
+                    max_width: "700px",
                     Timeline {
                         position: playback.position_sec.cloned(),
                         duration: playback.duration_sec.cloned(),
-                        on_seek: move |sec| playback.seek(sec),
+                        on_seek: move |sec| seek_service.seek(sec),
                     }
                 }
                 div {
@@ -116,7 +115,7 @@ pub fn NowPlaying() -> Element {
                 div {
                     class: "fz-volume-panel",
                     width: "100%",
-                    max_width: 320px,
+                    max_width: "320px",
                     VolumeControl { service: playback.clone() }
                 }
             }
