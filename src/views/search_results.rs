@@ -90,7 +90,7 @@ pub fn SearchResults(props: SearchResultsProps) -> Element {
                                         class: "fz-track-row",
                                         td { "{track.title}" }
                                         td { style: "color: var(--text-secondary);", "{track.artist}" }
-                                        td { style: "color: var(--text-secondary);", "{track.album.as_deref().unwrap_or("")}" }
+                                        td { style: "color: var(--text-secondary);", {track.album.as_deref().unwrap_or("")} }
                                         td { style: "font-family: var(--font-mono); color: var(--text-muted); text-align: right;", "{track.formatted_duration().unwrap_or_default()}" }
                                     }
                                 }
@@ -111,9 +111,9 @@ pub fn SearchResults(props: SearchResultsProps) -> Element {
                                 crate::components::media::AlbumCard {
                                     key: "{album.id}",
                                     album,
-                                    on_play: Some(move |_| {}),
-                                    on_shuffle: Some(move |_| {}),
-                                    on_add_queue: Some(move |_| {}),
+                                    on_play: move |_| {},
+                                    on_shuffle: move |_| {},
+                                    on_add_queue: move |_| {},
                                 }
                             }
                         }

@@ -87,7 +87,7 @@ pub fn TrackRow(props: TrackRowProps) -> Element {
             td {
                 class: "fz-row-album",
                 style: "color: var(--text-secondary);",
-                "{props.track.album.as_deref().unwrap_or("")}"
+                {props.track.album.as_deref().unwrap_or("")}
             }
             td {
                 class: "fz-row-duration",

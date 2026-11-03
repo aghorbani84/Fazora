@@ -2,22 +2,24 @@
 //! Interactions: open album, play album, shuffle, add to queue/playlist,
 //! context menu.
 
+use crate::components::primitives::Button;
 use crate::models::Album;
 use crate::routing::Route;
-use crate::state::AppState;
 use dioxus::prelude::*;
 
 #[derive(Props, Clone, PartialEq)]
 pub struct AlbumCardProps {
     album: Album,
-    on_play: Option<EventHandler<Album>>,
-    on_shuffle: Option<EventHandler<Album>>,
-    on_add_queue: Option<EventHandler<Album>>,
+    #[props(default)]
+    on_play: EventHandler<Album>,
+    #[props(default)]
+    on_shuffle: EventHandler<Album>,
+    #[props(default)]
+    on_add_queue: EventHandler<Album>,
 }
 
 #[component]
 pub fn AlbumCard(props: AlbumCardProps) -> Element {
-    let state = use_context::<Signal<AppState>>();
     let navigator = use_navigator();
 
     let open_album = move |_| {
@@ -27,9 +29,7 @@ pub fn AlbumCard(props: AlbumCardProps) -> Element {
     };
 
     let play_album = move |_| {
-        if let Some(h) = props.on_play.as_ref() {
-            h.call(props.album.clone());
-        }
+        props.on_play.call(props.album.clone());
     };
 
     rsx! {
@@ -83,8 +83,8 @@ pub fn AlbumCard(props: AlbumCardProps) -> Element {
                     style: "display: flex; justify-content: space-between; margin-top: var(--space-2); font-size: var(--text-xs); color: var(--text-muted);",
                     span {
                         match props.album.year {
-                            Some(y) => "{y}",
-                            None => "".to_string(),
+                            Some(y) => y.to_string(),
+                            None => String::new(),
                         }
                     }
                     span {

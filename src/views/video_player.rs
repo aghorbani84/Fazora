@@ -1,6 +1,7 @@
 //! Video player — immersive, distraction-free surface with overlays for
 //! subtitles, audio tracks, speed and settings.
 
+use crate::components::primitives::Button;
 use crate::models::Video;
 use crate::state::AppState;
 use dioxus::prelude::*;
@@ -49,7 +50,7 @@ pub fn VideoPlayer(props: VideoPlayerProps) -> Element {
                 }
             }
             // Top overlay
-            if showing_controls.get() {
+            if showing_controls.cloned() {
                 header {
                     class: "fz-video-topbar",
                     style: "position: absolute; top: 0; left: 0; right: 0; padding: var(--space-4); display: flex; align-items: center; justify-content: space-between; z-index: 30;",
@@ -70,13 +71,13 @@ pub fn VideoPlayer(props: VideoPlayerProps) -> Element {
                         Button {
                             variant: crate::components::primitives::ButtonVariant::Ghost,
                             label: "Settings",
-                            onclick: move |_| showing_settings.set(!showing_settings.get()),
+                            onclick: move |_| showing_settings.set(!showing_settings.cloned()),
                         }
                     }
                 }
             }
             // Center playback controls
-            if showing_controls.get() {
+            if showing_controls.cloned() {
                 div {
                     class: "fz-video-center-controls",
                     style: "position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-6); z-index: 40; pointer-events: none;",
@@ -122,7 +123,7 @@ pub fn VideoPlayer(props: VideoPlayerProps) -> Element {
                 }
             }
             // Advanced control panel overlay
-            if showing_settings.get() {
+            if showing_settings.cloned() {
                 div {
                     class: "fz-video-settings-panel",
                     style: "position: absolute; inset: 0; background: rgba(11, 13, 16, 0.85); backdrop-filter: blur(8px); display: flex; flex-direction: column; z-index: 50;",
