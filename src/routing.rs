@@ -63,7 +63,6 @@ pub enum Route {
         Library {},
         #[route("/:..route", not_found)]
         NotFound {},
-    #[end_layout]
 }
 
 /// 404 destination shown when the URL matches nothing.
