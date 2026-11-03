@@ -53,7 +53,7 @@ pub fn Music() -> Element {
                         placeholder: "Search albums, artists…",
                         aria_label: "Library search",
                         value: query.cloned(),
-                        oninput: move |event| {
+                        oninput: move |event: FormEvent| {
                             let mut signal = query;
                             signal.set(event.value());
                         },
@@ -117,7 +117,7 @@ pub fn Music() -> Element {
                         }
                     }
                     tbody {
-                        for (index, track) in tracks {
+                        for (index, track) in tracks.iter().cloned().enumerate() {
                             TrackRow {
                                 key: "{track.id}",
                                 track,

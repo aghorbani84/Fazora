@@ -37,7 +37,7 @@ pub fn NowPlaying() -> Element {
                     crate::components::primitives::IconButton {
                         active: show_queue.cloned(),
                         title: "Queue",
-                        onclick: move |_| { let mut signal = show_queue; signal.set(!*signal.read()); },
+                        onclick: move |_| { let mut signal = show_queue; let next = !*signal.read(); signal.set(next); },
                         svg { class: "fz-icon", width: 18, height: 18, use { href: "#icon-queue" } }
                     }
                     crate::components::primitives::IconButton {

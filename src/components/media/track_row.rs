@@ -2,7 +2,6 @@
 
 use crate::components::primitives::IconButton;
 use crate::models::Track;
-use crate::state::AppState;
 use dioxus::prelude::*;
 
 #[derive(Props, Clone, PartialEq)]
@@ -20,37 +19,44 @@ pub struct TrackRowProps {
 
 #[component]
 pub fn TrackRow(props: TrackRowProps) -> Element {
-    let state = use_context::<Signal<AppState>>();
-    let _ = state;
-
     let track = props.track.clone();
+    let index = props.index;
+    let selected = props.selected;
+    let playing = props.playing;
     let duration = track.formatted_duration().unwrap_or_else(|| "--:--".to_string());
-    let on_play = props.on_play;
-    let on_toggle_select = props.on_toggle_select;
+    let on_play_click = props.on_play;
+    let on_play_key = props.on_play;
+    let on_select_click = props.on_select;
+    let on_select_key = props.on_select;
+    let on_toggle_click = props.on_toggle_select;
+    let on_toggle_key = props.on_toggle_select;
     let on_add_queue = props.on_add_queue;
+    let _on_favorite = props.on_favorite;
+
+    let click_track = track.clone();
+    let keyboard_track = track.clone();
+    let queue_track = track.clone();
 
     rsx! {
         tr {
-            class: if props.playing {
+            class: if playing {
                 "fz-track-row playing"
-            } else if props.selected {
+            } else if selected {
                 "fz-track-row selected"
             } else {
                 "fz-track-row"
             },
             role: "row",
-            "aria-selected": props.selected,
+            "aria-selected": selected,
             tabindex: 0,
             onclick: move |_| {
-                on_play.call(track.clone());
+                on_select_click.call((index, true));
+                on_play_click.call(click_track.clone());
             },
             onkeydown: move |evt: KeyboardEvent| {
                 if matches!(evt.key(), Key::Enter) {
-                    props.on_play.call(props.track.clone());
-                }
-                if false {
-                    evt.prevent_default();
-                    props.on_play.call(props.track.clone());
+                    on_select_key.call((index, true));
+                    on_play_key.call(keyboard_track.clone());
                 }
             },
             td {
@@ -59,16 +65,17 @@ pub fn TrackRow(props: TrackRowProps) -> Element {
                 span {
                     class: "fz-checkbox",
                     role: "checkbox",
-                    "aria-checked": props.selected,
+                    "aria-checked": selected,
                     tabindex: 0,
                     onclick: move |evt| {
                         evt.stop_propagation();
-                        on_toggle_select.call(props.index);
+                        on_toggle_click.call(index);
                     },
                     onkeydown: move |evt: KeyboardEvent| {
                         if matches!(evt.key(), Key::Enter) {
                             evt.prevent_default();
-                            props.on_toggle_select.call(props.index);
+                            evt.stop_propagation();
+                            on_toggle_key.call(index);
                         }
                     },
                 }
@@ -77,22 +84,11 @@ pub fn TrackRow(props: TrackRowProps) -> Element {
                 class: "fz-row-number",
                 width: 32,
                 style: "color: var(--text-muted);",
-                "{props.index + 1}"
+                "{index + 1}"
             }
-            td {
-                class: "fz-row-title",
-                "{track.title}"
-            }
-            td {
-                class: "fz-row-artist",
-                style: "color: var(--text-secondary);",
-                "{track.artist}"
-            }
-            td {
-                class: "fz-row-album",
-                style: "color: var(--text-secondary);",
-                {track.album.as_deref().unwrap_or("")}
-            }
+            td { class: "fz-row-title", "{track.title}" }
+            td { class: "fz-row-artist", style: "color: var(--text-secondary);", "{track.artist}" }
+            td { class: "fz-row-album", style: "color: var(--text-secondary);", {track.album.as_deref().unwrap_or("")} }
             td {
                 class: "fz-row-duration",
                 style: "font-family: var(--font-mono); color: var(--text-muted); text-align: right; width: 60px;",
@@ -104,7 +100,10 @@ pub fn TrackRow(props: TrackRowProps) -> Element {
                 IconButton {
                     active: false,
                     title: "Add to queue",
-                    onclick: move |_| on_add_queue.call(track.clone()),
+                    onclick: move |evt| {
+                        evt.stop_propagation();
+                        on_add_queue.call(queue_track.clone());
+                    },
                     svg { class: "fz-icon", width: 16, height: 16, use { href: "#icon-queue" } }
                 }
             }

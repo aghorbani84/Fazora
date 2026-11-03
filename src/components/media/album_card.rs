@@ -27,6 +27,12 @@ pub fn AlbumCard(props: AlbumCardProps) -> Element {
     let keyboard_target = click_target.clone();
     let click_navigator = navigator.clone();
     let keyboard_navigator = navigator;
+    let on_play = props.on_play;
+    let album_to_play = props.album.clone();
+    let play_album = move |event: MouseEvent| {
+        event.stop_propagation();
+        on_play.call(album_to_play.clone());
+    };
     let open_album = move |_| {
         click_navigator.push(click_target.clone());
     };
