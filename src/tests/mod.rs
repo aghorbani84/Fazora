@@ -1,16 +1,13 @@
 //! FAZORA Media test suite.
 //!
-//! Service signals are created inside a Dioxus component scope. Each test
-//! harness retains its VirtualDom so the scope and its signals remain alive
-//! while the test uses the service. Local Rc/RefCell storage avoids putting
-//! non-Send Dioxus signals in a process-wide Mutex.
+//! Each service harness owns its VirtualDom for the lifetime of the test.
+//! Dioxus' default Signal storage is thread-local, so the test hand-off uses
+//! thread-local RefCell storage rather than a global Mutex/OnceLock.
 
 use dioxus::prelude::*;
 use std::cell::RefCell;
 use std::ops::Deref;
-use std::rc::Rc;
 
-/// Owns a service and the VirtualDom scope that allocated its signals.
 pub struct ServiceHarness<S> {
     service: S,
     _dom: VirtualDom,
@@ -24,24 +21,27 @@ impl<S> Deref for ServiceHarness<S> {
     }
 }
 
-/// Generate a per-service test harness.
 macro_rules! service_harness {
     ($name:ident, $slot:ident, $service:ty, $init:path) => {
+        std::thread_local! {
+            static $slot: RefCell<Option<$service>> = const { RefCell::new(None) };
+        }
+
         #[component]
-        fn $name(slot: Rc<RefCell<Option<$service>>>) -> Element {
+        fn $name() -> Element {
             let service = use_signal($init);
-            *slot.borrow_mut() = Some((*service.read()).clone());
+            $slot.with(|slot| {
+                *slot.borrow_mut() = Some((*service.read()).clone());
+            });
             rsx! { div {} }
         }
 
         pub fn with_service() -> ServiceHarness<$service> {
-            let slot = Rc::new(RefCell::new(None));
-            let mut dom = VirtualDom::new_with_props($name, slot.clone());
+            let mut dom = VirtualDom::new($name);
             dom.rebuild_in_place();
 
-            let service = slot
-                .borrow_mut()
-                .take()
+            let service = $slot
+                .with(|slot| slot.borrow_mut().take())
                 .expect("service harness component did not mount");
 
             ServiceHarness { service, _dom: dom }
