@@ -41,7 +41,7 @@ pub fn AlbumCard(props: AlbumCardProps) -> Element {
             onclick: open_album,
             onkeydown: move |evt: KeyboardEvent| {
                 if matches!(evt.key(), Key::Enter | Key::Space) {
-                    open_album.call(Default::default());
+                    open_album(());
                 }
             },
             div {

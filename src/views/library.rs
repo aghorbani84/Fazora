@@ -7,7 +7,8 @@ use dioxus::prelude::*;
 #[component]
 pub fn Library() -> Element {
     let state = use_context::<Signal<AppState>>();
-    let library = state.read().library;
+    let app_state = state.read();
+    let library_service = app_state.library.clone();
 
     rsx! {
         div {
@@ -23,7 +24,7 @@ pub fn Library() -> Element {
             div {
                 class: "fz-table",
                 style: "display: flex; flex-direction: column; gap: var(--space-2);",
-                for dir in library.read().media_dirs.read().iter() {
+                for dir in library_service.media_dirs.read().iter() {
                     div {
                         style: "padding: var(--space-3) var(--space-4); border: 1px solid var(--border); border-radius: var(--radius-medium); display: flex; align-items: center; justify-content: space-between; font-family: var(--font-mono); font-size: var(--text-sm);",
                         span { "{dir.path.display()}" }
@@ -56,7 +57,7 @@ pub fn Library() -> Element {
                 }
                 p {
                     style: "font-size: var(--text-sm); color: var(--text-secondary);",
-                    "{} tracks indexed", library.read().stats.track_count
+                    "{} tracks indexed", library_service.stats.read().track_count
                 }
             }
         }

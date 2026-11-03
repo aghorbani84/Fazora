@@ -35,7 +35,7 @@ pub fn AppShell() -> Element {
             Sidebar {
                 open: sidebar_open,
                 selected: selected_route,
-                on_navigate: navigate.clone(),
+                on_navigate: navigate,
             }
             if sidebar_open.get() {
                 div {

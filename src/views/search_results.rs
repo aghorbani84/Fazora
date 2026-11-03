@@ -12,29 +12,30 @@ pub struct SearchResultsProps {
 #[component]
 pub fn SearchResults(props: SearchResultsProps) -> Element {
     let state = use_context::<Signal<AppState>>();
-    let library = state.read().library;
+    let app_state = state.read();
+    let library = app_state.library.clone();
 
     let q = props.query.to_lowercase();
 
-    let tracks: Vec<Track> = library.read()
+    let tracks: Vec<Track> = library.library.read()
         .tracks.iter()
         .filter(|t| t.title.to_lowercase().contains(&q) || t.artist.to_lowercase().contains(&q))
         .cloned()
         .collect();
 
-    let albums: Vec<Album> = library.read()
+    let albums: Vec<Album> = library.library.read()
         .albums.iter()
         .filter(|a| a.title.to_lowercase().contains(&q) || a.artist.to_lowercase().contains(&q))
         .cloned()
         .collect();
 
-    let artists: Vec<Artist> = library.read()
+    let artists: Vec<Artist> = library.library.read()
         .artists.iter()
         .filter(|a| a.name.to_lowercase().contains(&q))
         .cloned()
         .collect();
 
-    let videos: Vec<Video> = library.read()
+    let videos: Vec<Video> = library.library.read()
         .videos.iter()
         .filter(|v| v.title.to_lowercase().contains(&q))
         .cloned()

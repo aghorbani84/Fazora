@@ -14,15 +14,16 @@ pub struct AlbumProps {
 #[component]
 pub fn Album(props: AlbumProps) -> Element {
     let state = use_context::<Signal<AppState>>();
-    let library = state.read().library;
+    let app_state = state.read();
+    let library = app_state.library.clone();
 
-    let album = library.read().albums.iter().find(|a| a.id == props.id).cloned();
+    let album = library.library.read().albums.iter().find(|a| a.id == props.id).cloned();
     let album = match album {
         Some(a) => a,
         None => return rsx! { div { class: "fz-empty", h2 { "Album not found" } } },
     };
 
-    let tracks: Vec<Track> = library.read()
+    let tracks: Vec<Track> = library.library.read()
         .tracks.iter()
         .filter(|t| t.album_id.as_deref() == Some(&props.id) || t.album.as_deref() == Some(&album.title))
         .cloned()

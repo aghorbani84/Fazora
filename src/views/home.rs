@@ -10,8 +10,9 @@ use dioxus::prelude::*;
 #[component]
 pub fn Home() -> Element {
     let state = use_context::<Signal<AppState>>();
-    let library = state.read().library;
-    let stats = state.read().stats;
+    let app_state = state.read();
+    let library_service = app_state.library.clone();
+    let stats = app_state.stats.clone();
 
     rsx! {
         div {
@@ -70,19 +71,19 @@ pub fn Home() -> Element {
             // Continue Listening
             section {
                 class: "fz-section",
-                RecentlyPlayed { library: library.read().clone() }
+                RecentlyPlayed { library: library_service.library.read().clone() }
             }
 
             // Recently Added
             section {
                 class: "fz-section",
-                RecentlyAdded { library: library.read().clone() }
+                RecentlyAdded { library: library_service.library.read().clone() }
             }
 
             // Your Favorites
             section {
                 class: "fz-section",
-                Favorites { playlists: library.read().playlists.clone() }
+                Favorites { playlists: library_service.library.read().playlists.clone() }
             }
 
             // Quick actions
@@ -111,7 +112,7 @@ pub fn Home() -> Element {
                         label: "Scan media",
                         icon: "#icon-clock",
                         on_click: move |_| {
-                            library.read().request_scan();
+                            library_service.request_scan();
                         },
                     }
                     QuickAction {

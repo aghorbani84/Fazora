@@ -16,15 +16,15 @@ enum DisplayMode {
 #[component]
 pub fn Music() -> Element {
     let state = use_context::<Signal<AppState>>();
-    let library = state.read().library;
+    let app_state = state.read();
+    let library_service = app_state.library.clone();
+    let stats = app_state.stats.clone();
 
     let display_mode = use_signal(|| DisplayMode::Grid);
     let query = use_signal(|| String::new());
     let selected_tracks = use_signal(|| std::collections::HashSet::<String>::new());
 
-    let stats = &library.read().stats;
-
-    let filtered_albums: Vec<Album> = library.read()
+    let filtered_albums: Vec<Album> = library_service.library.read()
         .albums.iter()
         .filter(|a| {
             let q = query.get().to_lowercase();
@@ -51,7 +51,7 @@ pub fn Music() -> Element {
                 }
                 div {
                     style: "display: flex; gap: var(--space-2);",
-                    Badge { variant: crate::components::primitives::BadgeVariant::Accent, rsx! {} }
+                    Badge { variant: crate::components::primitives::BadgeVariant::Accent }
                     Input {
                         placeholder: "Search albums, artists…",
                         aria_label: "Library search",
@@ -111,7 +111,7 @@ pub fn Music() -> Element {
                         }
                     }
                     tbody {
-                        for track in &library.read().tracks {
+                        for track in &library_service.library.read().tracks {
                             TrackRow {
                                 key: "{track.id}",
                                 track: track.clone(),

@@ -33,7 +33,7 @@ pub fn VideoCard(props: VideoCardProps) -> Element {
             onclick: open_video,
             onkeydown: move |evt: KeyboardEvent| {
                 if matches!(evt.key(), Key::Enter | Key::Space) {
-                    open_video.call(Default::default());
+                    open_video(());
                 }
             },
             div {

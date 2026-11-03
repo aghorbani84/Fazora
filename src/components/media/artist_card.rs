@@ -28,7 +28,7 @@ pub fn ArtistCard(props: ArtistCardProps) -> Element {
             onclick: open_artist,
             onkeydown: move |evt: KeyboardEvent| {
                 if matches!(evt.key(), Key::Enter | Key::Space) {
-                    open_artist.call(Default::default());
+                    open_artist(());
                 }
             },
             div {

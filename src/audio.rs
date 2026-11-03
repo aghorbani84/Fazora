@@ -128,9 +128,18 @@ impl AudioService {
         s.output_device = Some(device_id.to_string());
     }
 
-    pub fn save_preset(&self, name: String) -> Playlist {
-        // Placeholder: EQ presets are stored as user presets in settings.
-        let _ = name;
-        todo!("EQ preset persistence is wired through SettingsService")
+    pub fn save_preset(&self, _name: String) -> Playlist {
+        // EQ preset persistence is wired through SettingsService; return an
+        // empty placeholder playlist until that integration is implemented.
+        Playlist {
+            id: String::new(),
+            title: String::new(),
+            description: None,
+            track_ids: Vec::new(),
+            artwork: None,
+            created_at: 0,
+            modified_at: 0,
+            favorite: false,
+        }
     }
 }

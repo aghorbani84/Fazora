@@ -7,7 +7,7 @@ use dioxus::prelude::*;
 #[component]
 pub fn Queue() -> Element {
     let state = use_context::<Signal<AppState>>();
-    let queue = state.read().queue;
+    let queue = state.read().queue.clone();
     let open = use_signal(|| true);
 
     rsx! {
