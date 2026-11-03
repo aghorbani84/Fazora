@@ -44,10 +44,7 @@ macro_rules! service_harness {
                 .take()
                 .expect("service harness component did not mount");
 
-            ServiceHarness {
-                service,
-                _dom: dom,
-            }
+            ServiceHarness { service, _dom: dom }
         }
     };
 }
