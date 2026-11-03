@@ -3,7 +3,7 @@
 use crate::components::primitives::Slider;
 use dioxus::prelude::*;
 
-#[derive(Props)]
+#[derive(Props, Clone, PartialEq)]
 pub struct TimelineProps {
     position: f64,
     duration: f64,

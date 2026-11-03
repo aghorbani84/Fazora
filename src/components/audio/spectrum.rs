@@ -3,7 +3,7 @@
 
 use dioxus::prelude::*;
 
-#[derive(Props)]
+#[derive(Props, Clone, PartialEq)]
 pub struct SpectrumProps {
     #[props(default = false)]
     active: bool,

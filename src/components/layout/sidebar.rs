@@ -26,7 +26,7 @@ enum NavItem {
     Settings,
 }
 
-#[derive(Props)]
+#[derive(Props, Clone, PartialEq)]
 pub struct SidebarProps {
     open: Signal<bool>,
     selected: Signal<Route>,

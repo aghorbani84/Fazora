@@ -3,6 +3,7 @@
 
 use crate::routing::Route;
 use dioxus::prelude::*;
+use dioxus_router::prelude::*;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum BottomDestination {

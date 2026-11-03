@@ -4,7 +4,7 @@ use crate::audio::{AudioService, EqBand, EqPreset};
 use crate::components::primitives::{Button, Slider, Toggle};
 use dioxus::prelude::*;
 
-#[derive(Props)]
+#[derive(Props, Clone, PartialEq)]
 pub struct EqualizerProps {
     service: AudioService,
 }
@@ -148,7 +148,7 @@ pub fn Equalizer(props: EqualizerProps) -> Element {
     }
 }
 
-#[derive(Props)]
+#[derive(Props, Clone, PartialEq)]
 struct EqBandControlProps {
     band: EqBand,
     enabled: bool,

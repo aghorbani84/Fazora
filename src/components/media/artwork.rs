@@ -3,7 +3,7 @@
 
 use dioxus::prelude::*;
 
-#[derive(Props)]
+#[derive(Props, Clone, PartialEq)]
 pub struct ArtworkProps {
     src: Option<String>,
     #[props(default = 120)]

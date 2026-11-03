@@ -3,7 +3,7 @@
 use crate::audio::{AudioDevice, AudioService};
 use dioxus::prelude::*;
 
-#[derive(Props)]
+#[derive(Props, Clone, PartialEq)]
 pub struct AudioDeviceProps {
     service: AudioService,
 }

@@ -9,7 +9,7 @@ use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub enum ScanStatus {
     Idle,
     #[default]
@@ -91,7 +91,7 @@ impl LibraryService {
         self.indexed.set(true);
     }
 
-    pub fn set_scan_error(&self, message: String) {
+    pub fn set_scan_error(&mut self, message: String) {
         self.scan_status.set(ScanStatus::Error { message });
     }
 }

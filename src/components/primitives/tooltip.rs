@@ -2,11 +2,13 @@
 
 use dioxus::prelude::*;
 
-#[derive(Props)]
+#[derive(Props, Clone, PartialEq)]
 pub struct TooltipProps {
     label: String,
     #[props(default)]
     class: Option<String>,
+    #[props(default)]
+    children: Option<Element>,
 }
 
 #[component]

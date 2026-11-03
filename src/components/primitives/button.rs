@@ -10,7 +10,7 @@ pub enum ButtonVariant {
     Danger,
 }
 
-#[derive(Props)]
+#[derive(Props, Clone, PartialEq)]
 pub struct ButtonProps {
     #[props(default = ButtonVariant::Surface)]
     variant: ButtonVariant,
@@ -22,8 +22,12 @@ pub struct ButtonProps {
     class: Option<String>,
     #[props(default)]
     style: Option<String>,
+    #[props(default)]
     onclick: Option<EventHandler<MouseEvent>>,
+    #[props(default)]
     label: Option<String>,
+    #[props(default)]
+    children: Option<Element>,
 }
 
 #[component]
@@ -66,7 +70,7 @@ pub fn Button(props: ButtonProps) -> Element {
     }
 }
 
-#[derive(Props)]
+#[derive(Props, Clone, PartialEq)]
 pub struct IconButtonProps {
     #[props(default = false)]
     active: bool,
@@ -76,7 +80,10 @@ pub struct IconButtonProps {
     title: Option<String>,
     #[props(default)]
     class: Option<String>,
+    #[props(default)]
     onclick: Option<EventHandler<MouseEvent>>,
+    #[props(default)]
+    children: Option<Element>,
 }
 
 #[component]

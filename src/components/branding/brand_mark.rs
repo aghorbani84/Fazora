@@ -2,7 +2,7 @@
 
 use dioxus::prelude::*;
 
-#[derive(Props)]
+#[derive(Props, Clone, PartialEq)]
 pub struct BrandMarkProps {
     #[props(default = 24)]
     size: u32,

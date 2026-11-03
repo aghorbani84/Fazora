@@ -6,7 +6,7 @@
 
 use dioxus::prelude::*;
 
-#[derive(Props)]
+#[derive(Props, Clone, PartialEq)]
 pub struct FazoraLogoProps {
     #[props(default = 28)]
     size: u32,

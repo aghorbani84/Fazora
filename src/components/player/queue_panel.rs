@@ -75,7 +75,7 @@ pub fn QueuePanel(props: QueuePanelProps) -> Element {
     }
 }
 
-#[derive(Props)]
+#[derive(Props, Clone, PartialEq)]
 struct QueueRowProps {
     entry: QueueEntry,
     current: bool,

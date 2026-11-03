@@ -3,6 +3,7 @@
 use crate::models::Artist;
 use crate::routing::Route;
 use dioxus::prelude::*;
+use dioxus_router::prelude::*;
 
 #[derive(Props)]
 pub struct ArtistCardProps {

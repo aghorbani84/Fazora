@@ -5,7 +5,7 @@ use crate::models::Track;
 use crate::state::AppState;
 use dioxus::prelude::*;
 
-#[derive(Props)]
+#[derive(Props, Clone, PartialEq)]
 pub struct TrackRowProps {
     track: Track,
     index: usize,

@@ -6,7 +6,7 @@ use crate::components::primitives::{Badge, Button};
 use crate::state::AppState;
 use dioxus::prelude::*;
 
-#[derive(Props)]
+#[derive(Props, Clone, PartialEq)]
 pub struct AlbumProps {
     id: String,
 }
