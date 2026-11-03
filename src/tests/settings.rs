@@ -1,14 +1,22 @@
 //! Settings service tests.
 //!
-//! Uses Dioxus's testing render scope because `SettingsService::init()`
-//! creates `Signal`s via `use_signal()` which requires a component scope.
+//! `SettingsService::init()` creates `Signal`s via `use_signal()`, which must
+//! run inside a component scope, so each test mounts the service through the
+//! `VirtualDom` harness defined in `mod.rs`.
 
 use crate::settings::{Settings, SettingsService, Theme};
+use dioxus::prelude::*;
+
+service_harness!(
+    SettingsHarness,
+    SETTINGS_SLOT,
+    SettingsService,
+    SettingsService::init
+);
 
 #[test]
 fn settings_initial_state() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let settings = scope.create_service(|| SettingsService::init());
+    let settings = with_service();
 
     assert_eq!(settings.settings.read().theme, Theme::Dark);
     assert_eq!(settings.settings.read().language, "en");
@@ -51,8 +59,7 @@ fn settings_default() {
 
 #[test]
 fn settings_add_recent_query() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let settings = scope.create_service(|| SettingsService::init());
+    let settings = with_service();
 
     settings.add_recent_query("queen".to_string());
     settings.add_recent_query("beatles".to_string());
@@ -67,8 +74,7 @@ fn settings_add_recent_query() {
 
 #[test]
 fn settings_add_recent_query_moves_to_front() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let settings = scope.create_service(|| SettingsService::init());
+    let settings = with_service();
 
     settings.add_recent_query("queen".to_string());
     settings.add_recent_query("beatles".to_string());
@@ -82,11 +88,10 @@ fn settings_add_recent_query_moves_to_front() {
 
 #[test]
 fn settings_add_recent_query_truncates_to_10() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let settings = scope.create_service(|| SettingsService::init());
+    let settings = with_service();
 
     for i in 0..15 {
-        settings.add_recent_query(format!("query {}", i));
+        settings.add_recent_query(format!("query {i}"));
     }
 
     let queries = &settings.settings.read().recent_queries;
@@ -97,8 +102,7 @@ fn settings_add_recent_query_truncates_to_10() {
 
 #[test]
 fn settings_clear_recent_queries() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let settings = scope.create_service(|| SettingsService::init());
+    let settings = with_service();
 
     settings.add_recent_query("queen".to_string());
     settings.add_recent_query("beatles".to_string());

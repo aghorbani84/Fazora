@@ -6,10 +6,9 @@ use crate::components::layout::sidebar::Sidebar;
 use crate::components::layout::topbar::Topbar;
 use crate::components::player::MiniPlayer;
 use crate::components::player::QueuePanel;
-use crate::routing::{resolve_component, Route};
+use crate::routing::Route;
 use crate::state::AppState;
 use dioxus::prelude::*;
-use dioxus_router::prelude::*;
 
 #[component]
 pub fn AppShell() -> Element {
@@ -18,7 +17,7 @@ pub fn AppShell() -> Element {
 
     let sidebar_open = use_signal(|| false);
     let secondary_open = use_signal(|| false);
-    let selected_route = use_signal(|| Route::Home);
+    let selected_route = use_signal(|| Route::Home {});
 
     let toggle_sidebar = move |_| {
         sidebar_open.set(!sidebar_open.get());
@@ -53,7 +52,8 @@ pub fn AppShell() -> Element {
                 div {
                     class: "fz-content",
                     main {
-                        resolve_component(selected_route.read().clone())
+                        // The router renders the active route here via Outlet.
+                        Outlet::<Route> {}
                     }
                 }
                 if secondary_open.get() {

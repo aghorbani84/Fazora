@@ -1,14 +1,22 @@
 //! Audio service tests.
 //!
-//! Uses Dioxus's testing render scope because `AudioService::init()`
-//! creates `Signal`s via `use_signal()` which requires a component scope.
+//! `AudioService::init()` creates `Signal`s via `use_signal()`, which must
+//! run inside a component scope, so each test mounts the service through the
+//! `VirtualDom` harness defined in `mod.rs`.
 
 use crate::audio::{AudioDevice, AudioService, DeviceKind, EqBand, EqPreset};
+use dioxus::prelude::*;
+
+service_harness!(
+    AudioHarness,
+    AUDIO_SLOT,
+    AudioService,
+    AudioService::init
+);
 
 #[test]
 fn audio_initial_state() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let audio = scope.create_service(|| AudioService::init());
+    let audio = with_service();
 
     assert_eq!(audio.state.read().preset, EqPreset::Flat);
     assert_eq!(audio.state.read().preamp_db, 0.0);
@@ -28,8 +36,7 @@ fn audio_initial_state() {
 
 #[test]
 fn audio_set_band_gain() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let audio = scope.create_service(|| AudioService::init());
+    let audio = with_service();
 
     audio.set_band_gain(60.0, 5.0);
 
@@ -48,8 +55,7 @@ fn audio_set_band_gain() {
 
 #[test]
 fn audio_set_band_gain_clamps() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let audio = scope.create_service(|| AudioService::init());
+    let audio = with_service();
 
     audio.set_band_gain(1000.0, 20.0); // above max
     let band = audio
@@ -74,8 +80,7 @@ fn audio_set_band_gain_clamps() {
 
 #[test]
 fn audio_set_band_gain_unknown_frequency_noop() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let audio = scope.create_service(|| AudioService::init());
+    let audio = with_service();
 
     audio.set_band_gain(99999.0, 5.0); // no band at this frequency
 
@@ -87,8 +92,7 @@ fn audio_set_band_gain_unknown_frequency_noop() {
 
 #[test]
 fn audio_set_preamp_clamps() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let audio = scope.create_service(|| AudioService::init());
+    let audio = with_service();
 
     audio.set_preamp(20.0);
     assert_eq!(audio.state.read().preamp_db, 12.0); // clamped
@@ -102,8 +106,7 @@ fn audio_set_preamp_clamps() {
 
 #[test]
 fn audio_set_preset_flat_resets_bands() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let audio = scope.create_service(|| AudioService::init());
+    let audio = with_service();
 
     // First modify a band
     audio.set_band_gain(1000.0, 5.0);
@@ -121,8 +124,7 @@ fn audio_set_preset_flat_resets_bands() {
 
 #[test]
 fn audio_set_enabled() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let audio = scope.create_service(|| AudioService::init());
+    let audio = with_service();
 
     assert!(!audio.state.read().enabled);
     audio.set_enabled(true);
@@ -133,8 +135,7 @@ fn audio_set_enabled() {
 
 #[test]
 fn audio_set_output_device() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let audio = scope.create_service(|| AudioService::init());
+    let audio = with_service();
 
     assert!(audio.state.read().output_device.is_none());
     audio.set_output_device("dev1");

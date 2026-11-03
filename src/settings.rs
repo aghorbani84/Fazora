@@ -93,14 +93,14 @@ impl SettingsService {
     }
 
     pub fn add_recent_query(&self, query: String) {
-        self.settings.write().with(|s| {
-            s.recent_queries.retain(|q| q != &query);
-            s.recent_queries.insert(0, query);
-            s.recent_queries.truncate(10);
-        });
+        let mut s = self.settings.write();
+        s.recent_queries.retain(|q| q != &query);
+        s.recent_queries.insert(0, query);
+        s.recent_queries.truncate(10);
     }
 
     pub fn clear_recent_queries(&self) {
-        self.settings.write().with(|s| s.recent_queries.clear());
+        let mut s = self.settings.write();
+        s.recent_queries.clear();
     }
 }

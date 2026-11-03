@@ -1,10 +1,14 @@
 //! Queue service tests.
 //!
-//! Uses Dioxus's testing render scope because `QueueService::new()`
-//! creates `Signal`s via `use_signal()` which requires a component scope.
+//! `QueueService::new()` creates `Signal`s via `use_signal()`, which must run
+//! inside a component scope, so each test mounts the service through the
+//! `VirtualDom` harness defined in `mod.rs`.
 
 use crate::models::Track;
 use crate::queue::{QueueService, QueueMode};
+use dioxus::prelude::*;
+
+service_harness!(QueueHarness, QUEUE_SLOT, QueueService, QueueService::new);
 
 fn test_track(id: &str, title: &str) -> Track {
     Track {
@@ -34,8 +38,7 @@ fn test_track(id: &str, title: &str) -> Track {
 
 #[test]
 fn queue_initial_state_is_empty() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let queue = scope.create_service(|| QueueService::new());
+    let queue = with_service();
 
     assert!(queue.entries.read().is_empty());
     assert_eq!(queue.index.read(), &None);
@@ -47,8 +50,7 @@ fn queue_initial_state_is_empty() {
 
 #[test]
 fn queue_add_tracks() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let queue = scope.create_service(|| QueueService::new());
+    let queue = with_service();
 
     queue.add(test_track("t1", "Track One"), false);
     queue.add(test_track("t2", "Track Two"), false);
@@ -60,8 +62,7 @@ fn queue_add_tracks() {
 
 #[test]
 fn queue_add_play_next_inserts_after_current() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let queue = scope.create_service(|| QueueService::new());
+    let queue = with_service();
 
     queue.add(test_track("t1", "Track One"), false);
     queue.set_index(0);
@@ -77,8 +78,7 @@ fn queue_add_play_next_inserts_after_current() {
 
 #[test]
 fn queue_add_many() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let queue = scope.create_service(|| QueueService::new());
+    let queue = with_service();
 
     let tracks = vec![
         test_track("t1", "Track One"),
@@ -92,8 +92,7 @@ fn queue_add_many() {
 
 #[test]
 fn queue_remove_updates_index() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let queue = scope.create_service(|| QueueService::new());
+    let queue = with_service();
 
     queue.add(test_track("t1", "Track One"), false);
     queue.add(test_track("t2", "Track Two"), false);
@@ -111,8 +110,7 @@ fn queue_remove_updates_index() {
 
 #[test]
 fn queue_remove_last_element_clears_index() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let queue = scope.create_service(|| QueueService::new());
+    let queue = with_service();
 
     queue.add(test_track("t1", "Track One"), false);
     queue.set_index(0);
@@ -124,8 +122,7 @@ fn queue_remove_last_element_clears_index() {
 
 #[test]
 fn queue_clear() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let queue = scope.create_service(|| QueueService::new());
+    let queue = with_service();
 
     queue.add(test_track("t1", "Track One"), false);
     queue.add(test_track("t2", "Track Two"), false);
@@ -141,8 +138,7 @@ fn queue_clear() {
 
 #[test]
 fn queue_reorder() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let queue = scope.create_service(|| QueueService::new());
+    let queue = with_service();
 
     queue.add(test_track("t1", "Track One"), false);
     queue.add(test_track("t2", "Track Two"), false);
@@ -159,8 +155,7 @@ fn queue_reorder() {
 
 #[test]
 fn queue_reorder_invalid_positions_noop() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let queue = scope.create_service(|| QueueService::new());
+    let queue = with_service();
 
     queue.add(test_track("t1", "Track One"), false);
     queue.add(test_track("t2", "Track Two"), false);
@@ -175,8 +170,7 @@ fn queue_reorder_invalid_positions_noop() {
 
 #[test]
 fn queue_save_as_playlist() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let queue = scope.create_service(|| QueueService::new());
+    let queue = with_service();
 
     queue.add(test_track("t1", "Track One"), false);
     queue.add(test_track("t2", "Track Two"), false);
@@ -194,8 +188,7 @@ fn queue_save_as_playlist() {
 
 #[test]
 fn queue_move_next_cycles_to_start() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let queue = scope.create_service(|| QueueService::new());
+    let queue = with_service();
 
     queue.add(test_track("t1", "Track One"), false);
     queue.add(test_track("t2", "Track Two"), false);
@@ -209,8 +202,7 @@ fn queue_move_next_cycles_to_start() {
 
 #[test]
 fn queue_move_next_advances() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let queue = scope.create_service(|| QueueService::new());
+    let queue = with_service();
 
     queue.add(test_track("t1", "Track One"), false);
     queue.add(test_track("t2", "Track Two"), false);
@@ -223,8 +215,7 @@ fn queue_move_next_advances() {
 
 #[test]
 fn queue_move_previous_wraps_to_end() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let queue = scope.create_service(|| QueueService::new());
+    let queue = with_service();
 
     queue.add(test_track("t1", "Track One"), false);
     queue.add(test_track("t2", "Track Two"), false);
@@ -238,8 +229,7 @@ fn queue_move_previous_wraps_to_end() {
 
 #[test]
 fn queue_move_previous_goes_back() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let queue = scope.create_service(|| QueueService::new());
+    let queue = with_service();
 
     queue.add(test_track("t1", "Track One"), false);
     queue.add(test_track("t2", "Track Two"), false);
@@ -252,8 +242,7 @@ fn queue_move_previous_goes_back() {
 
 #[test]
 fn queue_upcoming_returns_tracks_after_current() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let queue = scope.create_service(|| QueueService::new());
+    let queue = with_service();
 
     queue.add(test_track("t1", "Track One"), false);
     queue.add(test_track("t2", "Track Two"), false);
@@ -268,8 +257,7 @@ fn queue_upcoming_returns_tracks_after_current() {
 
 #[test]
 fn queue_set_mode_toggle_shuffle() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let queue = scope.create_service(|| QueueService::new());
+    let queue = with_service();
 
     assert_eq!(queue.mode.read(), &QueueMode::Sequential);
     queue.toggle_shuffle();
@@ -285,8 +273,7 @@ fn queue_mode_default() {
 
 #[test]
 fn queue_set_index_out_of_bounds_noop() {
-    let mut scope = dioxus::testing::RenderScope::new();
-    let queue = scope.create_service(|| QueueService::new());
+    let queue = with_service();
 
     queue.add(test_track("t1", "Track One"), false);
     queue.set_index(5); // out of bounds
@@ -296,8 +283,7 @@ fn queue_set_index_out_of_bounds_noop() {
 
 #[test]
 fn queue_default() {
-    use std::default::Default;
-    let queue = QueueService::default();
+    let queue = with_service();
     assert!(queue.entries.read().is_empty());
     assert_eq!(queue.index.read(), &None);
 }

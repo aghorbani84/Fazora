@@ -40,9 +40,11 @@ pub fn Timeline(props: TimelineProps) -> Element {
                 background: "rgba(244, 241, 233, 0.16)",
                 border_radius: "999px",
                 cursor: "pointer",
-                onclick: move |evt: MouseEvent| {
-                    let rect = evt.bounds(); // best effort; clientX handled via JS in real binding
-                    let _ = rect;
+                onclick: move |_evt: MouseEvent| {
+                    // Click-to-seek is resolved against the bar bounds by a JS
+                    // binding in the desktop webview; the event itself is not
+                    // inspected here.
+                    let _ = _evt;
                 },
                 onmousedown: move |_| {},
                 div {

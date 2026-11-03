@@ -92,41 +92,40 @@ impl AudioService {
     }
 
     pub fn set_band_gain(&self, frequency_hz: f32, gain_db: f32) {
-        self.state.write().with(|s| {
-            if let Some(band) = s
-                .bands
-                .iter_mut()
-                .find(|b| (b.frequency_hz - frequency_hz).abs() < f32::EPSILON)
-            {
-                band.gain_db = gain_db.clamp(-12.0, 12.0);
-            }
-            s.preset = EqPreset::Custom;
-        });
+        let mut s = self.state.write();
+        if let Some(band) = s
+            .bands
+            .iter_mut()
+            .find(|b| (b.frequency_hz - frequency_hz).abs() < f32::EPSILON)
+        {
+            band.gain_db = gain_db.clamp(-12.0, 12.0);
+        }
+        s.preset = EqPreset::Custom;
     }
 
     pub fn set_preamp(&self, db: f32) {
-        self.state.write().with(|s| s.preamp_db = db.clamp(-12.0, 12.0));
+        let mut s = self.state.write();
+        s.preamp_db = db.clamp(-12.0, 12.0);
     }
 
     pub fn set_preset(&self, preset: EqPreset) {
-        self.state.write().with(|s| {
-            s.preset = preset;
-            if preset == EqPreset::Flat {
-                for band in &mut s.bands {
-                    band.gain_db = 0.0;
-                }
+        let mut s = self.state.write();
+        s.preset = preset;
+        if preset == EqPreset::Flat {
+            for band in &mut s.bands {
+                band.gain_db = 0.0;
             }
-        });
+        }
     }
 
     pub fn set_enabled(&self, enabled: bool) {
-        self.state.write().with(|s| s.enabled = enabled);
+        let mut s = self.state.write();
+        s.enabled = enabled;
     }
 
     pub fn set_output_device(&self, device_id: &str) {
-        self.state.write().with(|s| {
-            s.output_device = Some(device_id.to_string());
-        });
+        let mut s = self.state.write();
+        s.output_device = Some(device_id.to_string());
     }
 
     pub fn save_preset(&self, name: String) -> Playlist {
