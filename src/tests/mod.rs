@@ -24,7 +24,7 @@ impl<S> Deref for ServiceHarness<S> {
 macro_rules! service_harness {
     ($name:ident, $slot:ident, $service:ty, $init:path) => {
         std::thread_local! {
-            static $slot: RefCell<Option<$service>> = const { RefCell::new(None) };
+            static $slot: std::cell::RefCell<Option<$service>> = const { std::cell::RefCell::new(None) };
         }
 
         #[component]
@@ -36,7 +36,7 @@ macro_rules! service_harness {
             rsx! { div {} }
         }
 
-        pub fn with_service() -> ServiceHarness<$service> {
+        pub fn with_service() -> super::ServiceHarness<$service> {
             let mut dom = VirtualDom::new($name);
             dom.rebuild_in_place();
 
@@ -44,7 +44,7 @@ macro_rules! service_harness {
                 .with(|slot| slot.borrow_mut().take())
                 .expect("service harness component did not mount");
 
-            ServiceHarness { service, _dom: dom }
+            super::ServiceHarness { service, _dom: dom }
         }
     };
 }
