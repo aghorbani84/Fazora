@@ -18,7 +18,8 @@ pub fn AppShell() -> Element {
     let mut selected_route = use_signal(|| Route::Home {});
 
     let toggle_sidebar = move |_| {
-        sidebar_open.set(!*sidebar_open.read());
+        let next = !*sidebar_open.read();
+        sidebar_open.set(next);
     };
 
     let navigate = move |route: Route| {

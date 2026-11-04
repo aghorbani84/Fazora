@@ -33,8 +33,8 @@ pub fn BottomNavigation(props: BottomNavigationProps) -> Element {
                     aria_current: if selected == route { "page" } else { "false" },
                     onclick: move |_| on_navigate.call(route.clone()),
                     span { class: "fz-bottom-nav-icon",
-                        svg { class: "fz-icon", width: 20, height: 20, aria_hidden: "true",
-                            use { href: icon }
+                        svg { class: "fz-icon", width: 20, height: 20, 
+                            use { href: "#{icon}" }
                         }
                     }
                     span { class: "fz-bottom-nav-label", "{label}" }

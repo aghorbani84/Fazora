@@ -16,14 +16,23 @@ pub fn Home() -> Element {
     let library: Library = library_service.library.read().clone();
     let stats = library_service.stats.read().clone();
     let scan_status = library_service.scan_status.read().clone();
+    let scan_is_active = matches!(scan_status, ScanStatus::Scanning | ScanStatus::Indexing);
+    let scan_error = match &scan_status {
+        ScanStatus::Error { message } => Some(message.clone()),
+        _ => None,
+    };
     let playback = app_state.playback.clone();
     let current_track = playback.current_track();
     let position = *playback.position_sec.read();
     let duration = *playback.duration_sec.read();
     let navigator = use_navigator();
 
-    let mut recently_played: Vec<Track> = library.tracks.iter()
-        .filter(|track| track.last_played.is_some()).cloned().collect();
+    let mut recently_played: Vec<Track> = library
+        .tracks
+        .iter()
+        .filter(|track| track.last_played.is_some())
+        .cloned()
+        .collect();
     recently_played.sort_by_key(|track| std::cmp::Reverse(track.last_played.unwrap_or_default()));
     recently_played.truncate(12);
 
@@ -31,13 +40,21 @@ pub fn Home() -> Element {
     recently_added.sort_by_key(|track| std::cmp::Reverse(track.added_at));
     recently_added.truncate(12);
 
-    let mut most_played: Vec<Track> = library.tracks.iter()
-        .filter(|track| track.play_count > 0).cloned().collect();
+    let mut most_played: Vec<Track> = library
+        .tracks
+        .iter()
+        .filter(|track| track.play_count > 0)
+        .cloned()
+        .collect();
     most_played.sort_by_key(|track| std::cmp::Reverse(track.play_count));
     most_played.truncate(12);
 
-    let favorite_playlists: Vec<Playlist> = library.playlists.iter()
-        .filter(|playlist| playlist.favorite).cloned().collect();
+    let favorite_playlists: Vec<Playlist> = library
+        .playlists
+        .iter()
+        .filter(|playlist| playlist.favorite)
+        .cloned()
+        .collect();
 
     let mut artist_counts: HashMap<String, usize> = HashMap::new();
     let mut decade_counts: HashMap<i32, usize> = HashMap::new();
@@ -81,12 +98,11 @@ pub fn Home() -> Element {
                         onclick: move |_| navigator.push(Route::Library {}),
                         "Open Library"
                     }
-                    match scan_status {
-                        ScanStatus::Scanning | ScanStatus::Indexing =>
-                            p { class: "fz-state-note", "Library indexing is in progress." },
-                        ScanStatus::Error { message } =>
-                            p { class: "fz-state-error", "Last scan failed: {message}" },
-                        _ => {}
+                    if scan_is_active {
+                        p { class: "fz-state-note", "Library indexing is in progress." }
+                    }
+                    if let Some(message) = scan_error {
+                        p { class: "fz-state-error", "Last scan failed: {message}" }
                     }
                 }
             } else {
