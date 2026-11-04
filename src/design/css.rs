@@ -855,7 +855,8 @@ pub const COMPONENTS_CSS: &str = r#"
 .fz-mini-info strong, .fz-mini-info span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fz-mini-info strong { font-size: var(--text-sm); }
 .fz-mini-info span { color: var(--text-secondary); font-size: var(--text-xs); }
-.fz-mini-progress { grid-column: 1 / -1; width: 100%; }
+.fz-mini-progress { grid-column: 1 / -1; grid-row: 2; width: 100%; }
+.fz-mini-controls { grid-column: 3; grid-row: 1; }
 .fz-mini-progress-fill { height: 100%; border-radius: inherit; background: var(--accent); }
 .fz-mini-controls { display: flex; align-items: center; gap: var(--space-1); }
 .fz-mini-control { display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: var(--radius-medium); background: transparent; color: var(--text-primary); cursor: pointer; }
