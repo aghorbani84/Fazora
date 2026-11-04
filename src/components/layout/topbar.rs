@@ -29,14 +29,14 @@ pub fn Topbar(props: TopbarProps) -> Element {
                 class: "fz-header-icon",
                 aria_label: "Search",
                 title: "Search",
-                onclick: move |_| search_navigator.push(Route::Search {}),
+                onclick: move |_| { search_navigator.push(Route::Search {}); },
                 AppIcon { name: "search", size: 21 }
             }
             button {
                 class: "fz-header-icon",
                 aria_label: "Settings",
                 title: "Settings",
-                onclick: move |_| settings_navigator.push(Route::Settings {}),
+                onclick: move |_| { settings_navigator.push(Route::Settings {}); },
                 AppIcon { name: "settings", size: 21 }
             }
         }
