@@ -868,8 +868,8 @@ pub const COMPONENTS_CSS: &str = r#"
   justify-content: space-around;
   width: 100%;
   min-height: 64px;
-  height: 64px;
-  flex: 0 0 64px;
+  height: calc(64px + env(safe-area-inset-bottom, 0px));
+  flex: 0 0 calc(64px + env(safe-area-inset-bottom, 0px));
   padding: 0 var(--space-2) env(safe-area-inset-bottom, 0px);
   background: var(--surface-primary);
   border-top: 1px solid var(--border);
