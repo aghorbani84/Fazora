@@ -1,4 +1,4 @@
-//! Responsive application shell with sidebar, content, mini-player and bottom nav.
+//! Responsive application shell with sidebar, main column and bottom controls.
 use crate::components::layout::bottom_navigation::BottomNavigation;
 use crate::components::layout::sidebar::Sidebar;
 use crate::components::layout::topbar::Topbar;
@@ -37,16 +37,18 @@ pub fn AppShell() -> Element {
                     onclick: move |_| sidebar_open.set(false),
                 }
             }
-            div { class: "fz-body",
-                Topbar { on_toggle_sidebar: toggle_sidebar }
-                div { class: "fz-content",
-                    main { Outlet::<Route> {} }
+            div { class: "fz-main-column",
+                div { class: "fz-body",
+                    Topbar { on_toggle_sidebar: toggle_sidebar }
+                    div { class: "fz-content",
+                        main { Outlet::<Route> {} }
+                    }
                 }
-            }
-            MiniPlayer {}
-            BottomNavigation {
-                selected: selected_route,
-                on_navigate: navigate,
+                MiniPlayer {}
+                BottomNavigation {
+                    selected: selected_route,
+                    on_navigate: navigate,
+                }
             }
         }
     }
