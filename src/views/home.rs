@@ -129,7 +129,10 @@ pub fn Home() -> Element {
                     p { "FAZORA needs permission to read audio and video metadata so it can organize your music and videos. Your media stays on your device." }
                     crate::components::primitives::Button {
                         variant: crate::components::primitives::ButtonVariant::Primary,
-                        onclick: move |_| show_permission_details.set(!show_permission_details()),
+                        onclick: move |_| {
+                            let next = !*show_permission_details.read();
+                            show_permission_details.set(next);
+                        },
                         label: "Set up media access",
                     }
                     if show_permission_details() {
