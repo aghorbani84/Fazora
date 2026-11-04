@@ -4,12 +4,10 @@ use crate::components::layout::sidebar::Sidebar;
 use crate::components::layout::topbar::Topbar;
 use crate::components::player::MiniPlayer;
 use crate::routing::Route;
-use crate::state::AppState;
 use dioxus::prelude::*;
 
 #[component]
 pub fn AppShell() -> Element {
-    let _state = use_context::<Signal<AppState>>();
     let navigator = use_navigator();
     let mut sidebar_open = use_signal(|| false);
     let mut selected_route = use_signal(|| Route::Home {});
