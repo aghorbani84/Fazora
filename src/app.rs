@@ -18,35 +18,35 @@ use dioxus::prelude::*;
 
 #[component]
 pub fn App() -> Element {
-    // Build every application service behind a `Signal`. Each service
-    // constructor calls Dioxus hooks directly, so they must run in component
-    // scope (on every render, in the same order).
-    let playback = use_signal(PlaybackService::init);
-    let queue = use_signal(QueueService::new);
-    let library = use_signal(LibraryService::init);
-    let settings = use_signal(SettingsService::init);
-    let audio = use_signal(AudioService::init);
-    let search = use_signal(SearchService::init);
+    // Service constructors create Dioxus signals. Call them directly in this
+    // component's hook scope; do not wrap them in another use_signal
+    // initializer, because that would execute hooks from inside a hook's
+    // lazy initializer and can corrupt hook ordering on mobile runtimes.
+    let playback = PlaybackService::init();
+    let queue = QueueService::new();
+    let library = LibraryService::init();
+    let settings = SettingsService::init();
+    let audio = AudioService::init();
+    let search = SearchService::init();
 
+    // The aggregate state itself is a signal, but its initializer only
+    // assembles already-created service handles and does not invoke hooks.
     let app_state = use_signal(move || {
         AppState::new(
-            (*playback.read()).clone(),
-            (*queue.read()).clone(),
-            (*library.read()).clone(),
-            (*settings.read()).clone(),
-            (*audio.read()).clone(),
-            (*search.read()).clone(),
+            playback.clone(),
+            queue.clone(),
+            library.clone(),
+            settings.clone(),
+            audio.clone(),
+            search.clone(),
         )
     });
 
     provide_context(app_state);
 
     rsx! {
-        // Global design token stylesheet injected once at the root.
         style { {css::TOKENS_CSS} }
-        // Component-level styles (buttons, cards, sliders, …).
         style { {css::COMPONENTS_CSS} }
-
-        Router::<Route> { }
+        Router::<Route> {}
     }
 }
