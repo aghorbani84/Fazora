@@ -18,7 +18,9 @@ pub fn Home() -> Element {
     let stats = library_service.stats.read().clone();
     let scan_status = library_service.scan_status.read().clone();
 
-    let mut continue_tracks: Vec<Track> = library.tracks.iter()
+    let mut continue_tracks: Vec<Track> = library
+        .tracks
+        .iter()
         .filter(|track| track.last_played.is_some())
         .cloned()
         .collect();
@@ -27,7 +29,9 @@ pub fn Home() -> Element {
     let mut recently_added = library.tracks.clone();
     recently_added.sort_by(|a, b| b.added_at.cmp(&a.added_at));
 
-    let favorites: Vec<Playlist> = library.playlists.iter()
+    let favorites: Vec<Playlist> = library
+        .playlists
+        .iter()
         .filter(|playlist| playlist.favorite)
         .cloned()
         .collect();
