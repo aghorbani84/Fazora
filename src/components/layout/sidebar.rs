@@ -1,7 +1,6 @@
 //! Navigation sidebar — collapsible, with active destination indicator.
 
 use crate::components::branding::{AppIcon, BrandMark};
-use crate::components::primitives::IconButton;
 use crate::routing::Route;
 use dioxus::prelude::*;
 
