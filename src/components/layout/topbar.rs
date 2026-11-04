@@ -1,5 +1,4 @@
-//! Application header: brand, search, queue and settings.
-
+//! Application header: compact brand, responsive search and global actions.
 use crate::components::branding::FazoraLogo;
 use crate::components::primitives::{Button, IconButton, Input};
 use crate::routing::Route;
@@ -21,25 +20,19 @@ pub fn Topbar(props: TopbarProps) -> Element {
     let open_queue = props.on_open_queue;
 
     rsx! {
-        header {
-            class: "fz-topbar",
+        header { class: "fz-topbar",
             IconButton {
                 title: "Toggle navigation",
                 onclick: move |event| toggle_sidebar.call(event),
                 svg { class: "fz-icon", width: 20, height: 20, use { href: "#icon-menu" } }
             }
-            FazoraLogo { size: 20, compact: false }
-            div {
-                class: "fz-topbar-spacer",
-                flex: "1",
+            FazoraLogo { size: 24, compact: false }
+            div { class: "fz-topbar-spacer",
                 Input {
-                    placeholder: "Search artists, albums, tracks…",
-                    aria_label: "Global search",
+                    placeholder: "Search tracks, albums, artists…",
+                    aria_label: "Search your media library",
                     value: query.cloned(),
-                    oninput: move |event: FormEvent| {
-                        let mut signal = query;
-                        signal.set(event.value());
-                    },
+                    oninput: move |event: FormEvent| query.set(event.value()),
                     onkeydown: move |event: KeyboardEvent| {
                         if matches!(event.key(), Key::Enter) && !query.cloned().trim().is_empty() {
                             search_navigator.push(Route::SearchResults { query: query.cloned() });
@@ -47,20 +40,16 @@ pub fn Topbar(props: TopbarProps) -> Element {
                     },
                 }
             }
-            div {
-                class: "fz-topbar-actions",
-                gap: "var(--space-3)",
+            div { class: "fz-topbar-actions",
                 IconButton {
-                    title: "Queue",
+                    title: "Open playback queue",
                     class: "fz-topbar-icon",
                     onclick: move |event| open_queue.call(event),
                     svg { class: "fz-icon", width: 18, height: 18, use { href: "#icon-queue" } }
                 }
                 Button {
                     variant: crate::components::primitives::ButtonVariant::Ghost,
-                    onclick: move |_| {
-                        settings_navigator.push(Route::Settings {});
-                    },
+                    onclick: move |_| settings_navigator.push(Route::Settings {}),
                     label: "Settings",
                 }
             }
