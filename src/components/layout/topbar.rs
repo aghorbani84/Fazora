@@ -49,7 +49,7 @@ pub fn Topbar(props: TopbarProps) -> Element {
                 }
                 Button {
                     variant: crate::components::primitives::ButtonVariant::Ghost,
-                    onclick: move |_| settings_navigator.push(Route::Settings {}),
+                    onclick: move |_| { settings_navigator.push(Route::Settings {}); },
                     label: "Settings",
                 }
             }
