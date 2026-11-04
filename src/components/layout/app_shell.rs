@@ -1,7 +1,7 @@
 //! Application shell: responsive navigation, content and persistent player.
+use crate::components::layout::bottom_navigation::BottomNavigation;
 use crate::components::layout::sidebar::Sidebar;
 use crate::components::layout::topbar::Topbar;
-use crate::components::layout::bottom_navigation::BottomNavigation;
 use crate::components::player::{MiniPlayer, QueuePanel};
 use crate::routing::Route;
 use crate::state::AppState;
