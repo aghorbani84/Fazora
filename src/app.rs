@@ -47,6 +47,12 @@ pub fn App() -> Element {
     rsx! {
         style { {css::TOKENS_CSS} }
         style { {css::COMPONENTS_CSS} }
+        // Mount the shared SVG symbol sprite once so every icon reference resolves
+        // consistently in the Android WebView and desktop renderer.
+        div {
+            class: "fz-icon-sprite",
+            dangerous_inner_html: crate::components::ICONS,
+        }
         Router::<Route> {}
     }
 }
