@@ -102,7 +102,7 @@ pub fn AppIcon(props: AppIconProps) -> Element {
                     "shuffle" => rsx! {
                         path { d: "M16 3h5v5M4 20 21 3M21 16v5h-5M4 4l5 5M15 15l6 6" }
                     },
-                    "favorite" => rsx! { path { d: "M20.8 8.7c0 5.2-8.8 10.3-8.8 10.3S3.2 13.9 3.2 8.7A4.7 4.7 0 0 1 12 6.2a4.7 4.7 0 0 1 8.8 2.5Z" } },
+                    "favorite" | "star" => rsx! { path { d: "M20.8 8.7c0 5.2-8.8 10.3-8.8 10.3S3.2 13.9 3.2 8.7A4.7 4.7 0 0 1 12 6.2a4.7 4.7 0 0 1 8.8 2.5Z" } },
                     "clock" => rsx! {
                         circle { cx: "12", cy: "12", r: "9" }
                         path { d: "M12 7v5l3 2" }
