@@ -122,7 +122,7 @@ fn queue_remove_last_element_clears_index() {
 
 #[test]
 fn queue_clear() {
-    let queue = with_service();
+    let mut queue = with_service();
 
     queue.add(test_track("t1", "Track One"), false);
     queue.add(test_track("t2", "Track Two"), false);
