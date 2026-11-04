@@ -157,7 +157,7 @@ pub fn Home() -> Element {
                         h2 { class: "fz-section-title", "Recently added" }
                         button {
                             class: "fz-text-action",
-                            onclick: move |_| recent_navigator.push(Route::Library {}),
+                            onclick: move |_| { recent_navigator.push(Route::Library {}); },
                             "View library"
                         }
                     }
@@ -175,7 +175,7 @@ pub fn Home() -> Element {
                         h2 { class: "fz-section-title", "Your favorites" }
                         button {
                             class: "fz-text-action",
-                            onclick: move |_| favorites_navigator.push(Route::Favorites {}),
+                            onclick: move |_| { favorites_navigator.push(Route::Favorites {}); },
                             "See all"
                         }
                     }
@@ -202,13 +202,13 @@ pub fn Home() -> Element {
                         label: "Recently added",
                         icon: "clock",
                         disabled: false,
-                        on_click: move |_| quick_recent_navigator.push(Route::Library {}),
+                        on_click: move |_| { quick_recent_navigator.push(Route::Library {}); },
                     }
                     QuickAction {
                         label: "Favorites",
                         icon: "favorite",
                         disabled: false,
-                        on_click: move |_| quick_favorites_navigator.push(Route::Favorites {}),
+                        on_click: move |_| { quick_favorites_navigator.push(Route::Favorites {}); },
                     }
                 }
             }
@@ -223,7 +223,7 @@ fn StatCard(label: &'static str, value: String, icon: &'static str, route: Route
         button {
             class: "fz-card fz-stat-card",
             aria_label: "{label}: {value}. Open {label} library.",
-            onclick: move |_| navigator.push(route.clone()),
+            onclick: move |_| { navigator.push(route.clone()); },
             span { class: "fz-stat-icon", AppIcon { name: icon, size: 22 } }
             span { class: "fz-stat-copy",
                 strong { "{value}" }
