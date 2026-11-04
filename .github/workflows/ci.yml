@@ -48,7 +48,7 @@ jobs:
           components: clippy
 
       - name: Run clippy
-        run: cargo clippy --workspace --all-targets
+        run: cargo clippy --workspace --all-targets --features desktop
 
   check:
     name: Check (compile)
@@ -68,7 +68,7 @@ jobs:
         uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec
 
       - name: Check compilation
-        run: cargo check --workspace --all-targets
+        run: cargo check --workspace --all-targets --features desktop
 
   test:
     name: Tests
@@ -88,4 +88,4 @@ jobs:
         uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec
 
       - name: Run tests
-        run: cargo test --workspace
+        run: cargo test --workspace --features desktop
