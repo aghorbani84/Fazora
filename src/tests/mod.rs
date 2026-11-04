@@ -5,7 +5,6 @@
 //! thread-local RefCell storage rather than a global Mutex/OnceLock.
 
 use dioxus::prelude::*;
-use std::cell::RefCell;
 use std::ops::Deref;
 
 pub struct ServiceHarness<S> {
