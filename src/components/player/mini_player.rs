@@ -19,7 +19,7 @@ pub fn MiniPlayer() -> Element {
     let is_playing = playback.state.read().is_playing();
     let progress = playback.progress_ratio() * 100.0;
 
-    let open_now_playing = move |_| navigator.push(Route::NowPlaying {});
+    let open_now_playing = move |_| { navigator.push(Route::NowPlaying {}); };
     let play_service = playback.clone();
     let next_playback = playback.clone();
     let next_queue = queue.clone();
