@@ -87,7 +87,7 @@ jobs:
         env:
           RUST_BACKTRACE: "1"
         run: |
-          dx bundle --platform android --release --package-types apk --target ${{ matrix.rust_target }} --verbose
+          dx bundle --android --release --package-types apk --target ${{ matrix.rust_target }} --verbose
           APK_PATH="$(find target -type f -name '*.apk' -print -quit)"
           test -n "$APK_PATH" || { echo "Dioxus did not produce an APK"; exit 1; }
           mkdir -p dist
