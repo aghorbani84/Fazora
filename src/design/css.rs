@@ -707,6 +707,7 @@ pub const COMPONENTS_CSS: &str = r#"
   padding: var(--space-6);
 }
 .fz-home { width: 100%; max-width: 1120px; margin: 0 auto; }
+.fz-button { min-height: 44px; white-space: nowrap; }
 .fz-home-hero {
   display: flex;
   align-items: center;
