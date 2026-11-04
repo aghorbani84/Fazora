@@ -1,7 +1,7 @@
-//! Persistent mini-player dock at the bottom of the desktop app.
-
+//! Persistent compact mini-player dock.
+use crate::components::branding::AppIcon;
 use crate::components::media::Artwork;
-use crate::components::primitives::IconButton;
+use crate::playback::PlaybackState;
 use crate::routing::Route;
 use crate::state::AppState;
 use dioxus::prelude::*;
@@ -10,97 +10,67 @@ use dioxus::prelude::*;
 pub fn MiniPlayer() -> Element {
     let state = use_context::<Signal<AppState>>();
     let playback = state.read().playback.clone();
+    let queue = state.read().queue.clone();
     let navigator = use_navigator();
 
     let track = playback.state.read().current_track().cloned();
-    let title = track
-        .as_ref()
-        .map(|track| track.title.clone())
-        .unwrap_or_else(|| "No track".to_string());
-    let artist = track
-        .as_ref()
-        .map(|track| track.artist.clone())
-        .unwrap_or_default();
+    let title = track.as_ref().map(|item| item.title.clone()).unwrap_or_else(|| "Nothing playing".to_string());
+    let artist = track.as_ref().map(|item| item.artist.clone()).unwrap_or_else(|| "Choose a track from your library".to_string());
     let is_playing = playback.state.read().is_playing();
+    let progress = playback.progress_ratio() * 100.0;
 
-    let open_now_playing = move |_| {
-        navigator.push(Route::NowPlaying {});
-    };
+    let open_now_playing = move |_| navigator.push(Route::NowPlaying {});
     let play_service = playback.clone();
-    let seek_service = playback.clone();
+    let next_playback = playback.clone();
+    let next_queue = queue.clone();
 
     rsx! {
-        div {
-            class: "fz-player-dock",
-            role: "region",
-            "aria-label": "Now playing",
-            div {
-                class: "fz-mini-player",
-                onclick: open_now_playing,
-                style: "cursor: pointer;",
-                div {
-                    class: "fz-mini-artwork",
-                    if let Some(track) = &track {
+        div { class: "fz-player-dock",
+            div { class: "fz-mini-player",
+                div { class: "fz-mini-artwork",
+                    if let Some(current) = &track {
                         Artwork {
-                            src: track.artwork.clone(),
-                            width: 56,
-                            height: 56,
-                            alt: track.title.clone(),
+                            src: current.artwork.clone(),
+                            width: 44,
+                            height: 44,
+                            alt: current.title.clone(),
                         }
                     } else {
-                        div {
-                            style: "width: 56px; height: 56px; background: var(--surface-tertiary); border: 1px solid var(--border); border-radius: var(--radius-medium); display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-family: var(--font-mono); font-size: var(--text-xs);",
-                            "FZ"
+                        div { class: "fz-mini-artwork-fallback",
+                            AppIcon { name: "music", size: 20 }
                         }
                     }
                 }
-                div {
+                button {
                     class: "fz-mini-info",
-                    flex: "1",
-                    min_width: 0,
-                    h4 {
-                        style: "font-size: var(--text-sm); font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;",
-                        "{title}"
-                    }
-                    p {
-                        style: "font-size: var(--text-xs); color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;",
-                        "{artist}"
+                    aria_label: "Open now playing",
+                    onclick: open_now_playing,
+                    strong { "{title}" }
+                    span { "{artist}" }
+                }
+                div { class: "fz-mini-progress",
+                    div { class: "fz-mini-progress-track",
+                        div { class: "fz-mini-progress-fill", style: "width: {progress}%;" }
                     }
                 }
-                div {
-                    class: "fz-mini-progress",
-                    style: "flex: 1; min-width: 120px;",
-                    crate::components::player::timeline::Timeline {
-                        position: playback.position_sec.cloned(),
-                        duration: playback.duration_sec.cloned(),
-                        on_seek: move |seconds| seek_service.seek(seconds),
-                    }
-                }
-                div {
-                    class: "fz-mini-controls",
-                    gap: "var(--space-2)",
-                    IconButton {
-                        active: false,
-                        title: if is_playing { "Pause" } else { "Play" },
+                div { class: "fz-mini-controls",
+                    button {
+                        class: "fz-mini-control",
+                        aria_label: if is_playing { "Pause" } else { "Play" },
+                        disabled: track.is_none(),
                         onclick: move |_| play_service.play_toggle(),
-                        svg {
-                            class: "fz-icon",
-                            width: 18,
-                            height: 18,
-                            use { href: if is_playing { "#icon-pause" } else { "#icon-play" } }
-                        }
+                        AppIcon { name: if is_playing { "pause" } else { "play" }, size: 19 }
                     }
-                    IconButton {
-                        active: false,
-                        title: "Next",
-                        onclick: move |_| {},
-                        svg { class: "fz-icon", width: 18, height: 18, use { href: "#icon-next" } }
-                    }
-                    IconButton {
-                        active: false,
-                        title: "Queue",
-                        onclick: move |_| {},
-                        svg { class: "fz-icon", width: 18, height: 18, use { href: "#icon-queue" } }
+                    button {
+                        class: "fz-mini-control",
+                        aria_label: "Next track",
+                        disabled: queue.entries.read().is_empty(),
+                        onclick: move |_| {
+                            if let Some(next) = next_queue.move_next() {
+                                next_playback.set_state(PlaybackState::Playing { track: next });
+                            }
+                        },
+                        AppIcon { name: "next", size: 19 }
                     }
                 }
             }
