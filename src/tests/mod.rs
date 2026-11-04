@@ -34,9 +34,9 @@ macro_rules! service_harness {
 
         #[component]
         fn $name() -> Element {
-            let service = use_signal($init);
+            let service = $init();
             $slot.with(|slot| {
-                *slot.borrow_mut() = Some((*service.read()).clone());
+                *slot.borrow_mut() = Some(service.clone());
             });
             rsx! { div {} }
         }
