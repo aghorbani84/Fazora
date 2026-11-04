@@ -12,7 +12,7 @@ pub const MAX_SETTINGS_FILE_SIZE: u64 = 1_048_576;
 pub const MAX_QUERY_LENGTH: usize = 1_000;
 
 /// Maximum number of recent queries to retain.
-pub const MAX_RECENT_QUERIES: usize = 50;
+pub const MAX_RECENT_QUERIES: usize = 10;
 
 /// Allowed media directory root prefixes for path validation.
 /// Paths outside these roots are rejected to prevent access to

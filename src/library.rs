@@ -84,8 +84,14 @@ impl LibraryService {
             total_duration_sec: library
                 .tracks
                 .iter()
-                .filter_map(|t| t.duration_sec)
-                .map(|s| s as u64)
+                .filter_map(|track| track.duration_sec)
+                .chain(
+                    library
+                        .videos
+                        .iter()
+                        .filter_map(|video| video.duration_sec),
+                )
+                .map(u64::from)
                 .sum(),
             indexed_dirs: self.media_dirs.read().len(),
             last_scan: Some(chrono::Utc::now().timestamp_millis()),

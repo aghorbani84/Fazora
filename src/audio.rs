@@ -94,14 +94,21 @@ impl AudioService {
     pub fn set_band_gain(&self, frequency_hz: f32, gain_db: f32) {
         let mut state = self.state;
         let mut current = state.write();
-        if let Some(band) = current
-            .bands
-            .iter_mut()
-            .find(|b| (b.frequency_hz - frequency_hz).abs() < f32::EPSILON)
-        {
-            band.gain_db = gain_db.clamp(-12.0, 12.0);
+        let mut matched = false;
+        if let Some(band) = current.bands.iter_mut().min_by(|left, right| {
+            (left.frequency_hz - frequency_hz)
+                .abs()
+                .total_cmp(&(right.frequency_hz - frequency_hz).abs())
+        }) {
+            let tolerance_hz = frequency_hz.abs().max(1.0) * 0.1;
+            if (band.frequency_hz - frequency_hz).abs() <= tolerance_hz {
+                band.gain_db = gain_db.clamp(-12.0, 12.0);
+                matched = true;
+            }
         }
-        current.preset = EqPreset::Custom;
+        if matched {
+            current.preset = EqPreset::Custom;
+        }
     }
 
     pub fn set_preamp(&self, db: f32) {
