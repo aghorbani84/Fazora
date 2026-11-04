@@ -1,7 +1,7 @@
-//! FAZORA Media — application entry point.
+//! FAZORA Media application entry point.
 //!
-//! Bootstraps logging, initialises shared application state and launches the
-//! Dioxus desktop window.
+//! Dioxus CLI selects the desktop or mobile Cargo feature according
+//! to the requested target. The UI and application services remain shared.
 
 mod app;
 mod audio;
@@ -19,11 +19,12 @@ mod state;
 mod views;
 
 use app::App;
-use dioxus_desktop::{launch::launch, Config, WindowBuilder};
-use tracing_subscriber::{EnvFilter, FmtSubscriber};
 
+#[cfg(feature = "desktop")]
 fn main() {
-    // Initialise structured logging. Override with e.g. `FAZORA_LOG=debug`.
+    use dioxus_desktop::{launch::launch, Config, WindowBuilder};
+    use tracing_subscriber::{EnvFilter, FmtSubscriber};
+
     let filter = EnvFilter::try_from_default_env()
         .unwrap_or_else(|_| EnvFilter::new("info,fazora=info,dioxus=warn"));
     let _ = FmtSubscriber::builder()
@@ -43,3 +44,11 @@ fn main() {
 
     launch(|| rsx! { App {} }, vec![], vec![Box::new(config)]);
 }
+
+#[cfg(feature = "mobile")]
+fn main() {
+    dioxus::launch(App);
+}
+
+#[cfg(not(any(feature = "desktop", feature = "mobile")))]
+compile_error!("Select either the desktop or mobile Cargo feature.");

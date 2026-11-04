@@ -18,7 +18,7 @@ Built with **Rust + Dioxus Labs**.
 | Automated Tests | Partial (service layer + models) |
 | Linux Build | Configured |
 | Windows Build | Configured |
-| Android Build | Configured |
+| Android Build | Dioxus CLI APK bundle (CI validation) |
 
 ## Features
 
@@ -77,14 +77,15 @@ cargo run --release
 
 #### Android
 
-```bash
-# Install Android SDK, NDK (r26b), and JDK 17
-# Add Rust Android targets
-rustup target add aarch64-linux-android x86_64-linux-android
+Install Android SDK command-line tools, Android NDK r28c or newer, JDK 17, Rust, and the Dioxus CLI 0.7.10. Then build a real APK (not just a Rust shared library):
 
-# Build
-cargo build --release --target aarch64-linux-android
+```bash
+rustup target add aarch64-linux-android
+cargo install dioxus-cli --version 0.7.10 --locked
+dx bundle --platform android --release --package-types apk --target aarch64-linux-android
 ```
+
+The Android GitHub Actions workflow builds installable APKs for `arm64-v8a` and `x86_64`, verifies their signatures, and uploads each APK with a SHA-256 checksum. CI uses a temporary signing key, so APKs from separate workflow runs have different signing identities; uninstall an older CI build before installing a new one. For production updates, configure a persistent private signing key in GitHub Actions secrets.
 
 ## Development Setup
 
@@ -159,7 +160,7 @@ See [TESTING.md](./TESTING.md) for details.
 
 - Rust toolchain required for building (not available in all sandboxes)
 - Native multimedia engines (libVLC, libmpv) integration pending validation
-- Android APK packaging requires Dioxus mobile toolchain configuration
+- Android media scanning and native playback integrations still require device-level validation; CI confirms packaging and APK signature, not full playback functionality
 - iOS is not currently a target platform
 
 ## License
