@@ -36,14 +36,15 @@ pub fn BrandMark(props: BrandMarkProps) -> Element {
 /// Small inline SVG icons. No sprite sheet, font, URL, or external asset is used.
 #[derive(Props, Clone, PartialEq)]
 pub struct AppIconProps {
-    name: &'static str,
+    #[props(into)]
+    name: String,
     #[props(default = 20)]
     size: u32,
 }
 
 #[component]
 pub fn AppIcon(props: AppIconProps) -> Element {
-    let name = props.name;
+    let name = props.name.as_str();
     rsx! {
         svg {
             width: "{props.size}",
