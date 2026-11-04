@@ -14,12 +14,20 @@ pub fn MiniPlayer() -> Element {
     let navigator = use_navigator();
 
     let track = playback.state.read().current_track().cloned();
-    let title = track.as_ref().map(|item| item.title.clone()).unwrap_or_else(|| "Nothing playing".to_string());
-    let artist = track.as_ref().map(|item| item.artist.clone()).unwrap_or_else(|| "Choose a track from your library".to_string());
+    let title = track
+        .as_ref()
+        .map(|item| item.title.clone())
+        .unwrap_or_else(|| "Nothing playing".to_string());
+    let artist = track
+        .as_ref()
+        .map(|item| item.artist.clone())
+        .unwrap_or_else(|| "Choose a track from your library".to_string());
     let is_playing = playback.state.read().is_playing();
     let progress = playback.progress_ratio() * 100.0;
 
-    let open_now_playing = move |_| { navigator.push(Route::NowPlaying {}); };
+    let open_now_playing = move |_| {
+        navigator.push(Route::NowPlaying {});
+    };
     let play_service = playback.clone();
     let next_playback = playback.clone();
     let next_queue = queue.clone();
