@@ -49,7 +49,7 @@ jobs:
         run: Get-FileHash -Algorithm SHA256 fazora-windows-${{ matrix.arch }}.zip | Format-List -Property Hash | ForEach-Object { $_.Hash } | Out-File -FilePath fazora-windows-${{ matrix.arch }}.zip.sha256 -Encoding ascii
 
       - name: Upload artifact
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: fazora-windows-${{ matrix.arch }}
           path: |
