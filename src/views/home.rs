@@ -13,9 +13,11 @@ pub fn Home() -> Element {
     let library = library_service.library.read().clone();
     let scan_status = library_service.scan_status.read().clone();
     let navigator = use_navigator();
+    let empty_state_navigator = navigator.clone();
     let open_library = move |_| navigator.push(Route::Library {});
+    let open_library_empty = move |_| empty_state_navigator.push(Route::Library {});
 
-    let scan_label = match scan_status {
+    let scan_label = match &scan_status {
         crate::library::ScanStatus::Scanning | crate::library::ScanStatus::Indexing => "Scanning…",
         _ => "Scan media",
     };
@@ -35,7 +37,7 @@ pub fn Home() -> Element {
                     class: "fz-home-actions",
                     crate::components::primitives::Button {
                         variant: crate::components::primitives::ButtonVariant::Primary,
-                        disabled: matches!(scan_status, crate::library::ScanStatus::Scanning | crate::library::ScanStatus::Indexing),
+                        disabled: matches!(&scan_status, crate::library::ScanStatus::Scanning | crate::library::ScanStatus::Indexing),
                         onclick: move |_| library_service.request_scan(),
                         label: scan_label,
                     }
@@ -66,7 +68,7 @@ pub fn Home() -> Element {
                         title: "Your next favorite starts here",
                         description: "Scan your device or choose a media folder to build your personal library.",
                         action: "Explore library",
-                        on_action: open_library,
+                        on_action: open_library_empty,
                     }
                 } else {
                     div { class: "fz-home-list",
@@ -105,7 +107,7 @@ pub fn Home() -> Element {
 
             section {
                 class: "fz-section fz-home-section",
-                Favorites { playlists: library.playlists }
+                Favorites { playlists: library.playlists.clone() }
             }
         }
     }
