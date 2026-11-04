@@ -81,6 +81,31 @@ pub fn AppIcon(props: AppIconProps) -> Element {
                         path { d: "M5 5v14l10-7L5 5Z" }
                         path { d: "M19 5v14" }
                     },
+                    "previous" | "chevron-left" => rsx! { path { d: "m15 18-6-6 6-6" } },
+                    "chevron-down" => rsx! { path { d: "m6 9 6 6 6-6" } },
+                    "repeat" => rsx! {
+                        path { d: "m17 2 4 4-4 4M3 11V9a3 3 0 0 1 3-3h15M7 22l-4-4 4-4M21 13v2a3 3 0 0 1-3 3H3" }
+                    },
+                    "queue" => rsx! {
+                        rect { x: "3", y: "4", width: "18", height: "13", rx: "2" }
+                        path { d: "M3 9h18M7 20h14M7 23h11" }
+                    },
+                    "volume" => rsx! {
+                        path { d: "M4 10v4h4l5 4V6l-5 4H4Z" }
+                        path { d: "M17 9a5 5 0 0 1 0 6M19.5 6.5a9 9 0 0 1 0 11" }
+                    },
+                    "volume-mute" => rsx! {
+                        path { d: "M4 10v4h4l5 4V6l-5 4H4Z" }
+                        path { d: "m17 9 5 6m0-6-5 6" }
+                    },
+                    "lyrics" => rsx! {
+                        path { d: "M4 6h16M4 11h16M4 16h10" }
+                        path { d: "m17 17 2 2 3-4" }
+                    },
+                    "globe" => rsx! {
+                        circle { cx: "12", cy: "12", r: "9" }
+                        path { d: "M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" }
+                    },
                     "track" | "music" => rsx! {
                         path { d: "M9 18V5l12-2v13" }
                         circle { cx: "6", cy: "18", r: "3" }
