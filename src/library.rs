@@ -85,12 +85,7 @@ impl LibraryService {
                 .tracks
                 .iter()
                 .filter_map(|track| track.duration_sec)
-                .chain(
-                    library
-                        .videos
-                        .iter()
-                        .filter_map(|video| video.duration_sec),
-                )
+                .chain(library.videos.iter().filter_map(|video| video.duration_sec))
                 .map(u64::from)
                 .sum(),
             indexed_dirs: self.media_dirs.read().len(),
