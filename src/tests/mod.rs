@@ -5,7 +5,7 @@
 //! thread-local RefCell storage rather than a global Mutex/OnceLock.
 
 use dioxus::prelude::*;
-use std::ops::Deref;
+use std::ops::{Deref, DerefMut};
 
 pub struct ServiceHarness<S> {
     service: S,
@@ -17,6 +17,12 @@ impl<S> Deref for ServiceHarness<S> {
 
     fn deref(&self) -> &Self::Target {
         &self.service
+    }
+}
+
+impl<S> DerefMut for ServiceHarness<S> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.service
     }
 }
 

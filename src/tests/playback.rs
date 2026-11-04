@@ -170,7 +170,7 @@ fn playback_seek_sets_seeking_state() {
 
     assert!(matches!(
         &*playback.state.read(),
-        PlaybackState::Seeking { track, to_sec } if track.id == "t1" && to_sec == 45.5
+        PlaybackState::Seeking { track, to_sec } if track.id == "t1" && *to_sec == 45.5
     ));
 }
 
