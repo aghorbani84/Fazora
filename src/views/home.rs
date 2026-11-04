@@ -101,7 +101,7 @@ fn RecentlyPlayed(library: Library) -> Element {
     if tracks.is_empty() {
         rsx! {
             EmptyState {
-                icon: "#icon-headphones",
+                icon: "#icon-music",
                 title: "Your listening journey starts here",
                 message: "Your recently played tracks will appear here."
             }
@@ -138,7 +138,7 @@ fn RecentlyAdded(library: Library) -> Element {
     if tracks.is_empty() {
         rsx! {
             EmptyState {
-                icon: "#icon-sparkles",
+                icon: "#icon-album",
                 title: "Nothing in your library yet",
                 message: "Open your library to start organizing your media."
             }
