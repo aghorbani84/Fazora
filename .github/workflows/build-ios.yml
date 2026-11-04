@@ -12,24 +12,44 @@ permissions:
 
 jobs:
   build:
-    name: Build iOS (documentation check)
-    runs-on: ubuntu-24.04
+    name: Build iOS ARM64 app bundle (unsigned)
+    runs-on: macos-15
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
         with:
           persist-credentials: false
 
-      - name: Check iOS support status
+      - name: Install Rust iOS target
+        uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec
+        with:
+          targets: aarch64-apple-ios
+
+      - name: Install pinned Dioxus CLI
+        run: cargo install dioxus-cli --version 0.7.10 --locked
+
+      - name: Verify Apple toolchain
         run: |
-          echo "iOS is not currently a target platform for FAZORA Media."
-          echo "Current target platforms: Linux, Windows, Android."
-          echo ""
-          echo "To add iOS support, the following would be required:"
-          echo "  1. macOS runner with Xcode installed"
-          echo "  2. Rust iOS targets: aarch64-apple-ios, x86_64-ios-sim"
-          echo "  3. Dioxus iOS/mobile toolchain configuration"
-          echo "  4. iOS app bundle / .app packaging"
-          echo ""
-          echo "See: https://dioxuslabs.com/learning/0.5/reference/mobile"
-          exit 0
+          xcodebuild -version
+          xcrun --sdk iphoneos --show-sdk-version
+          rustc --version
+          dx --version
+
+      - name: Bundle iOS app
+        run: |
+          dx bundle --ios --release --package-types app --target aarch64-apple-ios --verbose
+          APP_PATH="$(find target -type d -name '*.app' -print -quit)"
+          test -n "$APP_PATH" || { echo "No iOS .app bundle was produced"; exit 1; }
+          mkdir -p dist
+          ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" dist/FAZORA-iOS-arm64-unsigned.app.zip
+          shasum -a 256 dist/FAZORA-iOS-arm64-unsigned.app.zip > dist/FAZORA-iOS-arm64-unsigned.app.zip.sha256
+
+      - name: Upload iOS build artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: FAZORA-iOS-arm64-unsigned
+          path: |
+            dist/FAZORA-iOS-arm64-unsigned.app.zip
+            dist/FAZORA-iOS-arm64-unsigned.app.zip.sha256
+          if-no-files-found: error
+          retention-days: 30
