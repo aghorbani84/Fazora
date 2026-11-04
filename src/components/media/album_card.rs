@@ -2,6 +2,7 @@
 //! Interactions: open album, play album, shuffle, add to queue/playlist,
 //! context menu.
 
+use crate::components::branding::AppIcon;
 use crate::components::primitives::Button;
 use crate::models::Album;
 use crate::routing::Route;
@@ -64,12 +65,7 @@ pub fn AlbumCard(props: AlbumCardProps) -> Element {
                     variant: crate::components::primitives::ButtonVariant::Ghost,
                     class: "fz-album-play-overlay",
                     onclick: play_album,
-                    svg {
-                        class: "fz-icon",
-                        width: 24,
-                        height: 24,
-                        use { href: "#icon-play" }
-                    }
+                    AppIcon { name: "play", size: 24 }
                 }
             }
             div {
