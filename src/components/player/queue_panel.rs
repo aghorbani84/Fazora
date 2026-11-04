@@ -1,6 +1,7 @@
 //! Queue panel — current track, upcoming tracks, reorder, remove, save as
 //! playlist. Queue changes update the real playback service.
 
+use crate::components::branding::AppIcon;
 use crate::components::primitives::IconButton;
 use crate::queue::{QueueEntry, QueueService};
 use dioxus::prelude::*;
@@ -36,7 +37,7 @@ pub fn QueuePanel(props: QueuePanelProps) -> Element {
                     active: false,
                     title: "Close",
                     onclick: move |_| props.on_close.call(()),
-                    svg { class: "fz-icon", width: 18, height: 18, use { href: "#icon-chevron-left" } }
+                    AppIcon { name: "chevron-left", size: 18 }
                 }
             }
             div {
@@ -140,7 +141,7 @@ fn QueueRow(props: QueueRowProps) -> Element {
                 active: false,
                 title: "Remove from queue",
                 onclick: move |_| on_remove.call(()),
-                svg { class: "fz-icon", width: 16, height: 16, use { href: "#icon-chevron-down" } }
+                AppIcon { name: "chevron-down", size: 16 }
             }
         }
     }
