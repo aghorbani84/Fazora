@@ -19,10 +19,11 @@ mod state;
 mod views;
 
 use app::App;
+use dioxus::prelude::*;
 
 #[cfg(feature = "desktop")]
 fn main() {
-    use dioxus_desktop::{launch::launch, Config, WindowBuilder};
+    use dioxus_desktop::{launch::launch, tao::dpi::LogicalSize, Config, WindowBuilder};
     use tracing_subscriber::{EnvFilter, FmtSubscriber};
 
     let filter = EnvFilter::try_from_default_env()
@@ -36,8 +37,8 @@ fn main() {
     let config = Config::new().with_window(
         WindowBuilder::new()
             .with_title("FAZORA Media")
-            .with_inner_size((1300.0, 850.0))
-            .with_min_inner_size((900.0, 600.0))
+            .with_inner_size(LogicalSize::new(1300.0, 850.0))
+            .with_min_inner_size(LogicalSize::new(900.0, 600.0))
             .with_resizable(true)
             .with_maximized(false),
     );
