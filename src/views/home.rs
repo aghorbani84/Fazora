@@ -32,12 +32,14 @@ pub fn Home() -> Element {
         .cloned()
         .collect();
 
-    let is_scanning = matches!(scan_status, ScanStatus::Scanning | ScanStatus::Indexing);
+    let is_scanning = matches!(&scan_status, ScanStatus::Scanning | ScanStatus::Indexing);
     let has_media = !library.tracks.is_empty() || !library.videos.is_empty();
     let mut show_permission_details = use_signal(|| false);
     let navigator = use_navigator();
     let recent_navigator = navigator.clone();
-    let favorites_navigator = navigator;
+    let quick_recent_navigator = navigator.clone();
+    let favorites_navigator = navigator.clone();
+    let quick_favorites_navigator = navigator;
 
     let play_tracks = library.tracks.clone();
     let play_queue = queue_service.clone();
@@ -82,22 +84,6 @@ pub fn Home() -> Element {
                     h1 { "Home" }
                     p { class: "fz-home-tagline", "Your media, engineered." }
                 }
-                div { class: "fz-home-actions",
-                    crate::components::primitives::Button {
-                        variant: crate::components::primitives::ButtonVariant::Primary,
-                        disabled: library.tracks.is_empty() || is_scanning,
-                        onclick: play_all,
-                        AppIcon { name: "play", size: 16 }
-                        "Play all"
-                    }
-                    crate::components::primitives::Button {
-                        variant: crate::components::primitives::ButtonVariant::Surface,
-                        disabled: library.tracks.is_empty() || is_scanning,
-                        onclick: shuffle_all,
-                        AppIcon { name: "shuffle", size: 16 }
-                        "Shuffle"
-                    }
-                }
             }
 
             section { class: "fz-stats-grid", aria_label: "Library statistics",
@@ -118,7 +104,7 @@ pub fn Home() -> Element {
                     }
                 }
             }
-            if let ScanStatus::Finished = scan_status {
+            if let ScanStatus::Finished = &scan_status {
                 section { class: "fz-scan-result",
                     strong { "Library scan complete" }
                     span { "{stats.track_count} tracks · {stats.album_count} albums · {stats.artist_count} artists · {stats.video_count} videos" }
@@ -216,13 +202,13 @@ pub fn Home() -> Element {
                         label: "Recently added",
                         icon: "clock",
                         disabled: false,
-                        on_click: move |_| recent_navigator.push(Route::Library {}),
+                        on_click: move |_| quick_recent_navigator.push(Route::Library {}),
                     }
                     QuickAction {
                         label: "Favorites",
                         icon: "favorite",
                         disabled: false,
-                        on_click: move |_| favorites_navigator.push(Route::Favorites {}),
+                        on_click: move |_| quick_favorites_navigator.push(Route::Favorites {}),
                     }
                 }
             }
