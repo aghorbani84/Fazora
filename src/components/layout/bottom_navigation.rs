@@ -26,14 +26,12 @@ pub fn BottomNavigation(props: BottomNavigationProps) -> Element {
             role: "navigation",
             aria_label: "Primary navigation",
             for (route, icon, label) in destinations {
-                let is_selected = selected == route;
-                let destination = route.clone();
                 button {
                     key: "{label}",
-                    class: if is_selected { "fz-bottom-nav-item active" } else { "fz-bottom-nav-item" },
+                    class: if selected == route { "fz-bottom-nav-item active" } else { "fz-bottom-nav-item" },
                     aria_label: "{label}",
-                    aria_current: if is_selected { "page" } else { "false" },
-                    onclick: move |_| on_navigate.call(destination.clone()),
+                    aria_current: if selected == route { "page" } else { "false" },
+                    onclick: move |_| on_navigate.call(route.clone()),
                     AppIcon { name: icon, size: 21 }
                     span { "{label}" }
                 }
