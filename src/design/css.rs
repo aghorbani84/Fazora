@@ -154,6 +154,14 @@ a { color: var(--text-inherit, inherit); text-decoration: none; }
   background: var(--background);
 }
 
+.fz-main-column {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
 .fz-body {
   display: flex;
   flex: 1 1 auto;
