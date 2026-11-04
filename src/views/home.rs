@@ -14,8 +14,8 @@ pub fn Home() -> Element {
     let scan_status = library_service.scan_status.read().clone();
     let navigator = use_navigator();
     let empty_state_navigator = navigator.clone();
-    let open_library = move |_| navigator.push(Route::Library {});
-    let open_library_empty = move |_| empty_state_navigator.push(Route::Library {});
+    let open_library = move |_| { navigator.push(Route::Library {}); };
+    let open_library_empty = move |_| { empty_state_navigator.push(Route::Library {}); };
 
     let scan_label = match &scan_status {
         crate::library::ScanStatus::Scanning | crate::library::ScanStatus::Indexing => "Scanning…",
