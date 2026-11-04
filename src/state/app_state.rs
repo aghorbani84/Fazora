@@ -1,8 +1,8 @@
 //! Aggregate state holder.
 
 use crate::{
-    audio::AudioService, library::LibraryService, playback::PlaybackService,
-    queue::QueueService, search::SearchService, settings::SettingsService,
+    audio::AudioService, library::LibraryService, playback::PlaybackService, queue::QueueService,
+    search::SearchService, settings::SettingsService,
 };
 use dioxus::prelude::*;
 

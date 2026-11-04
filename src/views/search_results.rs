@@ -15,28 +15,41 @@ pub fn SearchResults(props: SearchResultsProps) -> Element {
     let app_state = state.read();
     let library = app_state.library.clone();
 
-    let q = props.query.to_lowercase();
+    let query = props.query.clone();
+    let q = query.to_lowercase();
 
-    let tracks: Vec<Track> = library.library.read()
-        .tracks.iter()
+    let tracks: Vec<Track> = library
+        .library
+        .read()
+        .tracks
+        .iter()
         .filter(|t| t.title.to_lowercase().contains(&q) || t.artist.to_lowercase().contains(&q))
         .cloned()
         .collect();
 
-    let albums: Vec<Album> = library.library.read()
-        .albums.iter()
+    let albums: Vec<Album> = library
+        .library
+        .read()
+        .albums
+        .iter()
         .filter(|a| a.title.to_lowercase().contains(&q) || a.artist.to_lowercase().contains(&q))
         .cloned()
         .collect();
 
-    let artists: Vec<Artist> = library.library.read()
-        .artists.iter()
+    let artists: Vec<Artist> = library
+        .library
+        .read()
+        .artists
+        .iter()
         .filter(|a| a.name.to_lowercase().contains(&q))
         .cloned()
         .collect();
 
-    let videos: Vec<Video> = library.library.read()
-        .videos.iter()
+    let videos: Vec<Video> = library
+        .library
+        .read()
+        .videos
+        .iter()
         .filter(|v| v.title.to_lowercase().contains(&q))
         .cloned()
         .collect();
@@ -90,7 +103,7 @@ pub fn SearchResults(props: SearchResultsProps) -> Element {
                                         class: "fz-track-row",
                                         td { "{track.title}" }
                                         td { style: "color: var(--text-secondary);", "{track.artist}" }
-                                        td { style: "color: var(--text-secondary);", "{track.album.as_deref().unwrap_or("")}" }
+                                        td { style: "color: var(--text-secondary);", {track.album.as_deref().unwrap_or("")} }
                                         td { style: "font-family: var(--font-mono); color: var(--text-muted); text-align: right;", "{track.formatted_duration().unwrap_or_default()}" }
                                     }
                                 }
@@ -111,9 +124,9 @@ pub fn SearchResults(props: SearchResultsProps) -> Element {
                                 crate::components::media::AlbumCard {
                                     key: "{album.id}",
                                     album,
-                                    on_play: Some(move |_| {}),
-                                    on_shuffle: Some(move |_| {}),
-                                    on_add_queue: Some(move |_| {}),
+                                    on_play: move |_| {},
+                                    on_shuffle: move |_| {},
+                                    on_add_queue: move |_| {},
                                 }
                             }
                         }

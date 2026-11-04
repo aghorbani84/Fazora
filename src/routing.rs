@@ -7,11 +7,20 @@
 
 use crate::components::layout::AppShell;
 use crate::views::{
-    album::Album, artist::Artist, equalizer::EqualizerView, home::Home,
-    library::Library, music::Music, now_playing::NowPlaying,
-    playlists::{Playlists, Playlist}, queue::Queue, search::Search,
-    search_results::SearchResults, settings::{Settings, SettingsSection},
-    video_library::VideoLibrary, video_player::VideoPlayer,
+    album::Album,
+    artist::Artist,
+    equalizer::EqualizerView,
+    home::Home,
+    library::Library,
+    music::Music,
+    now_playing::NowPlaying,
+    playlists::{Playlist, Playlists},
+    queue::Queue,
+    search::Search,
+    search_results::SearchResults,
+    settings::{Settings, SettingsSection},
+    video_library::VideoLibrary,
+    video_player::VideoPlayer,
 };
 use dioxus::prelude::*;
 
@@ -61,13 +70,14 @@ pub enum Route {
         SettingsSection { section: String },
         #[route("/library", Library)]
         Library {},
-        #[route("/:..route", not_found)]
-        NotFound {},
+        #[route("/:..segments", not_found)]
+        NotFound { segments: Vec<String> },
 }
 
 /// 404 destination shown when the URL matches nothing.
 #[component]
-fn not_found() -> Element {
+fn not_found(segments: Vec<String>) -> Element {
+    let _ = segments;
     let navigator = use_navigator();
 
     rsx! {
@@ -76,7 +86,7 @@ fn not_found() -> Element {
             p { "The requested destination does not exist." }
             crate::components::primitives::Button {
                 variant: crate::components::primitives::ButtonVariant::Primary,
-                onclick: move |_| navigator.push(Route::Home {}),
+                onclick: move |_| { navigator.push(Route::Home {}); },
                 label: "Return home",
             }
         }

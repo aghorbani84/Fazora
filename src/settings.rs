@@ -1,10 +1,8 @@
 //! Settings service — persisted application settings.
 
-use crate::models::Playlist;
 use crate::security::{read_settings_file_limited, validate_settings_path};
 use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub enum Theme {
@@ -14,11 +12,11 @@ pub enum Theme {
     System,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Settings {
     pub theme: Theme,
     pub language: String,
-    pub ui_density: String, // "compact" | "comfortable" | "spacious"
+    pub ui_density: String,
     pub animations: bool,
     pub scan_on_startup: bool,
     pub autoplay: bool,
@@ -57,7 +55,7 @@ impl Default for Settings {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct SettingsService {
     pub settings: Signal<Settings>,
     pub path: Option<std::path::PathBuf>,
@@ -72,7 +70,6 @@ impl SettingsService {
     }
 
     pub fn load(&mut self) -> Result<(), crate::security::SecurityError> {
-        // Read settings.json from the platform config dir if present.
         if let Some(path) = &self.path {
             let validated = validate_settings_path(path)?;
             let text = read_settings_file_limited(&validated)?;
@@ -87,7 +84,8 @@ impl SettingsService {
         if let Some(path) = &self.path {
             let validated = validate_settings_path(path)?;
             if let Some(parent) = validated.parent() {
-                let _ = std::fs::create_dir_all(parent);
+                std::fs::create_dir_all(parent)
+                    .map_err(|_| crate::security::SecurityError::InvalidInput)?;
             }
             let text = serde_json::to_string_pretty(&*self.settings.read())
                 .map_err(|_| crate::security::SecurityError::InvalidInput)?;
@@ -98,18 +96,21 @@ impl SettingsService {
     }
 
     pub fn add_recent_query(&self, query: String) {
-        let mut s = self.settings.write();
         let sanitized = crate::security::sanitize_query(&query);
         if sanitized.is_empty() {
             return;
         }
-        s.recent_queries.retain(|q| q != &sanitized);
-        s.recent_queries.insert(0, sanitized);
-        s.recent_queries.truncate(crate::security::MAX_RECENT_QUERIES);
+        let mut settings = self.settings;
+        let mut current = settings.write();
+        current.recent_queries.retain(|q| q != &sanitized);
+        current.recent_queries.insert(0, sanitized);
+        current
+            .recent_queries
+            .truncate(crate::security::MAX_RECENT_QUERIES);
     }
 
     pub fn clear_recent_queries(&self) {
-        let mut s = self.settings.write();
-        s.recent_queries.clear();
+        let mut settings = self.settings;
+        settings.write().recent_queries.clear();
     }
 }

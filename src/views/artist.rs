@@ -1,8 +1,8 @@
 //! Artist page: artwork, name, album/track counts, top tracks, albums.
 
-use crate::models::{Album, Artist, Track};
 use crate::components::media::{Artwork, Metadata};
 use crate::components::primitives::Button;
+use crate::models::{Album, Artist, Track};
 use crate::state::AppState;
 use dioxus::prelude::*;
 
@@ -17,20 +17,32 @@ pub fn Artist(props: ArtistViewProps) -> Element {
     let app_state = state.read();
     let library = app_state.library.clone();
 
-    let artist = library.library.read().artists.iter().find(|a| a.id == props.id).cloned();
+    let artist = library
+        .library
+        .read()
+        .artists
+        .iter()
+        .find(|a| a.id == props.id)
+        .cloned();
     let artist = match artist {
         Some(a) => a,
         None => return rsx! { div { class: "fz-empty", h2 { "Artist not found" } } },
     };
 
-    let artist_albums: Vec<Album> = library.library.read()
-        .albums.iter()
+    let artist_albums: Vec<Album> = library
+        .library
+        .read()
+        .albums
+        .iter()
         .filter(|a| a.artist_id.as_deref() == Some(&props.id) || a.artist == artist.name)
         .cloned()
         .collect();
 
-    let artist_tracks: Vec<Track> = library.library.read()
-        .tracks.iter()
+    let artist_tracks: Vec<Track> = library
+        .library
+        .read()
+        .tracks
+        .iter()
         .filter(|t| t.artist_id.as_deref() == Some(&props.id) || t.artist == artist.name)
         .cloned()
         .collect();
@@ -92,9 +104,9 @@ pub fn Artist(props: ArtistViewProps) -> Element {
                             crate::components::media::AlbumCard {
                                 key: "{album.id}",
                                 album,
-                                on_play: Some(move |_| {}),
-                                on_shuffle: Some(move |_| {}),
-                                on_add_queue: Some(move |_| {}),
+                                on_play: move |_| {},
+                                on_shuffle: move |_| {},
+                                on_add_queue: move |_| {},
                             }
                         }
                     }
@@ -124,7 +136,7 @@ pub fn Artist(props: ArtistViewProps) -> Element {
                                 class: "fz-track-row",
                                 td { style: "color: var(--text-muted); font-family: var(--font-mono);", "{i + 1}" }
                                 td { "{track.title}" }
-                                td { style: "color: var(--text-secondary);", "{track.album.as_deref().unwrap_or("")}" }
+                                td { style: "color: var(--text-secondary);", {track.album.as_deref().unwrap_or("")} }
                                 td { style: "font-family: var(--font-mono); color: var(--text-muted); text-align: right;", "{track.formatted_duration().unwrap_or_default()}" }
                             }
                         }

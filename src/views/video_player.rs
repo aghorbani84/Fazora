@@ -1,6 +1,7 @@
 //! Video player — immersive, distraction-free surface with overlays for
 //! subtitles, audio tracks, speed and settings.
 
+use crate::components::primitives::Button;
 use crate::models::Video;
 use crate::state::AppState;
 use dioxus::prelude::*;
@@ -15,21 +16,27 @@ pub fn VideoPlayer(props: VideoPlayerProps) -> Element {
     let state = use_context::<Signal<AppState>>();
     let library = state.read().library.clone();
 
-    let video = library.library.read().videos.iter().find(|v| v.id == props.id).cloned();
+    let video = library
+        .library
+        .read()
+        .videos
+        .iter()
+        .find(|v| v.id == props.id)
+        .cloned();
     let video = match video {
         Some(v) => v,
         None => return rsx! { div { class: "fz-empty", h2 { "Video not found" } } },
     };
 
-    let showing_controls = use_signal(|| true);
-    let showing_settings = use_signal(|| false);
+    let mut showing_controls = use_signal(|| true);
+    let mut showing_settings = use_signal(|| false);
 
     rsx! {
         div {
             class: "fz-video-player",
             style: "width: 100%; height: 100%; background: var(--fazora-obsidian); color: var(--fazora-ivory); position: relative; display: flex; flex-direction: column;",
             onmousemove: move |_| {
-                showing_controls.set(true);
+                { let mut signal = showing_controls; signal.set(true); }
             },
             // Video surface — real native rendering, never a fake image.
             div {
@@ -49,7 +56,7 @@ pub fn VideoPlayer(props: VideoPlayerProps) -> Element {
                 }
             }
             // Top overlay
-            if showing_controls.get() {
+            if showing_controls.cloned() {
                 header {
                     class: "fz-video-topbar",
                     style: "position: absolute; top: 0; left: 0; right: 0; padding: var(--space-4); display: flex; align-items: center; justify-content: space-between; z-index: 30;",
@@ -70,13 +77,13 @@ pub fn VideoPlayer(props: VideoPlayerProps) -> Element {
                         Button {
                             variant: crate::components::primitives::ButtonVariant::Ghost,
                             label: "Settings",
-                            onclick: move |_| showing_settings.set(!showing_settings.get()),
+                            onclick: move |_| { let mut signal = showing_settings; let next = !*signal.read(); signal.set(next); },
                         }
                     }
                 }
             }
             // Center playback controls
-            if showing_controls.get() {
+            if showing_controls.cloned() {
                 div {
                     class: "fz-video-center-controls",
                     style: "position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-6); z-index: 40; pointer-events: none;",
@@ -122,7 +129,7 @@ pub fn VideoPlayer(props: VideoPlayerProps) -> Element {
                 }
             }
             // Advanced control panel overlay
-            if showing_settings.get() {
+            if showing_settings.cloned() {
                 div {
                     class: "fz-video-settings-panel",
                     style: "position: absolute; inset: 0; background: rgba(11, 13, 16, 0.85); backdrop-filter: blur(8px); display: flex; flex-direction: column; z-index: 50;",
@@ -135,7 +142,7 @@ pub fn VideoPlayer(props: VideoPlayerProps) -> Element {
                         Button {
                             variant: crate::components::primitives::ButtonVariant::Ghost,
                             label: "Done",
-                            onclick: move |_| showing_settings.set(false),
+                            onclick: move |_| { let mut signal = showing_settings; signal.set(false); },
                         }
                     }
                     div {

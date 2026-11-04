@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 
 /// A single audio track in the library.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Track {
     pub id: String,
     pub title: String,
@@ -33,18 +33,17 @@ pub struct Track {
 impl Track {
     pub fn formatted_duration(&self) -> Option<String> {
         let secs = self.duration_sec?;
-
         let minutes = secs / 60;
         let seconds = secs % 60;
         Some(format!("{}:{:02}", minutes, seconds))
     }
 
     pub fn subtitle(&self) -> String {
-        match (&self.artist, &self.album) {
-            (Some(artist), Some(album)) => format!("{} · {}", artist, album),
-            (Some(artist), None) => artist.clone(),
-            (None, Some(album)) => album.clone(),
-            (None, None) => "Unknown artist".to_string(),
+        match (self.artist.is_empty(), self.album.as_deref()) {
+            (false, Some(album)) => format!("{} · {}", self.artist, album),
+            (false, None) => self.artist.clone(),
+            (true, Some(album)) => album.to_string(),
+            (true, None) => "Unknown artist".to_string(),
         }
     }
 }

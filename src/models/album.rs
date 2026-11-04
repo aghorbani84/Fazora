@@ -18,11 +18,11 @@ pub struct Album {
 
 impl Album {
     pub fn subtitle(&self) -> String {
-        match (self.year, &self.artist) {
-            (Some(year), Some(artist)) => format!("{} · {}", artist, year),
-            (None, Some(artist)) => artist.clone(),
-            (Some(year), None) => year.to_string(),
-            (None, None) => "Unknown album".to_string(),
+        match (self.year, self.artist.is_empty()) {
+            (Some(year), false) => format!("{} · {}", self.artist, year),
+            (None, false) => self.artist.clone(),
+            (Some(year), true) => year.to_string(),
+            (None, true) => "Unknown album".to_string(),
         }
     }
 }

@@ -12,17 +12,20 @@ pub struct VideoCardProps {
 #[component]
 pub fn VideoCard(props: VideoCardProps) -> Element {
     let navigator = use_navigator();
-
-    let open_video = move |_| {
-        navigator.push(Route::Video {
-            id: props.video.id.clone(),
-        });
+    let click_target = Route::Video {
+        id: props.video.id.clone(),
     };
-
-    let progress = props.video.progress_ratio();
-    let duration = props.video
+    let keyboard_target = click_target.clone();
+    let click_navigator = navigator.clone();
+    let keyboard_navigator = navigator;
+    let progress = props.video.progress_ratio().clamp(0.0, 1.0);
+    let duration = props
+        .video
         .formatted_duration()
         .unwrap_or_else(|| "--:--".to_string());
+    let open_video = move |_| {
+        click_navigator.push(click_target.clone());
+    };
 
     rsx! {
         div {
@@ -33,7 +36,7 @@ pub fn VideoCard(props: VideoCardProps) -> Element {
             onclick: open_video,
             onkeydown: move |evt: KeyboardEvent| {
                 if matches!(evt.key(), Key::Enter) {
-                    open_video(());
+                    keyboard_navigator.push(keyboard_target.clone());
                 }
             },
             div {

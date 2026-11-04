@@ -1,182 +1,226 @@
-name: Release
+name: Publish Cross-Platform Release
 
 on:
   push:
-    tags: ['v*']
+    tags:
+      - "v*"
 
 permissions:
-  contents: write
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   build-linux:
-    name: Build Linux x86_64
-    runs-on: ubuntu-20.04
+    name: Linux x86_64
+    runs-on: ubuntu-24.04
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        with:
+          persist-credentials: false
       - name: Install system dependencies
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq libwebkit2gtk-4.0-dev
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Cache Cargo registry
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-linux-x86_64-cargo-${{ hashFiles('**/Cargo.lock') }}
-
-      - name: Build release
+          sudo apt-get update
+          sudo apt-get install -y build-essential pkg-config libwebkit2gtk-4.1-dev libgtk-3-dev libssl-dev libxdo-dev librsvg2-dev
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec
+      - name: Build
         run: cargo build --release
-
-      - name: Create portable archive
+      - name: Package and checksum
         run: |
-          mkdir -p fazora-linux-x86_64
-          cp target/release/fazora fazora-linux-x86_64/
-          cp README.md fazora-linux-x86_64/
-          cp LICENSE fazora-linux-x86_64/ 2>/dev/null || true
-          tar -czf fazora-linux-x86_64.tar.gz -C fazora-linux-x86_64 .
-
-      - name: Generate SHA-256 checksum
-        run: sha256sum fazora-linux-x86_64.tar.gz > fazora-linux-x86_64.tar.gz.sha256
-
-      - name: Upload Linux artifact
-        uses: actions/upload-artifact@v4
+          mkdir -p dist/fazora-linux-x86_64
+          install -m 0755 target/release/fazora dist/fazora-linux-x86_64/fazora
+          cp README.md dist/fazora-linux-x86_64/
+          cp LICENSE dist/fazora-linux-x86_64/ 2>/dev/null || true
+          tar -czf dist/FAZORA-linux-x86_64.tar.gz -C dist fazora-linux-x86_64
+          sha256sum dist/FAZORA-linux-x86_64.tar.gz > dist/FAZORA-linux-x86_64.tar.gz.sha256
+      - name: Upload release files
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: fazora-linux-x86_64
-          path: |
-            fazora-linux-x86_64.tar.gz
-            fazora-linux-x86_64.tar.gz.sha256
+          name: release-linux
+          path: dist/FAZORA-linux-x86_64.tar.gz*
 
   build-windows:
-    name: Build Windows x86_64
-    runs-on: windows-latest
+    name: Windows x86_64
+    runs-on: windows-2022
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Cache Cargo registry
-        uses: actions/cache@v4
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
         with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-windows-x86_64-cargo-${{ hashFiles('**/Cargo.lock') }}
-
-      - name: Build release
-        run: cargo build --release
-
-      - name: Create portable ZIP package
+          persist-credentials: false
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec
+        with:
+          targets: x86_64-pc-windows-msvc
+      - name: Build
+        run: cargo build --release --target x86_64-pc-windows-msvc
+      - name: Package and checksum
+        shell: pwsh
         run: |
-          mkdir -p fazora-windows-x86_64
-          cp target/release/fazora.exe fazora-windows-x86_64/
-          cp README.md fazora-windows-x86_64/
-          cp LICENSE fazora-windows-x86_64/ 2>$null || true
-          Compress-Archive -Path fazora-windows-x86_64/* -DestinationPath fazora-windows-x86_64.zip
-
-      - name: Generate SHA-256 checksum
-        run: Get-FileHash -Algorithm SHA256 fazora-windows-x86_64.zip | Format-List -Property Hash | ForEach-Object { $_.Hash } | Out-File -FilePath fazora-windows-x86_64.zip.sha256 -Encoding ascii
-
-      - name: Upload Windows artifact
-        uses: actions/upload-artifact@v4
+          New-Item -ItemType Directory -Force -Path dist/fazora-windows-x86_64 | Out-Null
+          Copy-Item target/x86_64-pc-windows-msvc/release/fazora.exe dist/fazora-windows-x86_64/
+          Copy-Item README.md dist/fazora-windows-x86_64/
+          if (Test-Path LICENSE) { Copy-Item LICENSE dist/fazora-windows-x86_64/ }
+          Compress-Archive -Path dist/fazora-windows-x86_64/* -DestinationPath dist/FAZORA-windows-x86_64.zip
+          (Get-FileHash -Algorithm SHA256 dist/FAZORA-windows-x86_64.zip).Hash.ToLower() | Out-File -Encoding ascii dist/FAZORA-windows-x86_64.zip.sha256
+      - name: Upload release files
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: fazora-windows-x86_64
+          name: release-windows
           path: |
-            fazora-windows-x86_64.zip
-            fazora-windows-x86_64.zip.sha256
+            dist/FAZORA-windows-x86_64.zip
+            dist/FAZORA-windows-x86_64.zip.sha256
 
   build-android:
-    name: Build Android arm64-v8a
-    runs-on: ubuntu-latest
+    name: Android APK (${{ matrix.abi }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - abi: arm64-v8a
+            rust_target: aarch64-linux-android
+          - abi: x86_64
+            rust_target: x86_64-linux-android
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install Android SDK/NDK and Java
-        uses: nttld/setup-ndk@v1
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
         with:
-          ndk-version: r26b
-          api-level: 24
-
-      - name: Set up JDK
-        uses: actions/setup-java@v4
+          persist-credentials: false
+      - name: Install Android SDK
+        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407
+        with:
+          packages: platform-tools
+      - name: Install Android platform and build tools
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0" "platform-tools"
+      - name: Install Android NDK
+        id: setup-ndk
+        uses: nttld/setup-ndk@afb4c9964b521afb97c864b7d40b11e6911bd410
+        with:
+          ndk-version: r28c
+          link-to-sdk: true
+      - name: Export NDK environment
+        env:
+          NDK_PATH: ${{ steps.setup-ndk.outputs.ndk-path }}
+        run: |
+          echo "ANDROID_NDK_HOME=$NDK_PATH" >> "$GITHUB_ENV"
+          echo "NDK_HOME=$NDK_PATH" >> "$GITHUB_ENV"
+      - name: Set up JDK 17
+        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00
         with:
           distribution: temurin
-          java-version: 17
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+          java-version: "17"
+      - name: Install Rust target
+        uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec
         with:
-          targets: aarch64-linux-android
-
-      - name: Add Android target
-        run: rustup target add aarch64-linux-android
-
-      - name: Cache Cargo registry
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-android-arm64-v8a-cargo-${{ hashFiles('**/Cargo.lock') }}
-
-      - name: Build Android release
-        run: cargo build --release --target aarch64-linux-android
-
-      - name: Package native library
+          targets: ${{ matrix.rust_target }}
+      - name: Install pinned Dioxus CLI
         run: |
-          echo "Android APK packaging requires Dioxus mobile toolchain configuration."
-          echo "Native library built at: target/aarch64-linux-android/release/libfazora.so"
-          mkdir -p fazora-android-arm64-v8a
-          cp target/aarch64-linux-android/release/libfazora.so fazora-android-arm64-v8a/ 2>/dev/null || true
-          cp README.md fazora-android-arm64-v8a/
-
-      - name: Upload Android artifact
-        uses: actions/upload-artifact@v4
+          DX_ARCHIVE="$RUNNER_TEMP/dx.tar.gz"
+          curl --fail --location --retry 3 "https://github.com/DioxusLabs/dioxus/releases/download/v0.7.10/dx-x86_64-unknown-linux-gnu.tar.gz" --output "$DX_ARCHIVE"
+          echo "4363e4ed2a3f1eb7f4d38d2d59aed59ce43271c44c16b425e92c89a64761fbe7  $DX_ARCHIVE" | sha256sum --check
+          mkdir -p "$RUNNER_TEMP/dx"
+          tar -xzf "$DX_ARCHIVE" -C "$RUNNER_TEMP/dx"
+          DX_BIN="$(find "$RUNNER_TEMP/dx" -type f -name dx -perm -u+x -print -quit)"
+          test -n "$DX_BIN"
+          sudo install -m 0755 "$DX_BIN" /usr/local/bin/dx
+          dx --version
+      - name: Bundle APK
+        run: |
+          dx bundle --android --release --package-types apk --target ${{ matrix.rust_target }} --verbose
+          APK_PATH="$(find target -type f -name '*.apk' -print -quit)"
+          test -n "$APK_PATH"
+          mkdir -p dist
+          cp "$APK_PATH" "dist/FAZORA-Android-${{ matrix.abi }}-unsigned.apk"
+      - name: Sign and verify APK
+        run: |
+          keytool -genkeypair -v -keystore "$RUNNER_TEMP/fazora-ci.keystore" -storepass android -keypass android -alias fazora-ci -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=FAZORA CI,O=FAZORA,C=US"
+          APKSIGNER="$ANDROID_HOME/build-tools/35.0.0/apksigner"
+          test -x "$APKSIGNER"
+          "$APKSIGNER" sign --ks "$RUNNER_TEMP/fazora-ci.keystore" --ks-key-alias fazora-ci --ks-pass pass:android --key-pass pass:android --out "dist/FAZORA-Android-${{ matrix.abi }}.apk" "dist/FAZORA-Android-${{ matrix.abi }}-unsigned.apk"
+          "$APKSIGNER" verify --verbose "dist/FAZORA-Android-${{ matrix.abi }}.apk"
+          sha256sum "dist/FAZORA-Android-${{ matrix.abi }}.apk" > "dist/FAZORA-Android-${{ matrix.abi }}.apk.sha256"
+      - name: Upload release files
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: fazora-android-arm64-v8a
-          path: fazora-android-arm64-v8a/
+          name: release-android-${{ matrix.abi }}
+          path: |
+            dist/FAZORA-Android-${{ matrix.abi }}.apk
+            dist/FAZORA-Android-${{ matrix.abi }}.apk.sha256
 
-  release:
-    name: Create GitHub Release
-    runs-on: ubuntu-latest
-    needs: [build-linux, build-windows, build-android]
+  build-ios:
+    name: iOS arm64 app bundle (unsigned)
+    runs-on: macos-15
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        with:
+          persist-credentials: false
+      - name: Install Rust target
+        uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec
+        with:
+          targets: aarch64-apple-ios
+      - name: Install pinned Dioxus CLI
+        run: cargo install dioxus-cli --version 0.7.10 --locked
+      - name: Verify Apple toolchain
+        run: |
+          xcodebuild -version
+          xcrun --sdk iphoneos --show-sdk-version
+          rustc --version
+          dx --version
+      - name: Bundle iOS app
+        run: |
+          dx bundle --ios --release --package-types ios --target aarch64-apple-ios --verbose
+          APP_PATH="$(find target -type d -name '*.app' -print -quit)"
+          test -n "$APP_PATH" || { echo "No iOS .app bundle was produced"; exit 1; }
+          mkdir -p dist
+          ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" dist/FAZORA-iOS-arm64-unsigned.app.zip
+          shasum -a 256 dist/FAZORA-iOS-arm64-unsigned.app.zip > dist/FAZORA-iOS-arm64-unsigned.app.zip.sha256
+      - name: Upload release files
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: release-ios
+          path: |
+            dist/FAZORA-iOS-arm64-unsigned.app.zip
+            dist/FAZORA-iOS-arm64-unsigned.app.zip.sha256
 
-      - name: Read version from tag
-        id: version
-        run: echo "tag=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+  publish:
+    name: Publish GitHub Release
+    needs: [build-linux, build-windows, build-android, build-ios]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Download all platform packages
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: release-*
+          path: release-assets
+          merge-multiple: true
+      - name: Write release notes
+        run: |
+          cat > release-notes.md <<'EOF'
+          ## FAZORA Media — Cross-platform build
+
+          ### Downloads
+          - **Windows x86_64:** ZIP package
+          - **Linux x86_64:** TAR.GZ package (requires compatible WebKitGTK/GTK system libraries)
+          - **Android ARM64:** APK for most modern Android phones
+          - **Android x86_64:** APK for x86_64 emulators/devices
+          - **iOS ARM64:** unsigned .app bundle ZIP. This is not directly installable; Apple signing and provisioning are required before installing on a physical iPhone or publishing to the App Store.
+
+          SHA-256 checksum files are included for every package.
+
+          > Android CI APKs are signed with an ephemeral CI key. Uninstall an older CI-signed build before installing a later one. Production signing should use a persistent private key stored in GitHub Actions secrets.
+          EOF
+      - name: Publish release and attach binaries
         env:
-          GITHUB_REF_NAME: ${{ github.ref_name }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" release-assets/* \
+            --title "FAZORA ${GITHUB_REF_NAME}" \
+            --notes-file release-notes.md
 
-      - name: Download all build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-
-      - name: List artifacts
-        run: find artifacts -type f | sort
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ steps.version.outputs.tag }}
-          name: FAZORA Media ${{ steps.version.outputs.tag }}
-          draft: false
-          prerelease: false
-          generate_release_notes: true
-          files: |
-            artifacts/**/*

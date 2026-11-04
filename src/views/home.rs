@@ -4,7 +4,6 @@
 
 use crate::models::Playlist;
 use crate::state::AppState;
-use crate::components::media::AlbumCard;
 use dioxus::prelude::*;
 
 #[component]
@@ -167,16 +166,17 @@ fn StatCard(label: &'static str, value: String, icon: &'static str) -> Element {
 
 #[component]
 fn RecentlyPlayed(library: crate::models::Library) -> Element {
-    library_section("Continue listening", &library.tracks)
+    let _ = library;
+    library_section("Continue listening")
 }
 
 #[component]
 fn RecentlyAdded(library: crate::models::Library) -> Element {
-    library_section("Recently added", &library.tracks)
+    let _ = library;
+    library_section("Recently added")
 }
 
-#[component]
-fn library_section(title: &'static str, _tracks: &[crate::models::Track]) -> Element {
+fn library_section(title: &'static str) -> Element {
     rsx! {
         div {
             class: "fz-section-header",

@@ -1,0 +1,62 @@
+# FAZORA dependency policy.
+# Vulnerability and unsound advisories remain errors.
+[advisories]
+unmaintained = "workspace"
+unsound = "all"
+ignore = [
+  { id = "RUSTSEC-2024-0429", reason = "glib 0.18 is transitively required by Dioxus Desktop's GTK3/WebKitGTK 0.18 stack; glib 0.20 is not compatible with this gtk-rs stack. FAZORA does not call VariantStrIter. Revisit when Dioxus Desktop upgrades to a compatible patched GTK stack." },
+  { id = "RUSTSEC-2026-0097", reason = "rand 0.7.3 is build-time transitive through kuchikiki/selectors/phf_codegen. The advisory requires a custom logger to call rand thread_rng during reseeding; FAZORA does not implement such a logger or use rand directly. Revisit after upstream dependency removal/update." },
+]
+
+[licenses]
+allow = [
+  "0BSD",
+  "Apache-2.0",
+  "Apache-2.0 WITH LLVM-exception",
+  "BSD-2-Clause",
+  "BSD-3-Clause",
+  "CC0-1.0",
+  "ISC",
+  "MIT",
+  "MIT-0",
+  "NCSA",
+  "Unicode-3.0",
+  "Unlicense",
+  "Zlib",
+]
+
+# MPL-2.0 is allowed only for these exact transitive packages/versions.
+# Keep their upstream notices and source/license texts available in distributions.
+[[licenses.exceptions]]
+name = "cssparser"
+version = "0.29.6"
+allow = ["MPL-2.0"]
+
+[[licenses.exceptions]]
+name = "cssparser-macros"
+version = "0.6.1"
+allow = ["MPL-2.0"]
+
+[[licenses.exceptions]]
+name = "dtoa-short"
+version = "0.3.5"
+allow = ["MPL-2.0"]
+
+[[licenses.exceptions]]
+name = "option-ext"
+version = "0.2.0"
+allow = ["MPL-2.0"]
+
+[[licenses.exceptions]]
+name = "selectors"
+version = "0.24.0"
+allow = ["MPL-2.0"]
+
+[bans]
+multiple-versions = "warn"
+wildcards = "deny"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]

@@ -2,34 +2,39 @@
 //! Interactions: open album, play album, shuffle, add to queue/playlist,
 //! context menu.
 
+use crate::components::primitives::Button;
 use crate::models::Album;
 use crate::routing::Route;
-use crate::state::AppState;
 use dioxus::prelude::*;
 
 #[derive(Props, Clone, PartialEq)]
 pub struct AlbumCardProps {
     album: Album,
-    on_play: Option<EventHandler<Album>>,
-    on_shuffle: Option<EventHandler<Album>>,
-    on_add_queue: Option<EventHandler<Album>>,
+    #[props(default)]
+    on_play: EventHandler<Album>,
+    #[props(default)]
+    on_shuffle: EventHandler<Album>,
+    #[props(default)]
+    on_add_queue: EventHandler<Album>,
 }
 
 #[component]
 pub fn AlbumCard(props: AlbumCardProps) -> Element {
-    let state = use_context::<Signal<AppState>>();
     let navigator = use_navigator();
-
-    let open_album = move |_| {
-        navigator.push(Route::Album {
-            id: props.album.id.clone(),
-        });
+    let click_target = Route::Album {
+        id: props.album.id.clone(),
     };
-
-    let play_album = move |_| {
-        if let Some(h) = props.on_play.as_ref() {
-            h.call(props.album.clone());
-        }
+    let keyboard_target = click_target.clone();
+    let click_navigator = navigator.clone();
+    let keyboard_navigator = navigator;
+    let on_play = props.on_play;
+    let album_to_play = props.album.clone();
+    let play_album = move |event: MouseEvent| {
+        event.stop_propagation();
+        on_play.call(album_to_play.clone());
+    };
+    let open_album = move |_| {
+        click_navigator.push(click_target.clone());
     };
 
     rsx! {
@@ -41,7 +46,7 @@ pub fn AlbumCard(props: AlbumCardProps) -> Element {
             onclick: open_album,
             onkeydown: move |evt: KeyboardEvent| {
                 if matches!(evt.key(), Key::Enter) {
-                    open_album(());
+                    keyboard_navigator.push(keyboard_target.clone());
                 }
             },
             div {
@@ -83,8 +88,8 @@ pub fn AlbumCard(props: AlbumCardProps) -> Element {
                     style: "display: flex; justify-content: space-between; margin-top: var(--space-2); font-size: var(--text-xs); color: var(--text-muted);",
                     span {
                         match props.album.year {
-                            Some(y) => "{y}",
-                            None => "".to_string(),
+                            Some(y) => y.to_string(),
+                            None => String::new(),
                         }
                     }
                     span {
@@ -100,12 +105,7 @@ pub fn AlbumCard(props: AlbumCardProps) -> Element {
 }
 
 #[component]
-fn Artwork(
-    src: Option<String>,
-    width: u32,
-    height: u32,
-    alt: String,
-) -> Element {
+fn Artwork(src: Option<String>, width: u32, height: u32, alt: String) -> Element {
     rsx! {
         div {
             style: "width: 100%; height: 100%; background: var(--surface-tertiary); border: 1px solid var(--border); border-radius: var(--radius-medium); overflow: hidden; position: relative;",

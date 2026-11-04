@@ -27,7 +27,6 @@ pub fn FazoraLogo(props: FazoraLogoProps) -> Element {
             view_box: "0 0 64 64",
             fill: "none",
             xmlns: "http://www.w3.org/2000/svg",
-            aria_label: "FAZORA",
             path {
                 d: "M20 4v14h8v8H20v14H8V4h12z",
                 stroke: "var(--fazora-gold)",

@@ -21,9 +21,9 @@ fn library_initial_state() {
     let library = with_service();
 
     assert_eq!(library.track_count(), 0);
-    assert_eq!(library.scan_status.read(), &ScanStatus::Idle);
+    assert_eq!(&*library.scan_status.read(), &ScanStatus::Idle);
     assert!(library.media_dirs.read().is_empty());
-    assert!(!library.indexed.get());
+    assert!(!*library.indexed.read());
     assert!(library.library.read().tracks.is_empty());
 }
 
@@ -31,8 +31,11 @@ fn library_initial_state() {
 fn library_add_remove_media_dir() {
     let library = with_service();
 
-    let dir1 = PathBuf::from("/music");
-    let dir2 = PathBuf::from("/video");
+    let root = tempfile::tempdir().expect("create temporary media root");
+    let dir1 = root.path().join("music");
+    let dir2 = root.path().join("video");
+    std::fs::create_dir(&dir1).expect("create music test directory");
+    std::fs::create_dir(&dir2).expect("create video test directory");
 
     library.add_media_dir(dir1.clone());
     library.add_media_dir(dir2.clone());
@@ -53,9 +56,9 @@ fn library_add_remove_media_dir() {
 fn library_request_scan_sets_scanning() {
     let library = with_service();
 
-    assert_eq!(library.scan_status.read(), &ScanStatus::Idle);
+    assert_eq!(&*library.scan_status.read(), &ScanStatus::Idle);
     library.request_scan();
-    assert_eq!(library.scan_status.read(), &ScanStatus::Scanning);
+    assert_eq!(&*library.scan_status.read(), &ScanStatus::Scanning);
 }
 
 #[test]
@@ -138,8 +141,8 @@ fn library_set_library_updates_stats_and_status() {
     assert_eq!(library_service.stats.read().artist_count, 1);
     assert_eq!(library_service.stats.read().video_count, 1);
     assert_eq!(library_service.stats.read().total_duration_sec, 180 + 120);
-    assert!(library_service.indexed.get());
-    assert_eq!(library_service.scan_status.read(), &ScanStatus::Finished);
+    assert!(*library_service.indexed.read());
+    assert_eq!(&*library_service.scan_status.read(), &ScanStatus::Finished);
 }
 
 #[test]
@@ -149,7 +152,7 @@ fn library_set_scan_error() {
     library.set_scan_error("Permission denied".to_string());
 
     assert_eq!(
-        library.scan_status.read(),
+        &*library.scan_status.read(),
         &ScanStatus::Error {
             message: "Permission denied".to_string()
         }

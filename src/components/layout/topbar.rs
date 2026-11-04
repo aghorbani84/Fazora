@@ -1,4 +1,4 @@
-//! Application header: brand, search, device, settings.
+//! Application header: brand, search, queue and settings.
 
 use crate::components::branding::FazoraLogo;
 use crate::components::primitives::{Button, IconButton, Input};
@@ -14,14 +14,20 @@ pub struct TopbarProps {
 #[component]
 pub fn Topbar(props: TopbarProps) -> Element {
     let navigator = use_navigator();
-
-    let go_home = move |_| navigator.push(Route::Home {});
-    let go_search = move |_| navigator.push(Route::Search {});
-    let go_settings = move |_| navigator.push(Route::Settings {});
+    let search_navigator = navigator.clone();
+    let settings_navigator = navigator.clone();
+    let mut query = use_signal(String::new);
+    let toggle_sidebar = props.on_toggle_sidebar;
+    let open_queue = props.on_open_queue;
 
     rsx! {
         header {
             class: "fz-topbar",
+            IconButton {
+                title: "Toggle navigation",
+                onclick: move |event| toggle_sidebar.call(event),
+                svg { class: "fz-icon", width: 20, height: 20, use { href: "#icon-menu" } }
+            }
             FazoraLogo { size: 20, compact: false }
             div {
                 class: "fz-topbar-spacer",
@@ -29,7 +35,16 @@ pub fn Topbar(props: TopbarProps) -> Element {
                 Input {
                     placeholder: "Search artists, albums, tracks…",
                     aria_label: "Global search",
-                    oninput: Some(move |_| go_search(())),
+                    value: query.cloned(),
+                    oninput: move |event: FormEvent| {
+                        let mut signal = query;
+                        signal.set(event.value());
+                    },
+                    onkeydown: move |event: KeyboardEvent| {
+                        if matches!(event.key(), Key::Enter) && !query.cloned().trim().is_empty() {
+                            search_navigator.push(Route::SearchResults { query: query.cloned() });
+                        }
+                    },
                 }
             }
             div {
@@ -38,17 +53,14 @@ pub fn Topbar(props: TopbarProps) -> Element {
                 IconButton {
                     title: "Queue",
                     class: "fz-topbar-icon",
-                    onclick: move |evt| props.on_open_queue.call(evt),
-                    span {
-                        class: "fz-icon",
-                        width: 18,
-                        height: 18,
-                        use { href: "#icon-queue" }
-                    }
+                    onclick: move |event| open_queue.call(event),
+                    svg { class: "fz-icon", width: 18, height: 18, use { href: "#icon-queue" } }
                 }
                 Button {
                     variant: crate::components::primitives::ButtonVariant::Ghost,
-                    onclick: go_settings,
+                    onclick: move |_| {
+                        settings_navigator.push(Route::Settings {});
+                    },
                     label: "Settings",
                 }
             }

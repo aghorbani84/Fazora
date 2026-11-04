@@ -7,12 +7,7 @@
 use crate::audio::{AudioDevice, AudioService, DeviceKind, EqBand, EqPreset};
 use dioxus::prelude::*;
 
-service_harness!(
-    AudioHarness,
-    AUDIO_SLOT,
-    AudioService,
-    AudioService::init
-);
+service_harness!(AudioHarness, AUDIO_SLOT, AudioService, AudioService::init);
 
 #[test]
 fn audio_initial_state() {
@@ -43,9 +38,8 @@ fn audio_set_band_gain() {
     // Preset changes to Custom when a band is modified
     assert_eq!(audio.state.read().preset, EqPreset::Custom);
 
-    let band = audio
-        .state
-        .read()
+    let state = audio.state.read();
+    let band = state
         .bands
         .iter()
         .find(|b| b.frequency_hz == 64.0) // closest to 60.0
@@ -58,19 +52,18 @@ fn audio_set_band_gain_clamps() {
     let audio = with_service();
 
     audio.set_band_gain(1000.0, 20.0); // above max
-    let band = audio
-        .state
-        .read()
+    let state = audio.state.read();
+    let band = state
         .bands
         .iter()
         .find(|b| b.frequency_hz == 1000.0)
         .unwrap();
     assert_eq!(band.gain_db, 12.0); // clamped to max
+    drop(state);
 
     audio.set_band_gain(1000.0, -20.0); // below min
-    let band = audio
-        .state
-        .read()
+    let state = audio.state.read();
+    let band = state
         .bands
         .iter()
         .find(|b| b.frequency_hz == 1000.0)

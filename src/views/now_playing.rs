@@ -1,12 +1,11 @@
 //! Expanded Now Playing — full-window experience with artwork as the main
 //! visual focus, waveform seekbar, queue and lyrics panels.
 
+use crate::components::audio::lyrics_view::LyricsView;
 use crate::components::media::Artwork;
 use crate::components::player::playback_controls::PlaybackControls;
-use crate::components::player::volume_control::VolumeControl;
 use crate::components::player::timeline::Timeline;
-use crate::components::audio::lyrics_view::LyricsView;
-use crate::models::Track;
+use crate::components::player::volume_control::VolumeControl;
 use crate::state::AppState;
 use dioxus::prelude::*;
 
@@ -17,10 +16,10 @@ pub fn NowPlaying() -> Element {
     let queue = state.read().queue.clone();
 
     let track = playback.state.read().current_track().cloned();
-    let is_playing = playback.state.read().is_playing();
 
-    let show_queue = use_signal(|| false);
-    let show_lyrics = use_signal(|| false);
+    let mut show_queue = use_signal(|| false);
+    let mut show_lyrics = use_signal(|| false);
+    let seek_service = playback.clone();
 
     rsx! {
         div {
@@ -36,15 +35,19 @@ pub fn NowPlaying() -> Element {
                 div {
                     style: "display: flex; gap: var(--space-2);",
                     crate::components::primitives::IconButton {
-                        active: show_queue.get(),
+                        active: show_queue.cloned(),
                         title: "Queue",
-                        onclick: move |_| show_queue.set(!show_queue.get()),
+                        onclick: move |_| { let mut signal = show_queue; let next = !*signal.read(); signal.set(next); },
                         svg { class: "fz-icon", width: 18, height: 18, use { href: "#icon-queue" } }
                     }
                     crate::components::primitives::IconButton {
-                        active: show_lyrics.get(),
+                        active: show_lyrics.cloned(),
                         title: "Lyrics",
-                        onclick: move |_| show_lyrics.set(!show_lyrics.get()),
+                        onclick: move |_| {
+                            let mut signal = show_lyrics;
+                            let next = !*signal.read();
+                            signal.set(next);
+                        },
                         svg { class: "fz-icon", width: 18, height: 18, use { href: "#icon-lyrics" } }
                     }
                 }
@@ -83,7 +86,7 @@ pub fn NowPlaying() -> Element {
                         }
                         p {
                             style: "font-size: var(--text-sm); color: var(--text-muted); margin-top: var(--space-2); font-family: var(--font-mono);",
-                            "{t.album.as_deref().unwrap_or("")} · {t.year.map(|y| y.to_string()).unwrap_or_else(|| "—".to_string())}"
+                            {format!("{} · {}", t.album.as_deref().unwrap_or(""), t.year.map(|y| y.to_string()).unwrap_or_else(|| "—".to_string()))}
                         }
                     } else {
                         div {
@@ -97,17 +100,17 @@ pub fn NowPlaying() -> Element {
                 div {
                     class: "fz-progress-panel",
                     width: "100%",
-                    max_width: 700px,
+                    max_width: "700px",
                     Timeline {
-                        position: playback.position_sec.get(),
-                        duration: playback.duration_sec.get(),
-                        on_seek: move |sec| playback.seek(sec),
+                        position: playback.position_sec.cloned(),
+                        duration: playback.duration_sec.cloned(),
+                        on_seek: move |sec| seek_service.seek(sec),
                     }
                 }
                 div {
                     class: "fz-controls-panel",
                     width: "100%",
-                    max_width: 700px,
+                    max_width: "700px",
                     PlaybackControls {
                         service: playback.clone(),
                         queue: queue.clone(),
@@ -116,7 +119,7 @@ pub fn NowPlaying() -> Element {
                 div {
                     class: "fz-volume-panel",
                     width: "100%",
-                    max_width: 320px,
+                    max_width: "320px",
                     VolumeControl { service: playback.clone() }
                 }
             }
@@ -144,13 +147,13 @@ pub fn NowPlaying() -> Element {
                 }
             }
             // Lyrics panel (overlay slot)
-            if show_lyrics.get() {
+            if show_lyrics.cloned() {
                 div {
                     class: "fz-lyrics-panel",
                     style: "position: fixed; inset: 0; background: var(--fazora-obsidian); z-index: 60; display: flex; flex-direction: column;",
                     LyricsView {
                         track: track.clone(),
-                        position_sec: playback.position_sec.get(),
+                        position_sec: playback.position_sec.cloned(),
                         follow: true,
                         on_sync_adjust: None,
                     }

@@ -24,7 +24,7 @@ pub struct EqBand {
     pub q: f32,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 pub struct AudioState {
     pub preset: EqPreset,
     pub preamp_db: f32,
@@ -36,7 +36,7 @@ pub struct AudioState {
     pub gapless: bool,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct AudioDevice {
     pub id: String,
     pub name: String,
@@ -63,7 +63,7 @@ const DEFAULT_BANDS: [(f32, f32, f32); 10] = [
     (16000.0, 0.0, 1.0),
 ];
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct AudioService {
     pub state: Signal<AudioState>,
 }
@@ -92,45 +92,52 @@ impl AudioService {
     }
 
     pub fn set_band_gain(&self, frequency_hz: f32, gain_db: f32) {
-        let mut s = self.state.write();
-        if let Some(band) = s
-            .bands
-            .iter_mut()
-            .find(|b| (b.frequency_hz - frequency_hz).abs() < f32::EPSILON)
-        {
-            band.gain_db = gain_db.clamp(-12.0, 12.0);
+        let mut state = self.state;
+        let mut current = state.write();
+        let mut matched = false;
+        if let Some(band) = current.bands.iter_mut().min_by(|left, right| {
+            (left.frequency_hz - frequency_hz)
+                .abs()
+                .total_cmp(&(right.frequency_hz - frequency_hz).abs())
+        }) {
+            let tolerance_hz = frequency_hz.abs().max(1.0) * 0.1;
+            if (band.frequency_hz - frequency_hz).abs() <= tolerance_hz {
+                band.gain_db = gain_db.clamp(-12.0, 12.0);
+                matched = true;
+            }
         }
-        s.preset = EqPreset::Custom;
+        if matched {
+            current.preset = EqPreset::Custom;
+        }
     }
 
     pub fn set_preamp(&self, db: f32) {
-        let mut s = self.state.write();
-        s.preamp_db = db.clamp(-12.0, 12.0);
+        let mut state = self.state;
+        state.write().preamp_db = db.clamp(-12.0, 12.0);
     }
 
     pub fn set_preset(&self, preset: EqPreset) {
-        let mut s = self.state.write();
-        s.preset = preset;
+        let mut state = self.state;
+        let mut current = state.write();
+        current.preset = preset;
         if preset == EqPreset::Flat {
-            for band in &mut s.bands {
+            for band in &mut current.bands {
                 band.gain_db = 0.0;
             }
         }
     }
 
     pub fn set_enabled(&self, enabled: bool) {
-        let mut s = self.state.write();
-        s.enabled = enabled;
+        let mut state = self.state;
+        state.write().enabled = enabled;
     }
 
     pub fn set_output_device(&self, device_id: &str) {
-        let mut s = self.state.write();
-        s.output_device = Some(device_id.to_string());
+        let mut state = self.state;
+        state.write().output_device = Some(device_id.to_string());
     }
 
     pub fn save_preset(&self, _name: String) -> Playlist {
-        // EQ preset persistence is wired through SettingsService; return an
-        // empty placeholder playlist until that integration is implemented.
         Playlist {
             id: String::new(),
             title: String::new(),

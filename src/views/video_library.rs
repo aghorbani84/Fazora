@@ -11,15 +11,13 @@ pub fn VideoLibrary() -> Element {
     let library = state.read().library.clone();
     let videos = library.library.read().videos.clone();
 
-    let continue_watching: Vec<Video> = videos.iter()
+    let continue_watching: Vec<Video> = videos
+        .iter()
         .filter(|v| v.watched_position_sec.unwrap_or(0) > 0 && !v.watched)
         .cloned()
         .collect();
 
-    let favorites: Vec<Video> = videos.iter()
-        .filter(|v| v.favorite)
-        .cloned()
-        .collect();
+    let favorites: Vec<Video> = videos.iter().filter(|v| v.favorite).cloned().collect();
 
     rsx! {
         div {
