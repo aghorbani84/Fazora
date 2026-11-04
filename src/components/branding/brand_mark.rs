@@ -55,7 +55,6 @@ pub fn AppIcon(props: AppIconProps) -> Element {
             "stroke-linecap": "round",
             "stroke-linejoin": "round",
             "aria-hidden": "true",
-            focusable: "false",
             {
                 match name {
                     "menu" => rsx! { path { d: "M4 6h16M4 12h16M4 18h16" } },
