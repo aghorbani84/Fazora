@@ -173,7 +173,7 @@ jobs:
           dx --version
       - name: Bundle iOS app
         run: |
-          dx bundle --ios --release --package-types app --target aarch64-apple-ios --verbose
+          dx bundle --ios --release --package-types ios --target aarch64-apple-ios --verbose
           APP_PATH="$(find target -type d -name '*.app' -print -quit)"
           test -n "$APP_PATH" || { echo "No iOS .app bundle was produced"; exit 1; }
           mkdir -p dist
@@ -200,26 +200,27 @@ jobs:
           pattern: release-*
           path: release-assets
           merge-multiple: true
+      - name: Write release notes
+        run: |
+          cat > release-notes.md <<'EOF'
+          ## FAZORA Media — Cross-platform build
+
+          ### Downloads
+          - **Windows x86_64:** ZIP package
+          - **Linux x86_64:** TAR.GZ package (requires compatible WebKitGTK/GTK system libraries)
+          - **Android ARM64:** APK for most modern Android phones
+          - **Android x86_64:** APK for x86_64 emulators/devices
+          - **iOS ARM64:** unsigned .app bundle ZIP. This is not directly installable; Apple signing and provisioning are required before installing on a physical iPhone or publishing to the App Store.
+
+          SHA-256 checksum files are included for every package.
+
+          > Android CI APKs are signed with an ephemeral CI key. Uninstall an older CI-signed build before installing a later one. Production signing should use a persistent private key stored in GitHub Actions secrets.
+          EOF
       - name: Publish release and attach binaries
-        uses: softprops/action-gh-release@da05d552573ad5aba039eaac05058a918a7bf631
-        with:
-          name: FAZORA ${{ github.ref_name }}
-          tag_name: ${{ github.ref_name }}
-          draft: false
-          prerelease: false
-          generate_release_notes: true
-          body: |
-            ## FAZORA Media — Cross-platform build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" release-assets/* \
+            --title "FAZORA ${GITHUB_REF_NAME}" \
+            --notes-file release-notes.md
 
-            ### Downloads
-            - **Windows x86_64:** ZIP package
-            - **Linux x86_64:** TAR.GZ package (requires compatible WebKitGTK/GTK system libraries)
-            - **Android ARM64:** APK for most modern Android phones
-            - **Android x86_64:** APK for x86_64 emulators/devices
-            - **iOS ARM64:** unsigned .app bundle ZIP. This is not directly installable; Apple signing and provisioning are required before installing on a physical iPhone or publishing to the App Store.
-
-            SHA-256 checksum files are included for every package.
-
-            > Android CI APKs are signed with an ephemeral CI key. Uninstall an older CI-signed build before installing a later release. Production signing should use a persistent private key stored in GitHub Actions secrets.
-        files: release-assets/*
-        fail_on_unmatched_files: true
