@@ -37,7 +37,7 @@ jobs:
 
       - name: Bundle iOS app
         run: |
-          dx bundle --ios --release --package-types app --target aarch64-apple-ios --verbose
+          dx bundle --ios --release --package-types ios --target aarch64-apple-ios --verbose
           APP_PATH="$(find target -type d -name '*.app' -print -quit)"
           test -n "$APP_PATH" || { echo "No iOS .app bundle was produced"; exit 1; }
           mkdir -p dist
