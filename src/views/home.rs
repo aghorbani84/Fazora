@@ -12,6 +12,11 @@ pub fn Home() -> Element {
     let stats = library_service.stats.read().clone();
     let library = library_service.library.read().clone();
     let scan_status = library_service.scan_status.read().clone();
+    let mut recent_tracks = library.tracks.clone();
+    recent_tracks.retain(|track| track.last_played.is_some());
+    recent_tracks.sort_by(|a, b| b.last_played.cmp(&a.last_played));
+    let mut recently_added = library.tracks.clone();
+    recently_added.sort_by(|a, b| b.added_at.cmp(&a.added_at));
     let navigator = use_navigator();
     let empty_state_navigator = navigator.clone();
     let open_library = move |_| { navigator.push(Route::Library {}); };
@@ -63,16 +68,16 @@ pub fn Home() -> Element {
                     h3 { class: "fz-section-title", "Continue listening" }
                     span { class: "fz-section-meta", "RECENT" }
                 }
-                if library.tracks.is_empty() {
+                if recent_tracks.is_empty() {
                     EmptyLibraryState {
                         title: "Your next favorite starts here",
-                        description: "Scan your device or choose a media folder to build your personal library.",
+                        description: if library.tracks.is_empty() { "Scan your device or choose a media folder to build your personal library." } else { "Tracks you play will appear here, ready to pick up where you left off." },
                         action: "Explore library",
                         on_action: open_library_empty,
                     }
                 } else {
                     div { class: "fz-home-list",
-                        for track in library.tracks.iter().take(5) {
+                        for track in recent_tracks.iter().take(5) {
                             div { class: "fz-home-track", key: "{track.id}",
                                 div { class: "fz-home-track-art",
                                     svg { class: "fz-icon", width: 20, height: 20, use { href: "#icon-music" } }
@@ -93,14 +98,30 @@ pub fn Home() -> Element {
                     h3 { class: "fz-section-title", "Recently added" }
                     span { class: "fz-section-meta", "LIBRARY" }
                 }
-                if library.tracks.is_empty() && library.videos.is_empty() {
+                if recently_added.is_empty() && library.videos.is_empty() {
                     div { class: "fz-inline-empty",
                         svg { class: "fz-icon", width: 18, height: 18, use { href: "#icon-folder" } }
                         span { "New media will appear here after your first scan." }
                     }
                 } else {
-                    div { class: "fz-inline-empty",
-                        span { "{library.tracks.len() + library.videos.len()} media items in your library." }
+                    div { class: "fz-home-list",
+                        for track in recently_added.iter().take(4) {
+                            div { class: "fz-home-track", key: "added-{track.id}",
+                                div { class: "fz-home-track-art",
+                                    svg { class: "fz-icon", width: 20, height: 20, use { href: "#icon-music" } }
+                                }
+                                div { class: "fz-home-track-copy",
+                                    strong { "{track.title}" }
+                                    span { "{track.artist}" }
+                                }
+                            }
+                        }
+                        if !library.videos.is_empty() {
+                            div { class: "fz-inline-empty",
+                                svg { class: "fz-icon", width: 18, height: 18, use { href: "#icon-video" } }
+                                span { "{library.videos.len()} videos in your library." }
+                            }
+                        }
                     }
                 }
             }
