@@ -1,6 +1,6 @@
 //! Navigation sidebar — collapsible, with active destination indicator.
 
-use crate::components::branding::BrandMark;
+use crate::components::branding::{AppIcon, BrandMark};
 use crate::components::primitives::IconButton;
 use crate::routing::Route;
 use dioxus::prelude::*;
@@ -73,7 +73,7 @@ pub fn Sidebar(props: SidebarProps) -> Element {
 
     rsx! {
         nav {
-            class: if compact { "fz-sidebar collapsed" } else { "fz-sidebar" },
+            class: if compact { "fz-sidebar collapsed" } else { "fz-sidebar open" },
             aria_label: "Main navigation",
             div {
                 class: "fz-sidebar-brand",
@@ -138,7 +138,7 @@ fn NavLink(props: NavLinkProps) -> Element {
             },
             div {
                 class: "fz-nav-icon",
-                svg { class: "fz-icon", width: 20, height: 20, use { href: format!("#{}", props.icon) } }
+                AppIcon { name: props.icon.trim_start_matches("icon-"), size: 20 }
             }
             if !props.compact {
                 span { class: "fz-nav-label", "{props.label}" }
