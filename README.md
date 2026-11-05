@@ -189,7 +189,7 @@ See [TESTING.md](./TESTING.md) for details.
 
 ## License
 
-Proprietary — FAZORA Media. See [LICENSE](./LICENSE) for details.
+MIT. See [LICENSE](./LICENSE) for the full license text.
 
 ## Contributing
 
