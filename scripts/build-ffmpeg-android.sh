@@ -24,9 +24,17 @@ cd "$WORK"
 
 TARBALL="ffmpeg-$FFMPEG_VERSION.tar.xz"
 BASE=https://ffmpeg.org/releases
-curl --fail --location --retry 3 "$BASE/$TARBALL" -o "$TARBALL"
-curl --fail --location --retry 3 "$BASE/$TARBALL.asc" -o "$TARBALL.asc"
-curl --fail --location --retry 3 https://ffmpeg.org/ffmpeg-devel.asc -o ffmpeg-devel.asc
+download() {
+  local url="$1" output="$2"
+  curl --fail --show-error --location \
+    --connect-timeout 30 --max-time 600 \
+    --retry 8 --retry-all-errors --retry-delay 3 \
+    "$url" --output "$output"
+}
+
+download "$BASE/$TARBALL" "$TARBALL"
+download "$BASE/$TARBALL.asc" "$TARBALL.asc"
+download "https://ffmpeg.org/ffmpeg-devel.asc" "ffmpeg-devel.asc"
 
 gpg --batch --import ffmpeg-devel.asc
 ACTUAL="$(gpg --batch --with-colons --fingerprint "$FFMPEG_FINGERPRINT" | awk -F: '$1 == "fpr" {print $10; exit}')"
@@ -51,6 +59,7 @@ ARGS=(
   "--ranlib=$TOOLCHAIN/bin/llvm-ranlib" "--strip=$TOOLCHAIN/bin/llvm-strip"
   "--nm=$TOOLCHAIN/bin/llvm-nm"
   "--enable-shared" "--disable-static" "--enable-pic" "--enable-small"
+  "--disable-gpl" "--disable-version3" "--disable-nonfree"
   "--disable-autodetect" "--disable-programs" "--disable-doc" "--disable-debug"
   "--disable-network" "--disable-devices" "--disable-avdevice"
   "--disable-avfilter"
