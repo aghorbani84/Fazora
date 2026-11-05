@@ -49,3 +49,12 @@ Out of scope for this ADR: video, FFmpeg integration, DSP/equalizer processing, 
 - Native Kotlin/Gradle integration into the Dioxus-generated Android project must be prototyped before adding the dependency broadly.
 - Check transitive dependency licenses and package-size impact in CI.
 - Never treat a successful APK build as proof of audio output.
+
+
+## Native bridge implementation note
+
+[Fact] Dioxus 0.7.10 ships the `manganis::ffi` macro and documents Kotlin FFI. The official v0.7.10 geolocation-native-plugin example uses a Gradle library module under a source folder and an `extern "Kotlin"` block. FAZORA follows that documented shape with a small Media3 wrapper. Numeric command values cross JNI as strings and are parsed on the Kotlin side to avoid a reported numeric-argument code-generation defect in earlier Manganis 0.7.x releases.
+
+[Risk] A Dioxus issue reports Kotlin class lookup/classloader failures with `manganis::ffi` in 0.7.9 and 0.8.0-alpha.0. This is not proof that 0.7.10 fails, but it requires an actual Android launch test before treating the bridge as operational. The bridge is not marked ready merely because it compiles.
+
+[Fact] The first adapter implementation exposes initialization, content/file URI loading, play, pause, stop, seek, volume, state snapshot, and release. SAF selection, persistent URI permission handling, MediaSession/background service, and UI integration remain separate work.
