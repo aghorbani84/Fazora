@@ -96,7 +96,7 @@ pub fn Home() -> Element {
                     p { "FAZORA has not indexed any local media yet. Add a media folder from Library to begin." }
                     button {
                         class: "fz-button fz-button-primary fz-home-cta",
-                        onclick: move |_| navigator.push(Route::Library {}),
+                        onclick: move |_| { navigator.push(Route::Library {}); },
                         "Open Library"
                     }
                     if scan_is_active {
