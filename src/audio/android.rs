@@ -114,3 +114,68 @@ impl AndroidMediaEngine {
         self.command(releaseJson(&self.plugin))
     }
 }
+
+
+use std::cell::RefCell;
+
+thread_local! {
+    static ENGINE: RefCell<Option<AndroidMediaEngine>> = const { RefCell::new(None) };
+}
+
+/// Lazily create the native player. Called from an explicit user action so a
+/// JNI/class-loader failure cannot prevent the app shell from starting.
+pub fn initialize_global() -> Result<(), String> {
+    ENGINE.with(|slot| {
+        if slot.borrow().is_none() {
+            let engine = AndroidMediaEngine::new()?;
+            *slot.borrow_mut() = Some(engine);
+        }
+        Ok(())
+    })
+}
+
+fn with_engine<T>(operation: impl FnOnce(&AndroidMediaEngine) -> Result<T, String>) -> Result<T, String> {
+    ENGINE.with(|slot| {
+        let borrowed = slot.borrow();
+        let engine = borrowed
+            .as_ref()
+            .ok_or_else(|| "Android audio engine has not been initialized".to_string())?;
+        operation(engine)
+    })
+}
+
+pub fn open_audio_picker() -> Result<(), String> {
+    with_engine(AndroidMediaEngine::open_audio_picker)
+}
+
+pub fn take_picked_uri() -> Result<Option<String>, String> {
+    with_engine(AndroidMediaEngine::take_picked_uri)
+}
+
+pub fn set_media_uri(uri: &str) -> Result<(), String> {
+    with_engine(|engine| engine.set_media_uri(uri))
+}
+
+pub fn play() -> Result<(), String> {
+    with_engine(AndroidMediaEngine::play)
+}
+
+pub fn pause() -> Result<(), String> {
+    with_engine(AndroidMediaEngine::pause)
+}
+
+pub fn stop() -> Result<(), String> {
+    with_engine(AndroidMediaEngine::stop)
+}
+
+pub fn seek_to_ms(position_ms: u64) -> Result<(), String> {
+    with_engine(|engine| engine.seek_to_ms(position_ms))
+}
+
+pub fn set_volume(volume: f32) -> Result<(), String> {
+    with_engine(|engine| engine.set_volume(volume))
+}
+
+pub fn snapshot() -> Result<EngineSnapshot, String> {
+    with_engine(AndroidMediaEngine::snapshot)
+}
