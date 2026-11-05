@@ -42,7 +42,7 @@ pub fn Library() -> Element {
                     onclick: open_picker,
                 }
             }
-            if let PlaybackState::Error { message, .. } = playback_state {
+            if let PlaybackState::Error { ref message, .. } = playback_state {
                 div {
                     role: "alert",
                     style: "padding: var(--space-3); border: 1px solid var(--danger); border-radius: var(--radius-medium); color: var(--danger); margin-bottom: var(--space-4);",
