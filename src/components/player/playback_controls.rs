@@ -20,7 +20,7 @@ pub struct PlaybackControlsProps {
 pub fn PlaybackControls(props: PlaybackControlsProps) -> Element {
     let service = props.service.clone();
     let queue = props.queue.clone();
-    let is_playing = service.state.read().is_playing();
+    let is_playing = service.state.read().is_active();
     let engine_available = *service.engine_available.read();
     let shuffle_active = *queue.mode.read() == QueueMode::Shuffle;
     let repeat_mode = *service.repeat.read();
