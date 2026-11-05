@@ -25,7 +25,11 @@ pub fn Home() -> Element {
     let current_track = playback.current_track();
     let position = *playback.position_sec.read();
     let duration = *playback.duration_sec.read();
-    let progress_width = if duration > 0.0 { (position / duration * 100.0).clamp(0.0, 100.0) } else { 0.0 };
+    let progress_width = if duration > 0.0 {
+        (position / duration * 100.0).clamp(0.0, 100.0)
+    } else {
+        0.0
+    };
     let navigator = use_navigator();
 
     let mut recently_played: Vec<Track> = library
