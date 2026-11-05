@@ -200,6 +200,33 @@ class FazoraMediaPlugin(private val activity: Activity) {
         json.toString()
     }
 
+    /**
+     * Single JSON entry point used by the Rust bridge. Keeping one JNI method
+     * avoids repeated method lookups and allows class loading through the
+     * Activity's application ClassLoader on Android.
+     */
+    fun invokeJson(requestJson: String): String {
+        return try {
+            val request = JSONObject(requestJson)
+            val method = request.getString("method")
+            when (method) {
+                "initialize" -> initializeJson()
+                "openAudioPicker" -> openAudioPickerJson()
+                "takePickedUri" -> takePickedUriJson()
+                "setMediaUri" -> setMediaUriJson(request.getString("value"))
+                "play" -> playJson()
+                "pause" -> pauseJson()
+                "stop" -> stopJson()
+                "seekTo" -> seekToJson(request.getString("value"))
+                "setVolume" -> setVolumeJson(request.getString("value"))
+                "getState" -> getStateJson()
+                else -> response(false, "Unknown native command: $method")
+            }
+        } catch (error: Throwable) {
+            response(false, error.message ?: "Invalid native command")
+        }
+    }
+
     fun releaseJson(): String = onMainThread {
         try {
             player?.release()
