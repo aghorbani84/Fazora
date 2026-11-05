@@ -19,29 +19,13 @@ pub enum RepeatMode {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum PlaybackState {
     Idle,
-    Loading {
-        track: Track,
-    },
-    Playing {
-        track: Track,
-    },
-    Paused {
-        track: Track,
-    },
-    Buffering {
-        track: Track,
-    },
-    Seeking {
-        track: Track,
-        to_sec: f64,
-    },
-    Ended {
-        track: Track,
-    },
-    Error {
-        track: Option<Track>,
-        message: String,
-    },
+    Loading { track: Track },
+    Playing { track: Track },
+    Paused { track: Track },
+    Buffering { track: Track },
+    Seeking { track: Track, to_sec: f64 },
+    Ended { track: Track },
+    Error { track: Option<Track>, message: String },
 }
 
 impl PlaybackState {
@@ -76,6 +60,7 @@ pub struct PlaybackService {
     pub muted: Signal<bool>,
     pub repeat: Signal<RepeatMode>,
     pub shuffle: Signal<bool>,
+    /// True only after a platform playback adapter reports successful readiness.
     pub engine_available: Signal<bool>,
 }
 
@@ -89,8 +74,15 @@ impl PlaybackService {
             muted: use_signal(|| false),
             repeat: use_signal(|| RepeatMode::All),
             shuffle: use_signal(|| false),
-            engine_available: use_signal(|| true),
+            // No native decoder/output adapter is wired at initialization.
+            // The platform adapter must explicitly set this after it is ready.
+            engine_available: use_signal(|| false),
         }
+    }
+
+    pub fn set_engine_available(&self, available: bool) {
+        let mut signal = self.engine_available;
+        signal.set(available);
     }
 
     pub fn set_state(&self, value: PlaybackState) {
@@ -100,12 +92,12 @@ impl PlaybackService {
 
     pub fn set_position(&self, sec: f64) {
         let mut signal = self.position_sec;
-        signal.set(sec);
+        signal.set(sec.max(0.0));
     }
 
     pub fn set_duration(&self, sec: f64) {
         let mut signal = self.duration_sec;
-        signal.set(sec);
+        signal.set(sec.max(0.0));
     }
 
     pub fn load(&self, track: Track) {
@@ -113,6 +105,9 @@ impl PlaybackService {
     }
 
     pub fn play_toggle(&self) {
+        if !*self.engine_available.read() {
+            return;
+        }
         let current = self.state.read().clone();
         let next = match current {
             PlaybackState::Paused { track } | PlaybackState::Ended { track } => {
@@ -127,6 +122,9 @@ impl PlaybackService {
     }
 
     pub fn pause(&self) {
+        if !*self.engine_available.read() {
+            return;
+        }
         let current = self.state.read().clone();
         if let PlaybackState::Playing { track } = current {
             self.set_state(PlaybackState::Paused { track });
@@ -134,6 +132,9 @@ impl PlaybackService {
     }
 
     pub fn seek(&self, to_sec: f64) {
+        if !*self.engine_available.read() {
+            return;
+        }
         if let Some(track) = self.current_track() {
             self.set_state(PlaybackState::Seeking {
                 track,
@@ -157,6 +158,7 @@ impl PlaybackService {
 
     pub fn stop(&self) {
         self.set_state(PlaybackState::Idle);
+        self.set_position(0.0);
     }
 
     pub fn set_repeat(&self, mode: RepeatMode) {
