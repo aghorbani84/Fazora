@@ -19,13 +19,29 @@ pub enum RepeatMode {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum PlaybackState {
     Idle,
-    Loading { track: Track },
-    Playing { track: Track },
-    Paused { track: Track },
-    Buffering { track: Track },
-    Seeking { track: Track, to_sec: f64 },
-    Ended { track: Track },
-    Error { track: Option<Track>, message: String },
+    Loading {
+        track: Track,
+    },
+    Playing {
+        track: Track,
+    },
+    Paused {
+        track: Track,
+    },
+    Buffering {
+        track: Track,
+    },
+    Seeking {
+        track: Track,
+        to_sec: f64,
+    },
+    Ended {
+        track: Track,
+    },
+    Error {
+        track: Option<Track>,
+        message: String,
+    },
 }
 
 impl PlaybackState {
