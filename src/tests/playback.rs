@@ -54,7 +54,7 @@ fn playback_initial_state_is_idle() {
     assert!(!*playback.muted.read());
     assert_eq!(*playback.repeat.read(), RepeatMode::All);
     assert!(!*playback.shuffle.read());
-    assert!(*playback.engine_available.read());
+    assert!(!*playback.engine_available.read());
 }
 
 #[test]

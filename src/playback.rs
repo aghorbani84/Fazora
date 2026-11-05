@@ -89,7 +89,7 @@ impl PlaybackService {
             muted: use_signal(|| false),
             repeat: use_signal(|| RepeatMode::All),
             shuffle: use_signal(|| false),
-            engine_available: use_signal(|| true),
+            // False until the native decoder and platform output adapters initialize.\n            engine_available: use_signal(|| false),
         }
     }
 
