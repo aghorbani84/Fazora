@@ -166,7 +166,7 @@ impl PlaybackService {
 
     pub fn play_track(&self, track: Track) {
         self.load(track);
-        if matches!(*self.state.read(), PlaybackState::Loading { .. }) {
+        if matches!(&*self.state.read(), PlaybackState::Loading { .. }) {
             self.play_toggle();
         }
     }
