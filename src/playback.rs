@@ -59,10 +59,17 @@ impl PlaybackState {
     }
 
     pub fn is_playing(&self) -> bool {
-        matches!(self, PlaybackState::Playing { .. } | PlaybackState::Buffering { .. })
+        matches!(self, PlaybackState::Playing { .. })
     }
 
-    pub fn is_error(&self) -> bool {
+    pub fn is_active(&self) -> bool {
+        matches!(
+            self,
+            PlaybackState::Playing { .. } | PlaybackState::Buffering { .. }
+        )
+    }
+
+    pub fn is_error(&self) -> {
         matches!(self, PlaybackState::Error { .. })
     }
 }
@@ -182,7 +189,7 @@ impl PlaybackService {
                 return;
             };
 
-            if current.is_playing() {
+            if current.is_active() {
                 match crate::audio::android::pause() {
                     Ok(()) => self.set_state(PlaybackState::Paused { track }),
                     Err(message) => self.set_state(PlaybackState::Error {
@@ -198,6 +205,26 @@ impl PlaybackService {
                         message,
                     }),
                 }
+            }
+        }
+
+        #[cfg(all(not(target_os = "android"), test))]
+        {
+            if !*self.engine_available.read() {
+                return;
+            }
+            let current = self.state.read().clone();
+            let next = match current {
+                PlaybackState::Paused { track } | PlaybackState::Ended { track } => {
+                    Some(PlaybackState::Playing { track })
+                }
+                PlaybackState::Playing { track } | PlaybackState::Buffering { track } => {
+                    Some(PlaybackState::Paused { track })
+                }
+                _ => None,
+            };
+            if let Some(next) = next {
+                self.set_state(next);
             }
         }
     }
@@ -217,6 +244,17 @@ impl PlaybackService {
                         message,
                     }),
                 }
+            }
+        }
+
+        #[cfg(all(not(target_os = "android"), test))]
+        {
+            if !*self.engine_available.read() {
+                return;
+            }
+            let current = self.state.read().clone();
+            if let PlaybackState::Playing { track } = current {
+                self.set_state(PlaybackState::Paused { track });
             }
         }
     }
@@ -242,6 +280,19 @@ impl PlaybackService {
                         message,
                     }),
                 }
+            }
+        }
+
+        #[cfg(all(not(target_os = "android"), test))]
+        {
+            if !*self.engine_available.read() || !to_sec.is_finite() {
+                return;
+            }
+            if let Some(track) = self.current_track() {
+                self.set_state(PlaybackState::Seeking {
+                    track,
+                    to_sec: to_sec.max(0.0),
+                });
             }
         }
     }
