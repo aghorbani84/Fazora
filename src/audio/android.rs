@@ -42,14 +42,18 @@ impl NativeMediaPlugin {
             {
                 Ok(value) => value,
                 Err(error) => {
-                    return Some(Err(format!("Unable to get Android class loader: {error:?}")))
+                    return Some(Err(format!(
+                        "Unable to get Android class loader: {error:?}"
+                    )))
                 }
             };
 
             let class_name = match env.new_string("com.fazora.media.FazoraMediaPlugin") {
                 Ok(value) => value,
                 Err(error) => {
-                    return Some(Err(format!("Unable to allocate plugin class name: {error:?}")))
+                    return Some(Err(format!(
+                        "Unable to allocate plugin class name: {error:?}"
+                    )))
                 }
             };
 
@@ -194,7 +198,8 @@ impl AndroidMediaEngine {
     }
 
     pub fn seek_to_ms(&self, position_ms: u64) -> Result<(), String> {
-        self.invoke("seekTo", Some(&position_ms.to_string())).map(|_| ())
+        self.invoke("seekTo", Some(&position_ms.to_string()))
+            .map(|_| ())
     }
 
     pub fn set_volume(&self, volume: f32) -> Result<(), String> {
@@ -207,8 +212,7 @@ impl AndroidMediaEngine {
 
     pub fn snapshot(&self) -> Result<EngineSnapshot, String> {
         let response = self.invoke("getState", None)?;
-        serde_json::from_value(response)
-            .map_err(|error| format!("Invalid Media3 state: {error}"))
+        serde_json::from_value(response).map_err(|error| format!("Invalid Media3 state: {error}"))
     }
 }
 
