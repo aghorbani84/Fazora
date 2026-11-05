@@ -69,7 +69,7 @@ impl PlaybackState {
         )
     }
 
-    pub fn is_error(&self) -> {
+    pub fn is_error(&self) -> bool {
         matches!(self, PlaybackState::Error { .. })
     }
 }
