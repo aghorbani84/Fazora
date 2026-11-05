@@ -1,7 +1,6 @@
 //! Playback service — the bridge between UI state and the native engine.
 //!
-//! This struct is the UI-facing abstraction of playback. A real engine
-//! adapter (libVLC / libmpv / platform backend) drives these signals; the
+//! This struct is the UI-facing abstraction of playback. The native FFmpeg adapter and platform output drive these signals; the
 //! UI never touches native playback resources directly.
 
 use crate::models::Track;
@@ -93,6 +92,11 @@ impl PlaybackService {
         }
     }
 
+    pub fn set_engine_available(&self, available: bool) {
+        let mut signal = self.engine_available;
+        signal.set(available);
+    }
+
     pub fn set_state(&self, value: PlaybackState) {
         let mut signal = self.state;
         signal.set(value);
@@ -113,6 +117,9 @@ impl PlaybackService {
     }
 
     pub fn play_toggle(&self) {
+        if !*self.engine_available.read() {
+            return;
+        }
         let current = self.state.read().clone();
         let next = match current {
             PlaybackState::Paused { track } | PlaybackState::Ended { track } => {
@@ -127,6 +134,9 @@ impl PlaybackService {
     }
 
     pub fn pause(&self) {
+        if !*self.engine_available.read() {
+            return;
+        }
         let current = self.state.read().clone();
         if let PlaybackState::Playing { track } = current {
             self.set_state(PlaybackState::Paused { track });
@@ -134,6 +144,9 @@ impl PlaybackService {
     }
 
     pub fn seek(&self, to_sec: f64) {
+        if !*self.engine_available.read() {
+            return;
+        }
         if let Some(track) = self.current_track() {
             self.set_state(PlaybackState::Seeking {
                 track,
