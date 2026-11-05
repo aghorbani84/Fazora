@@ -25,6 +25,7 @@ pub fn Home() -> Element {
     let current_track = playback.current_track();
     let position = *playback.position_sec.read();
     let duration = *playback.duration_sec.read();
+    let progress_width = if duration > 0.0 { (position / duration * 100.0).clamp(0.0, 100.0) } else { 0.0 };
     let navigator = use_navigator();
 
     let mut recently_played: Vec<Track> = library
@@ -121,7 +122,7 @@ pub fn Home() -> Element {
                                 div { class: "fz-champagne-trace",
                                     div { class: "fz-champagne-trace-track" }
                                     div { class: "fz-champagne-trace-progress",
-                                        style: "width: {if duration > 0.0 { (position / duration * 100.0).clamp(0.0, 100.0) } else { 0.0 }}%;"
+                                        style: "width: {progress_width}%;"
                                     }
                                     span { class: "fz-champagne-trace-marker" }
                                 }
