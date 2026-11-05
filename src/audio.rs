@@ -1,5 +1,8 @@
 //! Audio service — equalizer, output devices and DSP configuration.
 
+#[cfg(target_os = "android")]
+pub mod android;
+
 use crate::models::Playlist;
 use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
