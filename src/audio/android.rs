@@ -82,7 +82,7 @@ impl NativeMediaPlugin {
                 }
             };
 
-            match env.new_global_ref(instance) {
+            match env.new_global_ref(&instance) {
                 Ok(global) => Some(Ok(Self { inner: global })),
                 Err(error) => Some(Err(format!("Unable to retain Media3 plugin: {error:?}"))),
             }
