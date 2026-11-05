@@ -17,8 +17,8 @@ Scoring is an engineering estimate, not a benchmark. Weights: correctness/safety
 |---|---:|---:|---:|---:|---:|---:|
 | AndroidX Media3 ExoPlayer + MediaSession | 9 | 9 | 9 | 8 | 7 | 8.55 |
 | Android platform MediaPlayer | 7 | 6 | 8 | 8 | 9 | 7.45 |
-| FFmpeg custom decoder/output pipeline | 8 | 5 | 8 | 5 | 3 | 6.15 |
-| Do nothing | 0 | 10 | 0 | 10 | 10 | 4.50 |
+| FFmpeg custom decoder/output pipeline | 8 | 5 | 8 | 5 | 3 | 6.20 |
+| Do nothing | 0 | 10 | 0 | 10 | 10 | 5.00 |
 
 Sensitivity: the Media3 option remains the leading choice under +/-20% perturbations of individual weights using these estimates. No measured benchmark is claimed.
 
