@@ -6,6 +6,7 @@
 //! main thread. This Rust wrapper keeps the JNI boundary narrow and JSON-based.
 
 use serde::Deserialize;
+use std::cell::RefCell;
 
 #[manganis::ffi("src/android")]
 extern "Kotlin" {
@@ -53,14 +54,20 @@ impl AndroidMediaEngine {
         Ok(engine)
     }
 
-    fn command(&self, response: Result<String, impl std::fmt::Display>) -> Result<(), String> {
+    fn command(
+        &self,
+        response: Result<String, impl std::fmt::Display>,
+    ) -> Result<(), String> {
         let json = response.map_err(|error| error.to_string())?;
-        let parsed: CommandResponse =
-            serde_json::from_str(&json).map_err(|error| format!("Invalid Media3 response: {error}"))?;
+        let parsed: CommandResponse = serde_json::from_str(&json)
+            .map_err(|error| format!("Invalid Media3 response: {error}"))?;
+
         if parsed.ok {
             Ok(())
         } else {
-            Err(parsed.message.unwrap_or_else(|| "Media3 command failed".to_string()))
+            Err(parsed
+                .message
+                .unwrap_or_else(|| "Media3 command failed".to_string()))
         }
     }
 
@@ -70,12 +77,14 @@ impl AndroidMediaEngine {
 
     pub fn take_picked_uri(&self) -> Result<Option<String>, String> {
         let json = takePickedUriJson(&self.plugin).map_err(|error| error.to_string())?;
+
         #[derive(Deserialize)]
         struct PickerResult {
             uri: Option<String>,
         }
-        let result: PickerResult =
-            serde_json::from_str(&json).map_err(|error| format!("Invalid picker response: {error}"))?;
+
+        let result: PickerResult = serde_json::from_str(&json)
+            .map_err(|error| format!("Invalid picker response: {error}"))?;
         Ok(result.uri)
     }
 
@@ -103,25 +112,25 @@ impl AndroidMediaEngine {
         if !volume.is_finite() {
             return Err("Volume must be finite".to_string());
         }
-        self.command(setVolumeJson(&self.plugin, volume.clamp(0.0, 1.0).to_string()))
+
+        self.command(setVolumeJson(
+            &self.plugin,
+            volume.clamp(0.0, 1.0).to_string(),
+        ))
     }
 
     pub fn snapshot(&self) -> Result<EngineSnapshot, String> {
         let json = getStateJson(&self.plugin).map_err(|error| error.to_string())?;
         serde_json::from_str(&json).map_err(|error| format!("Invalid Media3 state: {error}"))
     }
-
 }
-
-
-use std::cell::RefCell;
 
 thread_local! {
     static ENGINE: RefCell<Option<AndroidMediaEngine>> = const { RefCell::new(None) };
 }
 
 /// Lazily create the native player. Called from an explicit user action so a
-/// JNI/class-loader failure cannot prevent the app shell from starting.
+/// JNI/class-loader failure cannot prevent the app shell from launching.
 pub fn initialize_global() -> Result<(), String> {
     ENGINE.with(|slot| {
         if slot.borrow().is_none() {
@@ -132,7 +141,9 @@ pub fn initialize_global() -> Result<(), String> {
     })
 }
 
-fn with_engine<T>(operation: impl FnOnce(&AndroidMediaEngine) -> Result<T, String>) -> Result<T, String> {
+fn with_engine<T>(
+    operation: impl FnOnce(&AndroidMediaEngine) -> Result<T, String>,
+) -> Result<T, String> {
     ENGINE.with(|slot| {
         let borrowed = slot.borrow();
         let engine = borrowed
