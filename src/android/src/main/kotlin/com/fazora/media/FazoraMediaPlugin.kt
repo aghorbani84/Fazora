@@ -4,8 +4,6 @@ import android.app.Activity
 import android.net.Uri
 import android.os.Looper
 import android.content.Intent
-import androidx.activity.ComponentActivity
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
@@ -24,25 +22,8 @@ import java.util.concurrent.TimeUnit
 class FazoraMediaPlugin(private val activity: Activity) {
     private var player: ExoPlayer? = null
     private var lastError: String? = null
-    private var pickedUri: Uri? = null
-    private val componentActivity = activity as ComponentActivity
-    private val audioPicker = componentActivity.activityResultRegistry.register(
-        "fazora-audio-picker-${activity.hashCode()}",
-        ActivityResultContracts.OpenDocument()
-    ) { uri ->
-        if (uri != null) {
-            try {
-                activity.contentResolver.takePersistableUriPermission(
-                    uri,
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION
-                )
-            } catch (_: SecurityException) {
-                // Some providers grant only temporary access; the URI remains usable
-                // for the current process but may need to be selected again later.
-            }
-            pickedUri = uri
-        }
-    }
+    private var player: ExoPlayer? = null
+    private var lastError: String? = null
 
     private fun <T> onMainThread(block: () -> T): T {
         if (Looper.myLooper() == Looper.getMainLooper()) return block()
@@ -91,7 +72,7 @@ class FazoraMediaPlugin(private val activity: Activity) {
 
     fun openAudioPickerJson(): String = onMainThread {
         try {
-            audioPicker.launch(arrayOf("audio/*"))
+            activity.startActivity(Intent(activity, AudioPickerActivity::class.java))
             response(true)
         } catch (error: Throwable) {
             response(false, error.message ?: "Unable to open audio picker")
@@ -99,10 +80,8 @@ class FazoraMediaPlugin(private val activity: Activity) {
     }
 
     fun takePickedUriJson(): String = onMainThread {
-        val uri = pickedUri
-        pickedUri = null
         val json = JSONObject()
-        json.put("uri", uri?.toString())
+        json.put("uri", PickedAudioStore.take())
         json.toString()
     }
 
