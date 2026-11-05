@@ -170,16 +170,16 @@ impl PlaybackService {
     }
 
     pub fn play_toggle(&self) {
-        if !*self.engine_available.read() {
-            return;
-        }
-        let current = self.state.read().clone();
-        let Some(track) = current.current_track().cloned() else {
-            return;
-        };
-
         #[cfg(target_os = "android")]
         {
+            if !*self.engine_available.read() {
+                return;
+            }
+            let current = self.state.read().clone();
+            let Some(track) = current.current_track().cloned() else {
+                return;
+            };
+
             if current.is_playing() {
                 match crate::audio::android::pause() {
                     Ok(()) => self.set_state(PlaybackState::Paused { track }),
@@ -201,41 +201,45 @@ impl PlaybackService {
     }
 
     pub fn pause(&self) {
-        if !*self.engine_available.read() {
-            return;
-        }
-        let current = self.state.read().clone();
-        if let Some(track) = current.current_track().cloned() {
-            #[cfg(target_os = "android")]
-            match crate::audio::android::pause() {
-                Ok(()) => self.set_state(PlaybackState::Paused { track }),
-                Err(message) => self.set_state(PlaybackState::Error {
-                    track: Some(track),
-                    message,
-                }),
+        #[cfg(target_os = "android")]
+        {
+            if !*self.engine_available.read() {
+                return;
+            }
+            let current = self.state.read().clone();
+            if let Some(track) = current.current_track().cloned() {
+                match crate::audio::android::pause() {
+                    Ok(()) => self.set_state(PlaybackState::Paused { track }),
+                    Err(message) => self.set_state(PlaybackState::Error {
+                        track: Some(track),
+                        message,
+                    }),
+                }
             }
         }
     }
 
     pub fn seek(&self, to_sec: f64) {
-        if !*self.engine_available.read() || !to_sec.is_finite() {
-            return;
-        }
-        if let Some(track) = self.current_track() {
-            let target = to_sec.max(0.0);
-            #[cfg(target_os = "android")]
-            match crate::audio::android::seek_to_ms((target * 1000.0).round() as u64) {
-                Ok(()) => {
-                    self.set_position(target);
-                    self.set_state(PlaybackState::Seeking {
-                        track,
-                        to_sec: target,
-                    });
+        #[cfg(target_os = "android")]
+        {
+            if !*self.engine_available.read() || !to_sec.is_finite() {
+                return;
+            }
+            if let Some(track) = self.current_track() {
+                let target = to_sec.max(0.0);
+                match crate::audio::android::seek_to_ms((target * 1000.0).round() as u64) {
+                    Ok(()) => {
+                        self.set_position(target);
+                        self.set_state(PlaybackState::Seeking {
+                            track,
+                            to_sec: target,
+                        });
+                    }
+                    Err(message) => self.set_state(PlaybackState::Error {
+                        track: Some(track),
+                        message,
+                    }),
                 }
-                Err(message) => self.set_state(PlaybackState::Error {
-                    track: Some(track),
-                    message,
-                }),
             }
         }
     }
@@ -262,9 +266,9 @@ impl PlaybackService {
 
     pub fn toggle_mute(&self) {
         let next = !*self.muted.read();
-        let target_volume = if next { 0.0 } else { *self.volume.read() };
         #[cfg(target_os = "android")]
         if *self.engine_available.read() {
+            let target_volume = if next { 0.0 } else { *self.volume.read() };
             if let Err(message) = crate::audio::android::set_volume(target_volume) {
                 if let Some(track) = self.current_track() {
                     self.set_state(PlaybackState::Error {
