@@ -59,7 +59,7 @@ impl PlaybackState {
     }
 
     pub fn is_playing(&self) -> bool {
-        matches!(self, PlaybackState::Playing { .. })
+        matches!(self, PlaybackState::Playing { .. } | PlaybackState::Buffering { .. })
     }
 
     pub fn is_error(&self) -> bool {
@@ -363,6 +363,9 @@ impl PlaybackService {
                         Some(PlaybackState::Playing { track: track.clone() })
                     } else {
                         match snapshot.playback_state {
+                            2 if snapshot.play_when_ready => {
+                                Some(PlaybackState::Buffering { track: track.clone() })
+                            }
                             2 => Some(PlaybackState::Buffering { track: track.clone() }),
                             3 => Some(PlaybackState::Paused { track: track.clone() }),
                             4 => Some(PlaybackState::Ended { track: track.clone() }),
