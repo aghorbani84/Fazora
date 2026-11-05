@@ -22,8 +22,6 @@ import java.util.concurrent.TimeUnit
 class FazoraMediaPlugin(private val activity: Activity) {
     private var player: ExoPlayer? = null
     private var lastError: String? = null
-    private var player: ExoPlayer? = null
-    private var lastError: String? = null
 
     private fun <T> onMainThread(block: () -> T): T {
         if (Looper.myLooper() == Looper.getMainLooper()) return block()
