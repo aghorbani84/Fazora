@@ -122,10 +122,7 @@ impl NativeMediaPlugin {
             };
             let response_string: manganis::jni::objects::JString = response_object.into();
             match env.get_string(&response_string) {
-                Ok(value) => {
-                    let value: String = value.into();
-                    Some(Ok(value))
-                }
+                Ok(value) => Some(Ok(value.to_string_lossy().into_owned())),
                 Err(error) => Some(Err(format!("Unable to read native response: {error:?}"))),
             }
         });
