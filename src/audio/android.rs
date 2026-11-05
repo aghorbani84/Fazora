@@ -37,7 +37,7 @@ impl NativeMediaPlugin {
     fn new() -> Result<Self, String> {
         let result = manganis::android::with_activity(|mut env, activity| {
             let class_loader = match env
-                .call_method(&activity, "getClassLoader", "()Ljava/lang/ClassLoader;", &[])
+                .call_method(activity, "getClassLoader", "()Ljava/lang/ClassLoader;", &[])
                 .and_then(|value| value.l())
             {
                 Ok(value) => value,
@@ -74,7 +74,7 @@ impl NativeMediaPlugin {
             let instance = match env.new_object(
                 &class,
                 "(Landroid/app/Activity;)V",
-                &[manganis::jni::objects::JValue::Object(&activity)],
+                &[manganis::jni::objects::JValue::Object(activity)],
             ) {
                 Ok(value) => value,
                 Err(error) => {
