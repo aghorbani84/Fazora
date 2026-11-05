@@ -304,6 +304,10 @@ fn playback_state_is_playing() {
         track: test_track()
     }
     .is_playing());
+    assert!(PlaybackState::Playing {
+        track: test_track()
+    }
+    .is_active());
     assert!(!PlaybackState::Paused {
         track: test_track()
     }
@@ -317,6 +321,10 @@ fn playback_state_is_playing() {
         track: test_track()
     }
     .is_playing());
+    assert!(PlaybackState::Buffering {
+        track: test_track()
+    }
+    .is_active());
     assert!(!PlaybackState::Seeking {
         track: test_track(),
         to_sec: 0.0
