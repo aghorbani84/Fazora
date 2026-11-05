@@ -1,0 +1,67 @@
+name: Build LGPL FFmpeg Android libraries
+
+on:
+  push:
+    branches: [feature/ffmpeg-media-engine]
+    paths:
+      - "scripts/build-ffmpeg-android.sh"
+      - "native/ffmpeg/**"
+      - ".github/workflows/build-ffmpeg-android.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "scripts/build-ffmpeg-android.sh"
+      - "native/ffmpeg/**"
+      - ".github/workflows/build-ffmpeg-android.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ffmpeg-android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: FFmpeg LGPL Android (${{ matrix.abi }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        abi: [arm64-v8a, x86_64]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        with:
+          persist-credentials: false
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes nasm xz-utils gnupg
+
+      - name: Install Android NDK
+        id: setup-ndk
+        uses: nttld/setup-ndk@afb4c9964b521afb97c864b7d40b11e6911bd410
+        with:
+          ndk-version: r28c
+          link-to-sdk: true
+
+      - name: Build FFmpeg shared libraries
+        env:
+          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+          FFMPEG_OUTPUT_DIR: ${{ github.workspace }}/native/ffmpeg/prebuilt/android
+          BUILD_JOBS: "2"
+        run: |
+          scripts/build-ffmpeg-android.sh "${{ matrix.abi }}"
+          find "native/ffmpeg/prebuilt/android/${{ matrix.abi }}" -type f -name '*.so*' -print0 | sort -z | xargs -0 sha256sum > "native/ffmpeg/prebuilt/android/${{ matrix.abi }}/SHA256SUMS"
+
+      - name: Upload FFmpeg libraries and matching source
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: FAZORA-FFmpeg-9.0.2-LGPL-Android-${{ matrix.abi }}
+          path: native/ffmpeg/prebuilt/android/${{ matrix.abi }}/
+          if-no-files-found: error
+          retention-days: 90
