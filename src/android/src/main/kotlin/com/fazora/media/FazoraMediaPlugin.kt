@@ -190,6 +190,7 @@ class FazoraMediaPlugin(private val activity: Activity) {
         val json = JSONObject()
         json.put("engineAvailable", mediaPlayer != null)
         json.put("isPlaying", mediaPlayer?.isPlaying ?: false)
+        json.put("playWhenReady", mediaPlayer?.playWhenReady ?: false)
         json.put("playbackState", mediaPlayer?.playbackState ?: Player.STATE_IDLE)
         json.put("positionMs", mediaPlayer?.currentPosition ?: 0L)
         json.put("durationMs", (mediaPlayer?.duration ?: 0L).coerceAtLeast(0L))
