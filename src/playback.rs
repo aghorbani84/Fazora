@@ -417,15 +417,23 @@ impl PlaybackService {
                     });
                 } else if let Some(track) = self.current_track() {
                     let next = if snapshot.is_playing {
-                        Some(PlaybackState::Playing { track: track.clone() })
+                        Some(PlaybackState::Playing {
+                            track: track.clone(),
+                        })
                     } else {
                         match snapshot.playback_state {
-                            2 if snapshot.play_when_ready => {
-                                Some(PlaybackState::Buffering { track: track.clone() })
-                            }
-                            2 => Some(PlaybackState::Loading { track: track.clone() }),
-                            3 => Some(PlaybackState::Paused { track: track.clone() }),
-                            4 => Some(PlaybackState::Ended { track: track.clone() }),
+                            2 if snapshot.play_when_ready => Some(PlaybackState::Buffering {
+                                track: track.clone(),
+                            }),
+                            2 => Some(PlaybackState::Loading {
+                                track: track.clone(),
+                            }),
+                            3 => Some(PlaybackState::Paused {
+                                track: track.clone(),
+                            }),
+                            4 => Some(PlaybackState::Ended {
+                                track: track.clone(),
+                            }),
                             _ => None,
                         }
                     };
