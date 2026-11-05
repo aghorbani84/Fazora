@@ -54,7 +54,7 @@ fn playback_initial_state_is_idle() {
     assert!(!*playback.muted.read());
     assert_eq!(*playback.repeat.read(), RepeatMode::All);
     assert!(!*playback.shuffle.read());
-    assert!(*playback.engine_available.read());
+    assert!(!*playback.engine_available.read());
 }
 
 #[test]
@@ -85,6 +85,8 @@ fn playback_play_toggle_from_idle_does_nothing() {
 fn playback_play_toggle_from_paused_starts_playing() {
     let playback = with_service();
 
+    playback.set_engine_available(true);
+    playback.set_engine_available(true);
     let track = test_track();
     playback.set_state(PlaybackState::Paused {
         track: track.clone(),
@@ -102,6 +104,9 @@ fn playback_play_toggle_from_paused_starts_playing() {
 fn playback_play_toggle_from_playing_pauses() {
     let playback = with_service();
 
+    playback.set_engine_available(true);
+    playback.set_engine_available(true);
+    playback.set_engine_available(true);
     let track = test_track();
     playback.set_state(PlaybackState::Playing {
         track: track.clone(),
@@ -119,6 +124,8 @@ fn playback_play_toggle_from_playing_pauses() {
 fn playback_play_toggle_from_ended_restarts() {
     let playback = with_service();
 
+    playback.set_engine_available(true);
+    playback.set_engine_available(true);
     let track = test_track();
     playback.set_state(PlaybackState::Ended {
         track: track.clone(),
@@ -136,6 +143,7 @@ fn playback_play_toggle_from_ended_restarts() {
 fn playback_pause_from_playing_sets_paused() {
     let playback = with_service();
 
+    playback.set_engine_available(true);
     let track = test_track();
     playback.set_state(PlaybackState::Playing {
         track: track.clone(),
@@ -162,6 +170,7 @@ fn playback_pause_from_idle_does_nothing() {
 fn playback_seek_sets_seeking_state() {
     let playback = with_service();
 
+    playback.set_engine_available(true);
     let track = test_track();
     playback.set_state(PlaybackState::Playing {
         track: track.clone(),
