@@ -10,6 +10,8 @@ extern "Kotlin" {
     pub type FazoraMediaPlugin;
 
     pub fn initializeJson(this: &FazoraMediaPlugin) -> String;
+    pub fn openAudioPickerJson(this: &FazoraMediaPlugin) -> String;
+    pub fn takePickedUriJson(this: &FazoraMediaPlugin) -> String;
     pub fn setMediaUriJson(this: &FazoraMediaPlugin, uri: String) -> String;
     pub fn playJson(this: &FazoraMediaPlugin) -> String;
     pub fn pauseJson(this: &FazoraMediaPlugin) -> String;
@@ -59,6 +61,21 @@ impl AndroidMediaEngine {
         } else {
             Err(parsed.message.unwrap_or_else(|| "Media3 command failed".to_string()))
         }
+    }
+
+    pub fn open_audio_picker(&self) -> Result<(), String> {
+        self.command(openAudioPickerJson(&self.plugin))
+    }
+
+    pub fn take_picked_uri(&self) -> Result<Option<String>, String> {
+        let json = takePickedUriJson(&self.plugin).map_err(|error| error.to_string())?;
+        #[derive(Deserialize)]
+        struct PickerResult {
+            uri: Option<String>,
+        }
+        let result: PickerResult =
+            serde_json::from_str(&json).map_err(|error| format!("Invalid picker response: {error}"))?;
+        Ok(result.uri)
     }
 
     pub fn set_media_uri(&self, uri: &str) -> Result<(), String> {
