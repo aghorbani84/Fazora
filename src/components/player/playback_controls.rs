@@ -2,7 +2,7 @@
 //! Buttons reflect the real playback engine state.
 
 use crate::components::primitives::IconButton;
-use crate::playback::{PlaybackService, PlaybackState, RepeatMode};
+use crate::playback::{PlaybackService, RepeatMode};
 use crate::queue::{QueueMode, QueueService};
 use dioxus::prelude::*;
 
