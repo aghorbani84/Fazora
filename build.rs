@@ -39,9 +39,7 @@ fn main() {
         );
     }
 
-    let ndk = PathBuf::from(
-        env::var_os("ANDROID_NDK_HOME").expect("ANDROID_NDK_HOME must be set"),
-    );
+    let ndk = PathBuf::from(env::var_os("ANDROID_NDK_HOME").expect("ANDROID_NDK_HOME must be set"));
     let compiler = ndk
         .join("toolchains/llvm/prebuilt/linux-x86_64/bin")
         .join(format!("{compiler_triple}26-clang"));
