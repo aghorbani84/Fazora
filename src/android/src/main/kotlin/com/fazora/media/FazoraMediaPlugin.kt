@@ -81,7 +81,7 @@ class FazoraMediaPlugin(private val activity: Activity) {
             val value = uriValue.trim()
             if (value.isEmpty()) return@onMainThread response(false, "Media URI is empty")
             val uri = Uri.parse(value)
-            if (uri.scheme != "content" && uri.scheme != "file" && uri.scheme != "https") {
+            if (uri.scheme != "content" && uri.scheme != "file") {
                 return@onMainThread response(false, "Unsupported media URI scheme")
             }
             val mediaPlayer = ensurePlayer()
