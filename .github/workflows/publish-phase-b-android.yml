@@ -1,0 +1,97 @@
+name: Publish Phase B Android Release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/publish-phase-b-android.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Android ${ matrix.abi }
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - abi: arm64-v8a
+            target: aarch64-linux-android
+          - abi: x86_64
+            target: x86_64-linux-android
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        with:
+          ref: 41642e7a431dd2df2a22ba1ebc296d1e2000afd7
+          persist-credentials: false
+      - uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407
+        with:
+          packages: platform-tools
+      - run: sdkmanager "platforms;android-35" "build-tools;35.0.0" "platform-tools"
+      - id: ndk
+        uses: nttld/setup-ndk@afb4c9964b521afb97c864b7d40b11e6911bd410
+        with:
+          ndk-version: r28c
+          link-to-sdk: true
+      - name: Export NDK
+        env:
+          NDK_PATH: ${ steps.ndk.outputs.ndk-path }
+        run: |
+          echo "ANDROID_NDK_HOME=$NDK_PATH" >> "$GITHUB_ENV"
+          echo "NDK_HOME=$NDK_PATH" >> "$GITHUB_ENV"
+      - uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec
+        with:
+          targets: ${ matrix.target }
+      - name: Install Dioxus CLI
+        run: |
+          curl --fail --location --retry 3 "https://github.com/DioxusLabs/dioxus/releases/download/v0.7.10/dx-x86_64-unknown-linux-gnu.tar.gz" -o "$RUNNER_TEMP/dx.tar.gz"
+          echo "4363e4ed2a3f1eb7f4d38d2d59aed59ce43271c44c16b425e92c89a64761fbe7  $RUNNER_TEMP/dx.tar.gz" | sha256sum --check
+          mkdir "$RUNNER_TEMP/dx"
+          tar -xzf "$RUNNER_TEMP/dx.tar.gz" -C "$RUNNER_TEMP/dx"
+          sudo install -m 0755 "$(find "$RUNNER_TEMP/dx" -type f -name dx -perm -u+x -print -quit)" /usr/local/bin/dx
+      - name: Build APK
+        run: |
+          dx bundle --android --release --package-types apk --target ${ matrix.target } --verbose
+          APK_PATH="$(find target -type f -name '*.apk' -print -quit)"
+          test -n "$APK_PATH"
+          mkdir -p dist
+          cp "$APK_PATH" "dist/FAZORA-Android-${ matrix.abi }-unsigned.apk"
+      - name: Sign and verify
+        run: |
+          keytool -genkeypair -keystore "$RUNNER_TEMP/fazora.keystore" -storepass android -keypass android -alias fazora -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=FAZORA"
+          APKSIGNER="$ANDROID_HOME/build-tools/35.0.0/apksigner"
+          "$APKSIGNER" sign --ks "$RUNNER_TEMP/fazora.keystore" --ks-key-alias fazora --ks-pass pass:android --key-pass pass:android --out "dist/FAZORA-Android-${ matrix.abi }.apk" "dist/FAZORA-Android-${ matrix.abi }-unsigned.apk"
+          "$APKSIGNER" verify --verbose "dist/FAZORA-Android-${ matrix.abi }.apk"
+          sha256sum "dist/FAZORA-Android-${ matrix.abi }.apk" > "dist/FAZORA-Android-${ matrix.abi }.apk.sha256"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: android-${ matrix.abi }
+          path: |
+            dist/FAZORA-Android-${ matrix.abi }.apk
+            dist/FAZORA-Android-${ matrix.abi }.apk.sha256
+
+  release:
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: android-*
+          path: release-assets
+          merge-multiple: true
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${ github.token }
+        run: |
+          gh release create v0.1.1 release-assets/* \
+            --target 41642e7a431dd2df2a22ba1ebc296d1e2000afd7 \
+            --title "FAZORA Media v0.1.1" \
+            --notes "## FAZORA Media — Phase B Android release\n\n- ARM64 APK: recommended for most modern Android phones\n- x86_64 APK: for compatible x86_64 devices and emulators\n\nSHA-256 checksum files are included. APKs use an ephemeral CI signing key; uninstall an older CI-signed build before installing this version."
