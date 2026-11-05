@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.fazora.media"
-    compileSdk = 35
+    compileSdk = 34
 
     defaultConfig {
         minSdk = 24
@@ -23,6 +23,8 @@ android {
 }
 
 dependencies {
-    implementation("androidx.activity:activity:1.10.1")
-    implementation("androidx.media3:media3-exoplayer:1.11.1")
+    // The Dioxus 0.7.10-generated host app currently compiles against API 34.
+    // Media3 1.4.1 is the stable release compatible with that compile SDK.
+    // Keep this plugin's dependencies within the host app's AAR metadata floor.
+    implementation("androidx.media3:media3-exoplayer:1.4.1")
 }
