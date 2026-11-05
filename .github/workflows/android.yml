@@ -1,0 +1,182 @@
+name: Android APK and Emulator Smoke Test
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Android APK (${{ matrix.abi }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - abi: arm64-v8a
+            rust_target: aarch64-linux-android
+          - abi: x86_64
+            rust_target: x86_64-linux-android
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        with:
+          persist-credentials: false
+      - uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407
+        with:
+          packages: platform-tools
+      - name: Install Android SDK and NDK
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0" "platform-tools"
+      - id: ndk
+        uses: nttld/setup-ndk@afb4c9964b521afb97c864b7d40b11e6911bd410
+        with:
+          ndk-version: r28c
+          link-to-sdk: true
+      - name: Export NDK paths
+        env:
+          NDK_PATH: ${{ steps.ndk.outputs.ndk-path }}
+        run: |
+          echo "ANDROID_NDK_HOME=$NDK_PATH" >> "$GITHUB_ENV"
+          echo "NDK_HOME=$NDK_PATH" >> "$GITHUB_ENV"
+      - uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec
+        with:
+          targets: ${{ matrix.rust_target }}
+      - name: Install pinned Dioxus CLI 0.7.10
+        run: |
+          DX_ARCHIVE="$RUNNER_TEMP/dx.tar.gz"
+          curl --fail --location --retry 3 "https://github.com/DioxusLabs/dioxus/releases/download/v0.7.10/dx-x86_64-unknown-linux-gnu.tar.gz" --output "$DX_ARCHIVE"
+          echo "4363e4ed2a3f1eb7f4d38d2d59aed59ce43271c44c16b425e92c89a64761fbe7  $DX_ARCHIVE" | sha256sum --check
+          mkdir -p "$RUNNER_TEMP/dx"
+          tar -xzf "$DX_ARCHIVE" -C "$RUNNER_TEMP/dx"
+          DX_BIN="$(find "$RUNNER_TEMP/dx" -type f -name dx -perm -u+x -print -quit)"
+          test -n "$DX_BIN"
+          sudo install -m 0755 "$DX_BIN" /usr/local/bin/dx
+          dx --version
+      - name: Generate lockfile if absent
+        run: cargo generate-lockfile
+      - name: Cache Cargo
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-android-${{ matrix.abi }}-${{ hashFiles('Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-android-${{ matrix.abi }}-
+      - name: Build APK
+        run: |
+          dx bundle --android --release --package-types apk --target ${{ matrix.rust_target }} --verbose
+          APK_PATH="$(find target -type f -name '*.apk' -print -quit)"
+          test -n "$APK_PATH" || { echo "No APK produced"; exit 1; }
+          mkdir -p dist
+          cp "$APK_PATH" "dist/FAZORA-${{ matrix.abi }}-unsigned.apk"
+      - name: Sign with persistent release key
+        if: env.ANDROID_KEYSTORE_BASE64 != ''
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/fazora-release.jks"
+          APKSIGNER="$ANDROID_HOME/build-tools/35.0.0/apksigner"
+          "$APKSIGNER" sign --ks "$RUNNER_TEMP/fazora-release.jks" --ks-key-alias "$ANDROID_KEY_ALIAS" --ks-pass "pass:$ANDROID_KEYSTORE_PASSWORD" --key-pass "pass:$ANDROID_KEY_PASSWORD" --out "dist/FAZORA-${{ matrix.abi }}.apk" "dist/FAZORA-${{ matrix.abi }}-unsigned.apk"
+      - name: Sign with ephemeral debug key (fork-safe fallback)
+        if: env.ANDROID_KEYSTORE_BASE64 == ''
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          keytool -genkeypair -v -keystore "$RUNNER_TEMP/fazora-debug.keystore" -storepass android -keypass android -alias fazora-debug -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=FAZORA Debug,O=FAZORA,C=US"
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" sign --ks "$RUNNER_TEMP/fazora-debug.keystore" --ks-key-alias fazora-debug --ks-pass pass:android --key-pass pass:android --out "dist/FAZORA-${{ matrix.abi }}.apk" "dist/FAZORA-${{ matrix.abi }}-unsigned.apk"
+      - name: Verify APK and checksum
+        run: |
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose "dist/FAZORA-${{ matrix.abi }}.apk"
+          sha256sum "dist/FAZORA-${{ matrix.abi }}.apk" > "dist/FAZORA-${{ matrix.abi }}.apk.sha256"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: FAZORA-Android-${{ matrix.abi }}
+          path: |
+            dist/FAZORA-${{ matrix.abi }}.apk
+            dist/FAZORA-${{ matrix.abi }}.apk.sha256
+          if-no-files-found: error
+          retention-days: 30
+
+  emulator-smoke:
+    name: Android x86_64 emulator smoke test
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        with:
+          persist-credentials: false
+      - uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407
+        with:
+          packages: platform-tools
+      - name: Download x86_64 APK
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: FAZORA-Android-x86_64
+          path: dist
+      - name: Install emulator packages
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0" "emulator" "system-images;android-35;google_apis;x86_64"
+      - name: Create and boot x86_64 emulator
+        run: |
+          echo "no" | avdmanager create avd --force --name fazora-ci --device pixel_2 --package "system-images;android-35;google_apis;x86_64"
+          nohup emulator -avd fazora-ci -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -accel auto > "$RUNNER_TEMP/emulator.log" 2>&1 &
+          adb wait-for-device
+          for i in $(seq 1 90); do
+            booted="$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')"
+            [ "$booted" = "1" ] && break
+            sleep 2
+          done
+          test "$(adb shell getprop sys.boot_completed | tr -d '\r')" = "1"
+          adb shell input keyevent 82 || true
+      - name: Install, launch and assert process
+        run: |
+          adb install -r dist/FAZORA-x86_64.apk
+          PACKAGE="$( "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging dist/FAZORA-x86_64.apk | sed -n "s/^package: name='\([^']*\)'.*/\1/p" )"
+          test -n "$PACKAGE"
+          ACTIVITY="$( "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging dist/FAZORA-x86_64.apk | sed -n "s/^launchable-activity: name='\([^']*\)'.*/\1/p" )"
+          test -n "$ACTIVITY"
+          adb shell am start -n "$PACKAGE/$ACTIVITY"
+          sleep 15
+          adb shell pidof "$PACKAGE"
+          adb logcat -d > logcat.txt
+          if grep -E "FATAL EXCEPTION|panicked at" logcat.txt; then exit 1; fi
+      - name: Capture Home, Library and Search screenshots
+        run: |
+          mkdir -p screenshots
+          adb exec-out screencap -p > screenshots/home.png
+          adb shell input tap 250 2200
+          sleep 2
+          adb exec-out screencap -p > screenshots/library.png
+          adb shell input tap 540 2200
+          sleep 2
+          adb exec-out screencap -p > screenshots/search.png
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: android-emulator-evidence
+          path: |
+            screenshots/
+            logcat.txt
+            ${{ runner.temp }}/emulator.log
+          if-no-files-found: warn
+          retention-days: 30
