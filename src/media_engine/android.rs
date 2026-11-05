@@ -3,6 +3,8 @@
 use std::ffi::CStr;
 use std::os::raw::c_char;
 
+#[link(name = "fazora_ffmpeg_shim", kind = "static")]
+#[link(name = "avutil")]
 extern "C" {
     fn fazora_ffmpeg_version() -> *const c_char;
 }
