@@ -2,7 +2,7 @@
 //! Buttons reflect the real playback engine state.
 
 use crate::components::primitives::IconButton;
-use crate::playback::{PlaybackService, PlaybackState, RepeatMode};
+use crate::playback::{PlaybackService, RepeatMode};
 use crate::queue::{QueueMode, QueueService};
 use dioxus::prelude::*;
 
@@ -20,23 +20,30 @@ pub struct PlaybackControlsProps {
 pub fn PlaybackControls(props: PlaybackControlsProps) -> Element {
     let service = props.service.clone();
     let queue = props.queue.clone();
-    let is_playing = service.state.read().is_playing();
+    let is_playing = service.state.read().is_active();
+    let engine_available = *service.engine_available.read();
     let shuffle_active = *queue.mode.read() == QueueMode::Shuffle;
     let repeat_mode = *service.repeat.read();
 
     let previous_service = service.clone();
     let previous_queue = queue.clone();
     let previous = move |_| {
+        if !*previous_service.engine_available.read() {
+            return;
+        }
         if let Some(track) = previous_queue.move_previous() {
-            previous_service.set_state(PlaybackState::Playing { track });
+            previous_service.play_track(track);
         }
     };
 
     let next_service = service.clone();
     let next_queue = queue.clone();
     let next = move |_| {
+        if !*next_service.engine_available.read() {
+            return;
+        }
         if let Some(track) = next_queue.move_next() {
-            next_service.set_state(PlaybackState::Playing { track });
+            next_service.play_track(track);
         }
     };
 
@@ -71,18 +78,21 @@ pub fn PlaybackControls(props: PlaybackControlsProps) -> Element {
             IconButton {
                 active: false,
                 title: "Previous",
+                disabled: !engine_available,
                 onclick: previous,
                 svg { class: "fz-icon", width: 24, height: 24, use { href: "#icon-previous" } }
             }
             IconButton {
                 active: is_playing,
                 title: if is_playing { "Pause" } else { "Play" },
+                disabled: !engine_available,
                 onclick: toggle_play,
                 svg { class: "fz-icon", width: 28, height: 28, use { href: if is_playing { "#icon-pause" } else { "#icon-play" } } }
             }
             IconButton {
                 active: false,
                 title: "Next",
+                disabled: !engine_available,
                 onclick: next,
                 svg { class: "fz-icon", width: 24, height: 24, use { href: "#icon-next" } }
             }

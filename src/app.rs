@@ -23,6 +23,20 @@ pub fn App() -> Element {
     // initializer, because that would execute hooks from inside a hook's
     // lazy initializer and can corrupt hook ordering on mobile runtimes.
     let playback = PlaybackService::init();
+
+    #[cfg(target_os = "android")]
+    let _native_poller = {
+        let playback = playback.clone();
+        use_future(move || {
+            let playback = playback.clone();
+            async move {
+                loop {
+                    tokio::time::sleep(std::time::Duration::from_millis(300)).await;
+                    playback.poll_native();
+                }
+            }
+        })
+    };
     let queue = QueueService::new();
     let library = LibraryService::init();
     let settings = SettingsService::init();

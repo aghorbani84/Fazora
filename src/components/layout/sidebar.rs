@@ -8,6 +8,7 @@ use dioxus::prelude::*;
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum NavItem {
     Home,
+    Library,
     Music,
     Albums,
     Artists,
@@ -31,6 +32,7 @@ pub struct SidebarProps {
 pub fn Sidebar(props: SidebarProps) -> Element {
     let items = [
         (NavItem::Home, Route::Home {}, "icon-home", "Home"),
+        (NavItem::Library, Route::Library {}, "icon-album", "Library"),
         (NavItem::Music, Route::Music {}, "icon-music", "Music"),
         (NavItem::Albums, Route::Albums {}, "icon-album", "Albums"),
         (
