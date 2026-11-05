@@ -12,6 +12,7 @@ pub fn Library() -> Element {
     let library_service = app_state.library.clone();
     let playback_service = app_state.playback.clone();
     let playback_state = playback_service.state.read().clone();
+    let playback_status = format!("{playback_state:?}");
 
     let open_picker_service = playback_service.clone();
     let open_picker = move |_| {
@@ -54,7 +55,7 @@ pub fn Library() -> Element {
                     style: "padding: var(--space-4); border: 1px solid var(--border); border-radius: var(--radius-medium); margin-bottom: var(--space-6);",
                     div { style: "font-weight: 700; color: var(--text-primary);", "{track.title}" }
                     div { style: "font-size: var(--text-sm); color: var(--text-secondary);", "{track.artist}" }
-                    div { style: "font-size: var(--text-xs); color: var(--text-secondary); margin-top: var(--space-2);", "Playback status: {format!(\"{:?}\", playback_state)}" }
+                    div { style: "font-size: var(--text-xs); color: var(--text-secondary); margin-top: var(--space-2);", "Playback status: {playback_status}" }
                 }
             }
             div {
