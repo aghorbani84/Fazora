@@ -21,6 +21,7 @@ pub fn PlaybackControls(props: PlaybackControlsProps) -> Element {
     let service = props.service.clone();
     let queue = props.queue.clone();
     let is_playing = service.state.read().is_playing();
+    let engine_available = *service.engine_available.read();
     let shuffle_active = *queue.mode.read() == QueueMode::Shuffle;
     let repeat_mode = *service.repeat.read();
 
@@ -71,18 +72,21 @@ pub fn PlaybackControls(props: PlaybackControlsProps) -> Element {
             IconButton {
                 active: false,
                 title: "Previous",
+                disabled: !engine_available,
                 onclick: previous,
                 svg { class: "fz-icon", width: 24, height: 24, use { href: "#icon-previous" } }
             }
             IconButton {
                 active: is_playing,
                 title: if is_playing { "Pause" } else { "Play" },
+                disabled: !engine_available,
                 onclick: toggle_play,
                 svg { class: "fz-icon", width: 28, height: 28, use { href: if is_playing { "#icon-pause" } else { "#icon-play" } } }
             }
             IconButton {
                 active: false,
                 title: "Next",
+                disabled: !engine_available,
                 onclick: next,
                 svg { class: "fz-icon", width: 24, height: 24, use { href: "#icon-next" } }
             }
