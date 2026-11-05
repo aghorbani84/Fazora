@@ -11,7 +11,7 @@ extern "C" {
 extern "Kotlin" {
     pub type MediaEnginePlugin;
 
-    pub fn verify_libraries(this: &MediaEnginePlugin) -> bool;
+    pub fn verify_libraries(this: &MediaEnginePlugin) -> String;
 }
 
 /// Verify the packaged FFmpeg shared libraries and return the upstream version string.
@@ -19,8 +19,8 @@ extern "Kotlin" {
 pub fn ffmpeg_version() -> Result<String, String> {
     let plugin = MediaEnginePlugin::new().map_err(|error| error.to_string())?;
     let loaded = verify_libraries(&plugin).map_err(|error| error.to_string())?;
-    if !loaded {
-        return Err("One or more FFmpeg shared libraries could not be loaded".to_string());
+    if loaded != "ok" {
+        return Err(format!("FFmpeg native libraries failed to load: {loaded}"));
     }
 
     let version_ptr = unsafe { fazora_ffmpeg_version() };
