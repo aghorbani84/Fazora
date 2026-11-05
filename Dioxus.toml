@@ -1,11 +1,4 @@
-[application]
-name = "fazora"
-default_platform = "desktop"
-asset_dir = "assets"
-
-[bundle]
-identifier = "com.fazora.media"
-publisher = "FAZORA"
-category = "Multimedia"
-short_description = "Premium music and video player"
-long_description = "FAZORA Media — a premium multimedia player built with Rust and Dioxus."
+[android]
+min_sdk = 26
+target_sdk = 35
+compile_sdk = 35
