@@ -8,6 +8,7 @@ on:
       - "native/ffmpeg/**"
       - "src/**"
       - "Cargo.toml"
+      - "build.rs"
       - ".github/workflows/build-ffmpeg-android.yml"
   pull_request:
     branches: [main]
