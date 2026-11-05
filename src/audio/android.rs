@@ -1,3 +1,5 @@
+#![allow(non_snake_case)]
+
 //! Android Media3 adapter.
 //!
 //! The Kotlin side owns ExoPlayer and marshals all player calls to Android's
@@ -19,7 +21,6 @@ extern "Kotlin" {
     pub fn seekToJson(this: &FazoraMediaPlugin, position_ms: String) -> String;
     pub fn setVolumeJson(this: &FazoraMediaPlugin, volume: String) -> String;
     pub fn getStateJson(this: &FazoraMediaPlugin) -> String;
-    pub fn releaseJson(this: &FazoraMediaPlugin) -> String;
 }
 
 #[derive(Debug, Clone, Deserialize, PartialEq)]
@@ -110,9 +111,6 @@ impl AndroidMediaEngine {
         serde_json::from_str(&json).map_err(|error| format!("Invalid Media3 state: {error}"))
     }
 
-    pub fn release(&self) -> Result<(), String> {
-        self.command(releaseJson(&self.plugin))
-    }
 }
 
 
