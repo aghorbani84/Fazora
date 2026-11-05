@@ -22,6 +22,7 @@ pub fn MiniPlayer() -> Element {
         .map(|track| track.artist.clone())
         .unwrap_or_default();
     let is_playing = playback.state.read().is_playing();
+    let engine_available = *playback.engine_available.read();
 
     let open_now_playing = move |_| {
         navigator.push(Route::NowPlaying {});
@@ -82,6 +83,7 @@ pub fn MiniPlayer() -> Element {
                     IconButton {
                         active: false,
                         title: if is_playing { "Pause" } else { "Play" },
+                        disabled: !engine_available,
                         onclick: move |_| play_service.play_toggle(),
                         svg {
                             class: "fz-icon",
@@ -93,6 +95,7 @@ pub fn MiniPlayer() -> Element {
                     IconButton {
                         active: false,
                         title: "Next",
+                        disabled: !engine_available,
                         onclick: move |_| {},
                         svg { class: "fz-icon", width: 18, height: 18, use { href: "#icon-next" } }
                     }
