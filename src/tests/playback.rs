@@ -58,6 +58,36 @@ fn playback_initial_state_is_idle() {
 }
 
 #[test]
+fn playback_controls_are_inert_until_engine_is_ready() {
+    let playback = with_service();
+    let track = test_track();
+
+    playback.set_state(PlaybackState::Paused {
+        track: track.clone(),
+    });
+    playback.play_toggle();
+    assert!(matches!(
+        &*playback.state.read(),
+        PlaybackState::Paused { track } if track.id == "t1"
+    ));
+
+    playback.set_state(PlaybackState::Playing {
+        track: track.clone(),
+    });
+    playback.pause();
+    assert!(matches!(
+        &*playback.state.read(),
+        PlaybackState::Playing { track } if track.id == "t1"
+    ));
+
+    playback.seek(45.5);
+    assert!(matches!(
+        &*playback.state.read(),
+        PlaybackState::Playing { track } if track.id == "t1"
+    ));
+}
+
+#[test]
 fn playback_load_sets_loading_state() {
     let playback = with_service();
 
@@ -86,7 +116,6 @@ fn playback_play_toggle_from_paused_starts_playing() {
     let playback = with_service();
 
     playback.set_engine_available(true);
-    playback.set_engine_available(true);
     let track = test_track();
     playback.set_state(PlaybackState::Paused {
         track: track.clone(),
@@ -104,8 +133,6 @@ fn playback_play_toggle_from_paused_starts_playing() {
 fn playback_play_toggle_from_playing_pauses() {
     let playback = with_service();
 
-    playback.set_engine_available(true);
-    playback.set_engine_available(true);
     playback.set_engine_available(true);
     let track = test_track();
     playback.set_state(PlaybackState::Playing {
