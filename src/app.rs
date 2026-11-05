@@ -29,6 +29,15 @@ pub fn App() -> Element {
     let audio = AudioService::init();
     let search = SearchService::init();
 
+    // Load the Android FFmpeg plugin after the Activity is available. This is
+    // only a dependency smoke test; playback stays unavailable until the real
+    // decoder and platform audio/video outputs are connected.
+    #[cfg(target_os = "android")]
+    use_effect(|| match crate::media_engine::ffmpeg_version() {
+        Ok(version) => tracing::info!("Loaded FFmpeg {version}"),
+        Err(error) => tracing::error!("FFmpeg native initialization failed: {error}"),
+    });
+
     // The aggregate state itself is a signal, but its initializer only
     // assembles already-created service handles and does not invoke hooks.
     let app_state = use_signal(move || {
