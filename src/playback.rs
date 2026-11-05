@@ -351,6 +351,12 @@ impl PlaybackService {
             }
 
             if let Ok(snapshot) = crate::audio::android::snapshot() {
+                if !snapshot.engine_available {
+                    self.set_engine_available(false);
+                    return;
+                }
+                let mut volume_signal = self.volume;
+                volume_signal.set(snapshot.volume.clamp(0.0, 1.0));
                 self.set_position(snapshot.position_ms.max(0) as f64 / 1000.0);
                 self.set_duration(snapshot.duration_ms.max(0) as f64 / 1000.0);
                 if let Some(message) = snapshot.error {
