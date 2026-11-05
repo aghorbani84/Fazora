@@ -1,7 +1,8 @@
 //! Playback service — the bridge between UI state and the native engine.
 //!
-//! This struct is the UI-facing abstraction of playback. The native FFmpeg adapter and platform output drive these signals; the
-//! UI never touches native playback resources directly.
+//! This struct is the UI-facing abstraction of playback. The native FFmpeg
+//! adapter and platform output drive these signals; the UI never touches
+//! native playback resources directly.
 
 use crate::models::Track;
 use dioxus::prelude::*;
