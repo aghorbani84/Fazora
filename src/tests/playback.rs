@@ -84,9 +84,14 @@ fn playback_play_toggle_from_idle_does_nothing() {
 #[test]
 fn playback_play_toggle_is_ignored_without_engine() {
     let playback = with_service();
-    playback.set_state(PlaybackState::Paused { track: test_track() });
+    playback.set_state(PlaybackState::Paused {
+        track: test_track(),
+    });
     playback.play_toggle();
-    assert!(matches!(&*playback.state.read(), PlaybackState::Paused { .. }));
+    assert!(matches!(
+        &*playback.state.read(),
+        PlaybackState::Paused { .. }
+    ));
 }
 
 #[test]
