@@ -53,7 +53,7 @@ ARGS=(
   "--enable-shared" "--disable-static" "--enable-pic" "--enable-small"
   "--disable-autodetect" "--disable-programs" "--disable-doc" "--disable-debug"
   "--disable-network" "--disable-devices" "--disable-avdevice"
-  "--disable-avfilter" "--disable-postproc"
+  "--disable-avfilter"
   "--enable-mediacodec" "--enable-jni"
   "--extra-cflags=-fPIC"
   "--extra-ldflags=-Wl,-z,max-page-size=16384"
