@@ -54,10 +54,13 @@ fn main() {
         .include(&include_dir)
         .compiler(compiler)
         .flag_if_supported("-fPIC")
-        .flag_if_supported("-fvisibility=hidden")
         .warnings(true)
         .compile("fazora_ffmpeg_shim");
 
+    // Declare the archive explicitly as well as through cc's metadata. This
+    // keeps the native ABI shim linked when Dioxus drives Cargo via its linker wrapper.
+    println!("cargo:rustc-link-search=native={}", PathBuf::from(env::var("OUT_DIR").expect("OUT_DIR must be set")).display());
+    println!("cargo:rustc-link-lib=static=fazora_ffmpeg_shim");
     println!("cargo:rustc-link-search=native={}", lib_dir.display());
     println!("cargo:rustc-link-lib=dylib=avutil");
 }
