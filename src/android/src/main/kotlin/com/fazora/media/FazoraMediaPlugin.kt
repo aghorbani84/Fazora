@@ -4,6 +4,7 @@ import android.app.Activity
 import android.net.Uri
 import android.os.Looper
 import android.content.Intent
+import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
@@ -24,7 +25,8 @@ class FazoraMediaPlugin(private val activity: Activity) {
     private var player: ExoPlayer? = null
     private var lastError: String? = null
     private var pickedUri: Uri? = null
-    private val audioPicker = activity.activityResultRegistry.register(
+    private val componentActivity = activity as ComponentActivity
+    private val audioPicker = componentActivity.activityResultRegistry.register(
         "fazora-audio-picker-${activity.hashCode()}",
         ActivityResultContracts.OpenDocument()
     ) { uri ->
