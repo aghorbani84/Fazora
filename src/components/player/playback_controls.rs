@@ -32,7 +32,7 @@ pub fn PlaybackControls(props: PlaybackControlsProps) -> Element {
             return;
         }
         if let Some(track) = previous_queue.move_previous() {
-            previous_service.set_state(PlaybackState::Playing { track });
+            previous_service.play_track(track);
         }
     };
 
@@ -43,7 +43,7 @@ pub fn PlaybackControls(props: PlaybackControlsProps) -> Element {
             return;
         }
         if let Some(track) = next_queue.move_next() {
-            next_service.set_state(PlaybackState::Playing { track });
+            next_service.play_track(track);
         }
     };
 
