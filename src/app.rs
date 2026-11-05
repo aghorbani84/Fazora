@@ -29,14 +29,10 @@ pub fn App() -> Element {
     let audio = AudioService::init();
     let search = SearchService::init();
 
-    // Load the Android FFmpeg plugin after the Activity is available. This is
-    // only a dependency smoke test; playback stays unavailable until the real
-    // decoder and platform audio/video outputs are connected.
-    #[cfg(target_os = "android")]
-    use_effect(|| match crate::media_engine::ffmpeg_version() {
-        Ok(version) => tracing::info!("Loaded FFmpeg {version}"),
-        Err(error) => tracing::error!("FFmpeg native initialization failed: {error}"),
-    });
+    // Native FFmpeg initialization is deliberately not performed during app
+    // startup. The current adapter is only a smoke test, and a native loading
+    // or JNI failure must never prevent the UI from launching. Keep the
+    // diagnostic callable from an explicit test screen or debug action later.
 
     // The aggregate state itself is a signal, but its initializer only
     // assembles already-created service handles and does not invoke hooks.
