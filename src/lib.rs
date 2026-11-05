@@ -9,6 +9,7 @@ mod components;
 mod design;
 mod library;
 mod models;
+pub mod media_engine;
 mod playback;
 mod queue;
 mod routing;

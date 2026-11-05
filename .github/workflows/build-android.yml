@@ -2,7 +2,7 @@ name: Build Android APK
 
 on:
   push:
-    branches: [main]
+    branches: [main, feature/ffmpeg-media-engine]
     tags: ["v*"]
   pull_request:
     branches: [main]
@@ -33,6 +33,11 @@ jobs:
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
         with:
           persist-credentials: false
+
+      - name: Install FFmpeg build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes nasm xz-utils gnupg
 
       - name: Install Android SDK
         uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407
@@ -91,6 +96,19 @@ jobs:
           test -n "$ANDROID_NDK_HOME"
           test -d "$ANDROID_NDK_HOME"
 
+      - name: Build LGPL FFmpeg shared libraries
+        env:
+          FFMPEG_OUTPUT_DIR: ${{ github.workspace }}/native/ffmpeg/prebuilt/android
+        run: |
+          scripts/build-ffmpeg-android.sh "${{ matrix.abi }}"
+          PREFIX="native/ffmpeg/prebuilt/android/${{ matrix.abi }}"
+          JNI_LIBS="src/android/src/main/jniLibs/${{ matrix.abi }}"
+          mkdir -p "$JNI_LIBS"
+          for library in avutil avcodec avformat swresample swscale; do
+            cp -L "$PREFIX/lib/lib$library.so" "$JNI_LIBS/lib$library.so"
+          done
+          echo "FAZORA_FFMPEG_ROOT=$GITHUB_WORKSPACE/$PREFIX" >> "$GITHUB_ENV"
+
       - name: Bundle installable APK
         env:
           RUST_BACKTRACE: "1"
@@ -100,6 +118,16 @@ jobs:
           test -n "$APK_PATH" || { echo "Dioxus did not produce an APK"; exit 1; }
           mkdir -p dist
           cp "$APK_PATH" "dist/FAZORA-${{ matrix.abi }}-unsigned.apk"
+
+      - name: Prepare matching FFmpeg source and license materials
+        run: |
+          PREFIX="native/ffmpeg/prebuilt/android/${{ matrix.abi }}"
+          mkdir -p dist/third-party/ffmpeg
+          cp "$PREFIX/ffmpeg-9.0.2.tar.xz" dist/third-party/ffmpeg/
+          cp "$PREFIX/ffmpeg-9.0.2.tar.xz.asc" dist/third-party/ffmpeg/
+          cp "$PREFIX/LICENSE.md" "$PREFIX/COPYING.LGPLv2.1" dist/third-party/ffmpeg/
+          cp "$PREFIX/configure-command.txt" "$PREFIX/ffmpeg-config.log" dist/third-party/ffmpeg/
+          cp THIRD_PARTY_NOTICES.md dist/
 
       - name: Sign APK for direct installation
         run: |
@@ -129,5 +157,7 @@ jobs:
           path: |
             dist/FAZORA-${{ matrix.abi }}.apk
             dist/FAZORA-${{ matrix.abi }}.apk.sha256
+            dist/THIRD_PARTY_NOTICES.md
+            dist/third-party/ffmpeg/**
           if-no-files-found: error
           retention-days: 30
