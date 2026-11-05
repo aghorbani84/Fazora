@@ -29,6 +29,7 @@ extern "Kotlin" {
 pub struct EngineSnapshot {
     pub engine_available: bool,
     pub is_playing: bool,
+    pub play_when_ready: bool,
     pub playback_state: i32,
     pub position_ms: i64,
     pub duration_ms: i64,
