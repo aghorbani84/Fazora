@@ -6,6 +6,8 @@ on:
     paths:
       - "scripts/build-ffmpeg-android.sh"
       - "native/ffmpeg/**"
+      - "src/**"
+      - "Cargo.toml"
       - ".github/workflows/build-ffmpeg-android.yml"
   pull_request:
     branches: [main]
@@ -65,3 +67,25 @@ jobs:
           path: native/ffmpeg/prebuilt/android/${{ matrix.abi }}/
           if-no-files-found: error
           retention-days: 90
+
+  rust-validation:
+    name: Rust playback service validation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a
+        with:
+          persist-credentials: false
+
+      - name: Install stable Rust
+        uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec
+        with:
+          toolchain: stable
+          components: rustfmt
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Run Rust tests
+        run: cargo test --all-targets
