@@ -6,7 +6,7 @@ use dioxus::prelude::*;
 #[component]
 pub fn Search() -> Element {
     let navigator = use_navigator();
-    let mut query = use_signal(String::new);
+    let query = use_signal(String::new);
 
     rsx! {
         div {
