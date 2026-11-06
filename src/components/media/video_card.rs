@@ -16,7 +16,7 @@ pub fn VideoCard(props: VideoCardProps) -> Element {
         id: props.video.id.clone(),
     };
     let keyboard_target = click_target.clone();
-    let click_navigator = navigator.clone();
+    let click_navigator = navigator;
     let keyboard_navigator = navigator;
     let progress = props.video.progress_ratio().clamp(0.0, 1.0);
     let duration = props
