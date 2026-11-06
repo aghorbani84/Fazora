@@ -1,8 +1,8 @@
 //! Album page: large artwork, metadata, track listing, playback actions.
 
 use crate::components::media::{Artwork, Metadata};
-use crate::components::primitives::{Badge, Button};
-use crate::models::{Album, Track};
+use crate::components::primitives::Button;
+use crate::models::Track;
 use crate::state::AppState;
 use dioxus::prelude::*;
 
