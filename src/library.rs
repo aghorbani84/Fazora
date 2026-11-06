@@ -47,7 +47,7 @@ impl LibraryService {
         }
     }
 
-    #[allow(dead_code, reason = "reserved for the P3 scanner and persistence adapter; not wired in Phase 1")]
+    #[allow(dead_code, reason = "P3 scanner and persistence adapter will use this")]
     pub fn track_count(&self) -> usize {
         self.library.read().tracks.len()
     }
