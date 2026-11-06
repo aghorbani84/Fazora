@@ -9,7 +9,7 @@ Scope: CI/CD only; no UI, scanner, playback, permissions, or product-feature cha
 - Dioxus is pinned to 0.7.10.
 - Its published manifest sets Rust MSRV to 1.83.0; the application previously declared 1.78.
 - The project must emit a real APK for `aarch64-linux-android` and `x86_64-linux-android`, signed with an ephemeral debug key for testing.
-- CI must build on every push, verify signatures/checksums, and attempt an x86_64 emulator install/launch smoke test.
+- CI must build on every push, verify signatures/checksums, and attempt an x86_64 Android 15 16 KiB page-size emulator install/launch smoke test.
 - No production signing secret, tag, release, or main-branch mutation is allowed in this phase.
 
 ## Options and weighted evaluation
@@ -32,7 +32,7 @@ Sensitivity test: each weight varied individually by +/-20%, then weights renorm
 4. Keep `panic = "unwind"` explicitly (the Rust default) so panic diagnostics remain available to the smoke test and crash logs; do not optimize away unwind diagnostics with `panic = "abort"`.
 5. Build APKs with Dioxus CLI 0.7.10 using the source-verified flags `dx bundle --android --release --package-types apk --target <triple> --out-dir dist --cargo-args=--locked`.
 6. The current Ubuntu 24.04 runner image already lists Android platform 35, Build Tools 35.0.0, command-line tools and platform-tools; it lists NDK 27.3.13750724 and 29.0.14206865, not r28c. The workflow explicitly installs platform 35, Build Tools 35.0.0, NDK r28c and JDK 17 so the build does not depend on image drift. NDK r28+ is required here because Android 15+ 16 KiB page-size compatibility requires 16 KiB ELF LOAD alignment; NDK r28 provides this by default.
-7. GitHub's Android emulator runner documents hardware acceleration for larger Linux runners. Standard `ubuntu-24.04` KVM availability is not assumed: the workflow checks `/dev/kvm` and `kvm-ok`, uses hardware acceleration when available, and attempts software emulation otherwise. If software emulation times out, use a larger GitHub runner with KVM or a self-hosted Linux runner with KVM; report the smoke gate as failed until it passes.
+7. The emulator smoke uses the documented `google_apis_ps16k` x86_64 system image and asserts `adb shell getconf PAGE_SIZE` equals 16384 before installation. GitHub's Android emulator runner documents hardware acceleration for larger Linux runners. Standard `ubuntu-24.04` KVM availability is not assumed: the workflow checks `/dev/kvm` and `kvm-ok`, uses hardware acceleration when available, and attempts software emulation otherwise. If software emulation times out, use a larger GitHub runner with KVM or a self-hosted Linux runner with KVM; report the smoke gate as failed until it passes.
 8. Sign each CI APK with a temporary debug key. Different runs will not be update-compatible; uninstall an older CI build before installing a new run's APK. Persistent signing remains a later owner-controlled gate.
 
 ## Verified Dioxus 0.7.10 CLI surface
