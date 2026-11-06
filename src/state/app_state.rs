@@ -4,7 +4,6 @@ use crate::{
     audio::AudioService, library::LibraryService, playback::PlaybackService, queue::QueueService,
     search::SearchService, settings::SettingsService,
 };
-use dioxus::prelude::*;
 
 /// Root application state. Every service lives here; views reach them through
 /// `use_context::<Signal<AppState>>()`.
