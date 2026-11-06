@@ -16,7 +16,6 @@ pub struct FazoraLogoProps {
 
 #[component]
 pub fn FazoraLogo(props: FazoraLogoProps) -> Element {
-    let scale = if props.compact { 1.0 } else { 1.25 };
     let stroke = (props.size as f32 * 0.18) as u32;
     let view = props.size;
 
