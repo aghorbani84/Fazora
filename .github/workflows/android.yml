@@ -140,7 +140,7 @@ jobs:
           echo "android_sdk=35" >> dist/build-metadata.txt
           echo "android_build_tools=35.0.0" >> dist/build-metadata.txt
           echo "android_ndk=r28c" >> dist/build-metadata.txt
-          java -version 2>&1 | head -n 1 >> dist/build-metadata.txt
+          java -version 2>&1 | sed -n '1p' >> dist/build-metadata.txt
           rustc --version >> dist/build-metadata.txt
           dx --version >> dist/build-metadata.txt
           du -h "$signed" | tee -a dist/build-metadata.txt
