@@ -4,10 +4,10 @@
 
 | Component | Requirement |
 |-----------|-------------|
-| Rust | 1.78+ |
+| Rust | 1.83+ (pinned project toolchain: 1.99.1) |
 | Linux | libwebkit2gtk-4.0-dev, libgtk-3-dev |
 | Windows | MSVC toolchain |
-| Android | Android SDK, NDK r26b, JDK 17 |
+| Android | Android SDK platform 35, Build Tools 35.0.0, NDK r28c, JDK 17, Dioxus CLI 0.7.10 |
 
 ## Linux
 
@@ -63,7 +63,7 @@ The binary is at `target/release/fazora.exe`.
 ### Prerequisites
 
 - Android SDK (command-line tools)
-- Android NDK r26b
+- Android NDK r28c
 - JDK 17
 - Rust Android targets:
 
@@ -76,12 +76,12 @@ rustup target add aarch64-linux-android x86_64-linux-android
 ```bash
 git clone https://github.com/aghorbani84/Fazora.git
 cd Fazora
-cargo build --release --target aarch64-linux-android
+dx bundle --android --release --package-types apk --target aarch64-linux-android --cargo-args=--locked
 ```
 
-The native library is at `target/aarch64-linux-android/release/libfazora.so`.
+The installable APK is produced under the Dioxus bundle output directory.
 
-APK packaging requires Dioxus mobile toolchain configuration.
+The Android workflow publishes a debug-signed APK and SHA-256 checksum as GitHub Actions artifacts. See INSTALL.md.
 
 ## Verification
 
