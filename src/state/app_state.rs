@@ -12,8 +12,10 @@ pub struct AppState {
     pub playback: PlaybackService,
     pub queue: QueueService,
     pub library: LibraryService,
+    #[allow(dead_code, reason = "reserved for the later settings UI integration")]
     pub settings: SettingsService,
     pub audio: AudioService,
+    #[allow(dead_code, reason = "reserved for the P4 search engine integration")]
     pub search: SearchService,
 }
 
