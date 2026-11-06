@@ -143,7 +143,13 @@ jobs:
           while IFS= read -r so_file; do
             alignments="$("$llvm_objdump" -p "$so_file" | awk '$1 == "LOAD" { print $NF }')"
             test -n "$alignments" || { echo "No ELF LOAD segments found in $so_file"; exit 1; }
-            bad="$(printf '%s\\n' "$alignments" | grep -Ev '^2\\*\\*(1[4-9]|[2-9][0-9])
+            bad="$(echo "$alignments" | awk '$0 !~ /^2[*][*](1[4-9]|[2-9][0-9])$/')"
+            if [ -n "$bad" ]; then
+              echo "ELF LOAD segment(s) below 16KiB alignment in $so_file:"
+              echo "$bad"
+              exit 1
+            fi
+          done <<< "$so_files"
           (cd dist && sha256sum "FAZORA-$abi.apk" > "FAZORA-$abi.apk.sha256")
           bytes="$(stat -c '%s' "$signed")"
           printf 'abi=%s\napplication_id=com.fazora.media\nrust_target=%s\napk_size_bytes=%s\n' \
