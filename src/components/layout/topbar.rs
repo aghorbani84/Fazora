@@ -14,9 +14,9 @@ pub struct TopbarProps {
 #[component]
 pub fn Topbar(props: TopbarProps) -> Element {
     let navigator = use_navigator();
-    let search_navigator = navigator.clone();
+    let search_navigator = navigator;
     let settings_navigator = navigator.clone();
-    let mut query = use_signal(String::new);
+    let query = use_signal(String::new);
     let toggle_sidebar = props.on_toggle_sidebar;
     let open_queue = props.on_open_queue;
 
