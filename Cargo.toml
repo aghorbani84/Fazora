@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 description = "FAZORA Media — premium multimedia player. Sound. Motion. Precision."
 authors = ["FAZORA"]
-rust-version = "1.78"
+rust-version = "1.83"
 
 [[bin]]
 name = "fazora"
@@ -32,3 +32,10 @@ mobile = ["dioxus/mobile"]
 tempfile = "3"
 
 [workspace]
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "unwind"
+strip = true
