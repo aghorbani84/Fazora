@@ -1,6 +1,6 @@
 //! Audio output device selector.
 
-use crate::audio::{AudioDevice, AudioService};
+use crate::audio::AudioService;
 use dioxus::prelude::*;
 
 #[derive(Props, Clone, PartialEq)]
