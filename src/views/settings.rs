@@ -1,7 +1,5 @@
 //! Settings hub — categories, searchable.
 
-use crate::components::primitives::Button;
-use crate::state::AppState;
 use dioxus::prelude::*;
 
 #[component]
