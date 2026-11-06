@@ -1,6 +1,7 @@
 //! Centre playback controls for Now Playing and video surfaces.
 //! Buttons reflect the real playback engine state.
 
+use crate::components::branding::AppIcon;
 use crate::components::primitives::IconButton;
 use crate::playback::{PlaybackService, PlaybackState, RepeatMode};
 use crate::queue::{QueueMode, QueueService};
@@ -65,33 +66,33 @@ pub fn PlaybackControls(props: PlaybackControlsProps) -> Element {
                     active: shuffle_active,
                     title: "Shuffle",
                     onclick: toggle_shuffle,
-                    svg { class: "fz-icon", width: 22, height: 22, use { href: "#icon-shuffle" } }
+                    AppIcon { name: "shuffle", size: 22 }
                 }
             }
             IconButton {
                 active: false,
                 title: "Previous",
                 onclick: previous,
-                svg { class: "fz-icon", width: 24, height: 24, use { href: "#icon-previous" } }
+                AppIcon { name: "previous", size: 24 }
             }
             IconButton {
                 active: is_playing,
                 title: if is_playing { "Pause" } else { "Play" },
                 onclick: toggle_play,
-                svg { class: "fz-icon", width: 28, height: 28, use { href: if is_playing { "#icon-pause" } else { "#icon-play" } } }
+                AppIcon { name: if is_playing { "pause" } else { "play" }, size: 28 }
             }
             IconButton {
                 active: false,
                 title: "Next",
                 onclick: next,
-                svg { class: "fz-icon", width: 24, height: 24, use { href: "#icon-next" } }
+                AppIcon { name: "next", size: 24 }
             }
             if props.show_repeat {
                 IconButton {
                     active: repeat_mode == RepeatMode::All,
                     title: "Repeat",
                     onclick: toggle_repeat,
-                    svg { class: "fz-icon", width: 22, height: 22, use { href: "#icon-repeat" } }
+                    AppIcon { name: "repeat", size: 22 }
                 }
             }
         }

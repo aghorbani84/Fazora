@@ -1,6 +1,7 @@
 //! Video player — immersive, distraction-free surface with overlays for
 //! subtitles, audio tracks, speed and settings.
 
+use crate::components::branding::AppIcon;
 use crate::components::primitives::Button;
 use crate::models::Video;
 use crate::state::AppState;
@@ -90,12 +91,7 @@ pub fn VideoPlayer(props: VideoPlayerProps) -> Element {
                     Button {
                         variant: crate::components::primitives::ButtonVariant::Surface,
                         style: "pointer-events: auto; width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center;",
-                        svg {
-                            class: "fz-icon",
-                            width: 32,
-                            height: 32,
-                            use { href: "#icon-play" }
-                        }
+                        AppIcon { name: "play", size: 32 }
                     }
                 }
             }

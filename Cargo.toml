@@ -11,7 +11,7 @@ name = "fazora"
 path = "src/main.rs"
 
 [dependencies]
-dioxus = { version = "0.7.10", features = ["router"] }
+dioxus = { version = "0.7.10", features = ["router", "document"] }
 dioxus-desktop = { version = "0.7.10", optional = true }
 
 serde = { version = "1", features = ["derive"] }
@@ -24,7 +24,7 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 [features]
-default = ["desktop"]
+default = []
 desktop = ["dioxus/desktop", "dep:dioxus-desktop"]
 mobile = ["dioxus/mobile"]
 
@@ -32,3 +32,8 @@ mobile = ["dioxus/mobile"]
 tempfile = "3"
 
 [workspace]
+
+[profile.release]
+opt-level = "z"
+lto = true
+strip = true

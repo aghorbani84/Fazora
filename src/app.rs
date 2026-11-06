@@ -45,6 +45,10 @@ pub fn App() -> Element {
     provide_context(app_state);
 
     rsx! {
+        document::Meta {
+            name: "viewport",
+            content: "width=device-width, initial-scale=1, viewport-fit=cover",
+        }
         style { {css::TOKENS_CSS} }
         style { {css::COMPONENTS_CSS} }
         Router::<Route> {}
