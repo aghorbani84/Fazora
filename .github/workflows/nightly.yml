@@ -1,0 +1,113 @@
+name: Nightly Android prerelease
+
+on:
+  workflow_run:
+    workflows: ["Android APK"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nightly-android
+  cancel-in-progress: false
+
+jobs:
+  publish-nightly:
+    name: Publish rolling Android prerelease
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      actions: read
+      contents: write
+    steps:
+      - name: Checkout exact source commit
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+
+      - name: Require successful CI for the same commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 30); do
+            runs="$(gh run list --workflow ci.yml --commit "$HEAD_SHA" --limit 20 --json databaseId,event,status,conclusion)"
+            ci="$(jq -c '[.[] | select(.event == "push")] | first // empty' <<< "$runs")"
+            if [ -n "$ci" ]; then
+              status="$(jq -r '.status' <<< "$ci")"
+              conclusion="$(jq -r '.conclusion // ""' <<< "$ci")"
+              if [ "$status" = "completed" ]; then
+                test "$conclusion" = "success" || { echo "CI for $HEAD_SHA concluded: $conclusion"; exit 1; }
+                echo "CI succeeded for exact SHA $HEAD_SHA"
+                exit 0
+              fi
+            fi
+            sleep 20
+          done
+          echo "Timed out waiting for the CI push run for $HEAD_SHA"
+          exit 1
+
+      - name: Download and verify both APK artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ANDROID_RUN_ID: ${{ github.event.workflow_run.id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist/arm64 dist/x86_64
+          gh run download "$ANDROID_RUN_ID" --name FAZORA-Android-arm64-v8a --dir dist/arm64
+          gh run download "$ANDROID_RUN_ID" --name FAZORA-Android-x86_64 --dir dist/x86_64
+          cp INSTALL.md dist/INSTALL.md
+          test -s dist/arm64/FAZORA-arm64-v8a.apk
+          test -s dist/x86_64/FAZORA-x86_64.apk
+          (cd dist/arm64 && sha256sum --check FAZORA-arm64-v8a.apk.sha256)
+          (cd dist/x86_64 && sha256sum --check FAZORA-x86_64.apk.sha256)
+          find dist -maxdepth 2 -type f -printf '%p %s bytes\n' | sort
+
+      - name: Create or update rolling prerelease assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          title="FAZORA nightly — $(date -u +%F)"
+          notes="$RUNNER_TEMP/nightly-notes.md"
+          cat > "$notes" <<EOF
+          Automated rolling prerelease built from commit: $HEAD_SHA
+
+          Both Android ABI APKs passed the Android APK workflow and the CI workflow for this exact commit. Checksums are included. See INSTALL.md for installation instructions.
+
+          This is a debug-signed testing build, not a production-signed release.
+          EOF
+
+          assets=(
+            dist/arm64/FAZORA-arm64-v8a.apk
+            dist/arm64/FAZORA-arm64-v8a.apk.sha256
+            dist/arm64/FAZORA-arm64-v8a-build-metadata.txt
+            dist/x86_64/FAZORA-x86_64.apk
+            dist/x86_64/FAZORA-x86_64.apk.sha256
+            dist/x86_64/FAZORA-x86_64-build-metadata.txt
+            dist/INSTALL.md
+          )
+
+          if gh release view nightly >/dev/null 2>&1; then
+            gh release edit nightly --title "$title" --notes-file "$notes" --prerelease
+            gh release upload nightly "${assets[@]}" --clobber
+          else
+            gh release create nightly "${assets[@]}" \
+              --target "$HEAD_SHA" \
+              --title "$title" \
+              --notes-file "$notes" \
+              --prerelease
+          fi
+
+          echo "Updated rolling prerelease assets for $HEAD_SHA"
