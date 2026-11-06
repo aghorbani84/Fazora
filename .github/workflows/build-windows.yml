@@ -31,8 +31,8 @@ jobs:
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec
-          toolchain: 1.99.1
         with:
+          toolchain: 1.99.1
           targets: ${{ matrix.rust_target }}
 
       - name: Build release
