@@ -11,13 +11,13 @@ Windows, and Android with platform-specific rendering backends.
 
 ```bash
 # Debug build
-cargo build
+cargo build --locked
 
 # Release build
-cargo build --release
+cargo build --locked --release
 
 # Build for aarch64
-cargo build --release --target aarch64-unknown-linux-gnu
+cargo build --locked --release --target aarch64-unknown-linux-gnu
 ```
 
 Required system packages: `libwebkit2gtk-4.1-dev libgtk-3-dev pkg-config libssl-dev libxdo-dev librsvg2-dev`
@@ -26,10 +26,10 @@ Required system packages: `libwebkit2gtk-4.1-dev libgtk-3-dev pkg-config libssl-
 
 ```bash
 # Debug build
-cargo build
+cargo build --locked
 
 # Release build
-cargo build --release
+cargo build --locked --release
 ```
 
 Required: MSVC toolchain (`rustup default stable`)
@@ -41,8 +41,8 @@ Required: MSVC toolchain (`rustup default stable`)
 rustup target add aarch64-linux-android x86_64-linux-android
 
 # Build installable APKs (not only .so files)
-dx bundle --android --release --package-types apk --target aarch64-linux-android --cargo-args=--locked
-dx bundle --android --release --package-types apk --target x86_64-linux-android --cargo-args=--locked
+dx bundle --android --release --package-types apk --target aarch64-linux-android --out-dir dist --cargo-args=--locked
+dx bundle --android --release --package-types apk --target x86_64-linux-android --out-dir dist --cargo-args=--locked
 ```
 
 Required: Android SDK platform 35, Build Tools 35.0.0, Android NDK r28c, JDK 17, Dioxus CLI 0.7.10
