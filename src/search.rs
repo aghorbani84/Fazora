@@ -31,7 +31,7 @@ impl SearchService {
         }
     }
 
-    #[allow(dead_code, reason = "reserved for the P4 search engine integration; Phase 1 is CI-only")]
+    #[allow(dead_code, reason = "P4 search engine integration will use this")]
     pub fn set_query(&self, query: String) {
         let mut state = self.state;
         state.write().query = sanitize_query(&query);
