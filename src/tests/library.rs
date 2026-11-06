@@ -4,7 +4,7 @@
 //! run inside a component scope, so each test mounts the service through the
 //! `VirtualDom` harness defined in `mod.rs`.
 
-use crate::library::{LibraryService, MediaDirectory, ScanStatus};
+use crate::library_service::{LibraryService, MediaDirectory, ScanStatus};
 use crate::models::{Album, Artist, Library, LibraryStats, Track, Video};
 use dioxus::prelude::*;
 use std::path::PathBuf;
