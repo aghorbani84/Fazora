@@ -17,8 +17,8 @@ pub fn NowPlaying() -> Element {
 
     let track = playback.state.read().current_track().cloned();
 
-    let mut show_queue = use_signal(|| false);
-    let mut show_lyrics = use_signal(|| false);
+    let show_queue = use_signal(|| false);
+    let show_lyrics = use_signal(|| false);
     let seek_service = playback.clone();
 
     rsx! {
