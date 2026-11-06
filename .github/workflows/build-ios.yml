@@ -10,10 +10,15 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: build-ios-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     name: Build iOS ARM64 app bundle (unsigned)
     runs-on: macos-15
+    timeout-minutes: 90
     steps:
       - name: Checkout
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
@@ -23,6 +28,7 @@ jobs:
       - name: Install Rust iOS target
         uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec
         with:
+          toolchain: 1.99.1
           targets: aarch64-apple-ios
 
       - name: Install pinned Dioxus CLI
@@ -37,7 +43,7 @@ jobs:
 
       - name: Bundle iOS app
         run: |
-          dx bundle --ios --release --package-types ios --target aarch64-apple-ios --verbose
+          dx bundle --ios --release --package-types ios --target aarch64-apple-ios --cargo-args=--locked --verbose
           APP_PATH="$(find target -type d -name '*.app' -print -quit)"
           test -n "$APP_PATH" || { echo "No iOS .app bundle was produced"; exit 1; }
           mkdir -p dist
