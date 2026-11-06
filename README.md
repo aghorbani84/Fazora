@@ -84,7 +84,7 @@ Install Android SDK command-line tools, Android NDK r28c or newer, JDK 17, Rust,
 ```bash
 rustup target add aarch64-linux-android
 cargo install dioxus-cli --version 0.7.10 --locked
-dx bundle --android --release --package-types apk --target aarch64-linux-android
+dx bundle --android --release --package-types apk --target aarch64-linux-android --out-dir dist --cargo-args=--locked
 ```
 
 The Android GitHub Actions workflow builds installable APKs for `arm64-v8a` and `x86_64`, verifies their signatures, and uploads each APK with a SHA-256 checksum. CI uses a temporary signing key, so APKs from separate workflow runs have different signing identities; uninstall an older CI build before installing a new one. For production updates, configure a persistent private signing key in GitHub Actions secrets.
