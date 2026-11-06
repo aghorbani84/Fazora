@@ -15,10 +15,10 @@ Weights: correctness/safety 0.30, maintainability 0.20, performance 0.20, revers
 
 | Option | Correctness | Maintainability | Performance | Reversibility | Effort | Weighted |
 |---|---:|---:|---:|---:|---:|---:|
-| Keep current floating stable + MSRV 1.78 | 3 | 4 | 7 | 9 | 10 | 5.65 |
+| Keep current floating stable + MSRV 1.78 | 3 | 4 | 7 | 9 | 10 | 5.95 |
 | Pin current stable for CI; declare/test MSRV 1.83 | 9 | 9 | 9 | 9 | 7 | 8.70 |
-| Pin every workflow to Rust 1.83 | 7 | 7 | 7 | 9 | 8 | 7.40 |
-| Do nothing | 4 | 4 | 6 | 10 | 10 | 6.10 |
+| Pin every workflow to Rust 1.83 | 7 | 7 | 7 | 9 | 8 | 7.45 |
+| Do nothing | 4 | 4 | 6 | 10 | 10 | 6.20 |
 
 ## Decision
 
