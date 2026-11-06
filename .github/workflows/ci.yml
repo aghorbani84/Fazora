@@ -88,7 +88,8 @@ jobs:
 
   android-apk:
     name: Android APK and emulator smoke test
-    uses: ./.github/workflows/android.yml
+    if: github.event_name == 'pull_request'
+    uses: ./.github/workflows/build-android.yml
     permissions:
       contents: read
 
