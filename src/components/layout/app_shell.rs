@@ -12,9 +12,9 @@ pub fn AppShell() -> Element {
     let state = use_context::<Signal<AppState>>();
     let navigator = use_navigator();
     let queue = state.read().queue.clone();
-    let mut sidebar_open = use_signal(|| false);
-    let mut secondary_open = use_signal(|| false);
-    let mut selected_route = use_signal(|| Route::Home {});
+    let sidebar_open = use_signal(|| false);
+    let secondary_open = use_signal(|| false);
+    let selected_route = use_signal(|| Route::Home {});
 
     let toggle_sidebar = move |_| {
         let mut open = sidebar_open;
