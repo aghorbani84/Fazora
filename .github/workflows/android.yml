@@ -216,7 +216,7 @@ jobs:
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
         with:
           api-level: 35
-          target: google_apis
+          target: google_apis_ps16k
           arch: x86_64
           profile: pixel_6
           emulator-boot-timeout: 1200
@@ -230,12 +230,15 @@ jobs:
             test -s "$apk"
             adb wait-for-device
             adb shell getprop sys.boot_completed | grep -q 1
+            page_size="$(adb shell getconf PAGE_SIZE | tr -d "\\r")"
+            test "$page_size" = "16384" || { echo "Expected 16KiB page size, got $page_size"; exit 1; }
             adb install -r "$apk"
             adb logcat -c
             adb shell monkey -p "$app_id" -c android.intent.category.LAUNCHER 1
             sleep 60
             adb exec-out screencap -p > smoke-evidence/screenshots/after-60-seconds.png
             adb logcat -d -v threadtime > smoke-evidence/logcat.txt
+            adb shell getconf PAGE_SIZE > smoke-evidence/page-size.txt
             adb shell dumpsys package "$app_id" > smoke-evidence/package.txt
             adb shell pidof "$app_id" > smoke-evidence/process.txt
             test -s smoke-evidence/process.txt
