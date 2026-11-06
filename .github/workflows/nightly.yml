@@ -1,0 +1,45 @@
+name: Nightly
+
+on:
+  schedule:
+    - cron: "23 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nightly
+  cancel-in-progress: true
+
+jobs:
+  nightly:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        with:
+          persist-credentials: false
+      - name: Install Linux desktop dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential pkg-config libwebkit2gtk-4.1-dev libgtk-3-dev libssl-dev libxdo-dev librsvg2-dev
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec
+      - name: Generate lockfile when bootstrapping
+        run: cargo generate-lockfile
+      - name: Build nightly binary
+        run: cargo build --release --locked
+      - name: Package nightly
+        run: |
+          mkdir -p dist
+          cp target/release/fazora dist/FAZORA-nightly-linux-x86_64
+          sha256sum dist/FAZORA-nightly-linux-x86_64 > dist/FAZORA-nightly-linux-x86_64.sha256
+      - name: Publish rolling nightly prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete nightly --yes || true
+          git push origin :refs/tags/nightly || true
+          gh release create nightly dist/* --title "FAZORA Nightly" --notes "Rolling nightly build from main. Not a stable release." --prerelease

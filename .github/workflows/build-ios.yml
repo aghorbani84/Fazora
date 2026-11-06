@@ -1,40 +1,35 @@
-name: Build iOS
+name: Build iOS (manual)
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: ios-manual-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
-    name: Build iOS ARM64 app bundle (unsigned)
+    name: iOS ARM64 app bundle (unsigned)
     runs-on: macos-15
+    timeout-minutes: 60
     steps:
-      - name: Checkout
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
         with:
           persist-credentials: false
-
-      - name: Install Rust iOS target
-        uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec
         with:
           targets: aarch64-apple-ios
-
       - name: Install pinned Dioxus CLI
         run: cargo install dioxus-cli --version 0.7.10 --locked
-
       - name: Verify Apple toolchain
         run: |
           xcodebuild -version
           xcrun --sdk iphoneos --show-sdk-version
           rustc --version
           dx --version
-
       - name: Bundle iOS app
         run: |
           dx bundle --ios --release --package-types ios --target aarch64-apple-ios --verbose
@@ -43,13 +38,9 @@ jobs:
           mkdir -p dist
           ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" dist/FAZORA-iOS-arm64-unsigned.app.zip
           shasum -a 256 dist/FAZORA-iOS-arm64-unsigned.app.zip > dist/FAZORA-iOS-arm64-unsigned.app.zip.sha256
-
-      - name: Upload iOS build artifact
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: FAZORA-iOS-arm64-unsigned
           path: |
             dist/FAZORA-iOS-arm64-unsigned.app.zip
             dist/FAZORA-iOS-arm64-unsigned.app.zip.sha256
-          if-no-files-found: error
-          retention-days: 30
