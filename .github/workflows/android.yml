@@ -112,7 +112,8 @@ jobs:
           actual="$("$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$apk_path" | sed -n "s/^package: name='\\([^']*\\)'.*/\\1/p" | head -n 1)"
           test "$actual" = "$expected" || { echo "Expected application id $expected, got $actual"; exit 1; }
           mv "$apk_path" "dist/FAZORA-${{ matrix.abi }}-unsigned.apk"
-          echo "bundle_seconds=$((finished-started))" >> "$GITHUB_STEP_SUMMARY"
+          echo "bundle_seconds=$((finished-started))" > dist/build-time.txt
+          cat dist/build-time.txt >> "$GITHUB_STEP_SUMMARY"
 
       - name: Align, debug-sign and verify APK
         run: |
@@ -135,6 +136,11 @@ jobs:
           bytes="$(stat -c '%s' "$signed")"
           printf 'abi=%s\napplication_id=com.fazora.media\nrust_target=%s\napk_size_bytes=%s\n' \
             "$abi" "${{ matrix.rust_target }}" "$bytes" > "dist/build-metadata.txt"
+          cat dist/build-time.txt >> dist/build-metadata.txt
+          echo "android_sdk=35" >> dist/build-metadata.txt
+          echo "android_build_tools=35.0.0" >> dist/build-metadata.txt
+          echo "android_ndk=r28c" >> dist/build-metadata.txt
+          java -version 2>&1 | head -n 1 >> dist/build-metadata.txt
           rustc --version >> dist/build-metadata.txt
           dx --version >> dist/build-metadata.txt
           du -h "$signed" | tee -a dist/build-metadata.txt
