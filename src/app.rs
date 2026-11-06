@@ -7,7 +7,7 @@
 
 use crate::audio::AudioService;
 use crate::design::css;
-use crate::library::LibraryService;
+use crate::library_service::LibraryService;
 use crate::playback::PlaybackService;
 use crate::queue::QueueService;
 use crate::routing::Route;
