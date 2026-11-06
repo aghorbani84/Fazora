@@ -20,7 +20,7 @@ cargo build --release
 cargo build --release --target aarch64-unknown-linux-gnu
 ```
 
-Required system packages: `libwebkit2gtk-4.0-dev libgtk-3-dev`
+Required system packages: `libwebkit2gtk-4.1-dev libgtk-3-dev pkg-config libssl-dev libxdo-dev librsvg2-dev`
 
 ### Windows (WebView2 backend)
 
@@ -40,12 +40,12 @@ Required: MSVC toolchain (`rustup default stable`)
 # Add targets
 rustup target add aarch64-linux-android x86_64-linux-android
 
-# Build native library
-cargo build --release --target aarch64-linux-android
-cargo build --release --target x86_64-linux-android
+# Build installable APKs (not only .so files)
+dx bundle --android --release --package-types apk --target aarch64-linux-android --cargo-args=--locked
+dx bundle --android --release --package-types apk --target x86_64-linux-android --cargo-args=--locked
 ```
 
-Required: Android SDK, NDK r26b, JDK 17
+Required: Android SDK platform 35, Build Tools 35.0.0, Android NDK r28c, JDK 17, Dioxus CLI 0.7.10
 
 ## Build Profiles
 
