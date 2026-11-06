@@ -1,0 +1,223 @@
+name: Android APK
+
+on:
+  push:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: APK (${{ matrix.abi }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - abi: arm64-v8a
+            rust_target: aarch64-linux-android
+          - abi: x86_64
+            rust_target: x86_64-linux-android
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        with:
+          persist-credentials: false
+
+      - name: Install Android SDK command-line tools
+        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407
+        with:
+          packages: platform-tools
+
+      - name: Install pinned Android SDK platform and build tools
+        run: |
+          yes | sdkmanager --licenses
+          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Install pinned Android NDK
+        id: ndk
+        uses: nttld/setup-ndk@afb4c9964b521afb97c864b7d40b11e6911bd410
+        with:
+          ndk-version: r28c
+          link-to-sdk: true
+
+      - name: Export NDK environment
+        env:
+          NDK_PATH: ${{ steps.ndk.outputs.ndk-path }}
+        run: |
+          echo "ANDROID_NDK_HOME=$NDK_PATH" >> "$GITHUB_ENV"
+          echo "NDK_HOME=$NDK_PATH" >> "$GITHUB_ENV"
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install Rust Android target
+        run: rustup target add ${{ matrix.rust_target }}
+
+      - name: Download and verify Dioxus CLI 0.7.10
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/dx-0.7.10.tar.gz"
+          curl --fail --location --retry 3 \
+            "https://github.com/DioxusLabs/dioxus/releases/download/v0.7.10/dx-x86_64-unknown-linux-gnu.tar.gz" \
+            --output "$archive"
+          echo "4363e4ed2a3f1eb7f4d38d2d59aed59ce43271c44c16b425e92c89a64761fbe7  $archive" | sha256sum --check
+          mkdir -p "$RUNNER_TEMP/dx"
+          tar -xzf "$archive" -C "$RUNNER_TEMP/dx"
+          dx_bin="$(find "$RUNNER_TEMP/dx" -type f -name dx -perm -u+x -print -quit)"
+          test -n "$dx_bin"
+          sudo install -m 0755 "$dx_bin" /usr/local/bin/dx
+          dx --version
+
+      - name: Verify Android build environment
+        run: |
+          set -euo pipefail
+          rustc --version
+          cargo --version
+          dx --version
+          java -version
+          test -d "$ANDROID_HOME/platforms/android-35"
+          test -x "$ANDROID_HOME/build-tools/35.0.0/aapt"
+          test -x "$ANDROID_HOME/build-tools/35.0.0/zipalign"
+          test -x "$ANDROID_HOME/build-tools/35.0.0/apksigner"
+          test -d "$ANDROID_NDK_HOME/toolchains/llvm"
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_NDK_HOME=$ANDROID_NDK_HOME"
+
+      - name: Bundle APK with Dioxus CLI
+        env:
+          RUST_BACKTRACE: "1"
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          started="$(date +%s)"
+          dx bundle --android --release --package-types apk \
+            --target "${{ matrix.rust_target }}" \
+            --out-dir dist --cargo-args=--locked --verbose
+          finished="$(date +%s)"
+          apk_path="$(find dist -maxdepth 1 -type f -name '*.apk' -print -quit)"
+          test -n "$apk_path" || { echo "Dioxus did not produce an APK"; exit 1; }
+          expected="com.fazora.media"
+          actual="$("$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$apk_path" | sed -n "s/^package: name='\\([^']*\\)'.*/\\1/p" | head -n 1)"
+          test "$actual" = "$expected" || { echo "Expected application id $expected, got $actual"; exit 1; }
+          mv "$apk_path" "dist/FAZORA-${{ matrix.abi }}-unsigned.apk"
+          echo "bundle_seconds=$((finished-started))" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Align, debug-sign and verify APK
+        run: |
+          set -euo pipefail
+          abi="${{ matrix.abi }}"
+          unsigned="dist/FAZORA-$abi-unsigned.apk"
+          aligned="dist/FAZORA-$abi-aligned.apk"
+          signed="dist/FAZORA-$abi.apk"
+          key="$RUNNER_TEMP/fazora-ci-debug.keystore"
+          keytool -genkeypair -v -keystore "$key" -storepass android -keypass android \
+            -alias fazora-ci -keyalg RSA -keysize 2048 -validity 10000 \
+            -dname "CN=FAZORA CI,O=FAZORA,C=US"
+          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -f -p 4 "$unsigned" "$aligned"
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" sign \
+            --ks "$key" --ks-key-alias fazora-ci \
+            --ks-pass pass:android --key-pass pass:android \
+            --out "$signed" "$aligned"
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$signed"
+          (cd dist && sha256sum "FAZORA-$abi.apk" > "FAZORA-$abi.apk.sha256")
+          bytes="$(stat -c '%s' "$signed")"
+          printf 'abi=%s\napplication_id=com.fazora.media\nrust_target=%s\napk_size_bytes=%s\n' \
+            "$abi" "${{ matrix.rust_target }}" "$bytes" > "dist/build-metadata.txt"
+          rustc --version >> dist/build-metadata.txt
+          dx --version >> dist/build-metadata.txt
+          du -h "$signed" | tee -a dist/build-metadata.txt
+
+      - name: Upload installable APK and checksum
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: FAZORA-Android-${{ matrix.abi }}
+          path: |
+            dist/FAZORA-${{ matrix.abi }}.apk
+            dist/FAZORA-${{ matrix.abi }}.apk.sha256
+            dist/build-metadata.txt
+          if-no-files-found: error
+          retention-days: 30
+
+  emulator-smoke:
+    name: x86_64 emulator install, launch and 60s logcat smoke
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    permissions:
+      contents: read
+    steps:
+      - name: Create evidence directory
+        run: mkdir -p smoke-evidence/screenshots
+
+      - name: Verify KVM and grant emulator access
+        run: |
+          set -euo pipefail
+          if [ ! -e /dev/kvm ]; then
+            echo "::error::GitHub runner did not expose /dev/kvm; hardware-accelerated emulator smoke test cannot run."
+            exit 1
+          fi
+          sudo apt-get update
+          sudo apt-get install -y cpu-checker
+          sudo kvm-ok
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Download x86_64 APK
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: FAZORA-Android-x86_64
+          path: dist
+
+      - name: Install, launch, wait 60 seconds and inspect logcat
+        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          emulator-boot-timeout: 600
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          disable-animations: true
+          script: |
+            set -euo pipefail
+            app_id="com.fazora.media"
+            apk="dist/FAZORA-x86_64.apk"
+            test -s "$apk"
+            adb wait-for-device
+            adb shell getprop sys.boot_completed | grep -q 1
+            adb install -r "$apk"
+            adb logcat -c
+            adb shell monkey -p "$app_id" -c android.intent.category.LAUNCHER 1
+            sleep 60
+            adb exec-out screencap -p > smoke-evidence/screenshots/after-60-seconds.png
+            adb logcat -d -v threadtime > smoke-evidence/logcat.txt
+            adb shell dumpsys package "$app_id" > smoke-evidence/package.txt
+            adb shell pidof "$app_id" > smoke-evidence/process.txt
+            test -s smoke-evidence/process.txt
+            if grep -E 'FATAL EXCEPTION|panicked at' smoke-evidence/logcat.txt; then
+              echo "Crash signature found in logcat"
+              exit 1
+            fi
+            printf 'PASS: installed, launched, process alive after 60 seconds, no crash signatures found.\n' > smoke-evidence/result.txt
+
+      - name: Upload emulator logs and screenshot
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: FAZORA-Android-emulator-smoke
+          path: smoke-evidence/
+          if-no-files-found: warn
+          retention-days: 30
