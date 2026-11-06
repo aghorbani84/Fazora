@@ -1,0 +1,38 @@
+name: Resolve Cargo lockfile
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  resolve:
+    name: Resolve and archive Cargo.lock
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        with:
+          persist-credentials: false
+
+      - name: Install pinned Rust toolchain
+        uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec
+        with:
+          toolchain: 1.99.1
+
+      - name: Resolve dependencies
+        run: |
+          cargo generate-lockfile
+          cargo metadata --locked --format-version 1 > /dev/null
+          test -s Cargo.lock
+
+      - name: Upload resolved lockfile
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fazora-cargo-lockfile
+          path: Cargo.lock
+          if-no-files-found: error
+          retention-days: 7
