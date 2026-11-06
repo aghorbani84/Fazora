@@ -30,7 +30,6 @@ jobs:
         uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec
         with:
           toolchain: 1.99.1
-          toolchain: 1.99.1
 
       - name: Build release
         run: cargo build --locked --release
