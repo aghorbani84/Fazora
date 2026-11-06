@@ -86,6 +86,12 @@ jobs:
       - name: Audit locked dependencies
         run: cargo audit
 
+  android-apk:
+    name: Android APK and emulator smoke test
+    uses: ./.github/workflows/android.yml
+    permissions:
+      contents: read
+
   build-linux:
     name: Linux x86_64 release build
     runs-on: ubuntu-24.04
