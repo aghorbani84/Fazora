@@ -1,16 +1,7 @@
-//! Android-style bottom navigation with primary destinations.
-
+//! Four-destination Android bottom navigation.
+use crate::components::branding::AppIcon;
 use crate::routing::Route;
 use dioxus::prelude::*;
-
-#[derive(Clone, Copy, PartialEq, Eq)]
-enum BottomDestination {
-    Home,
-    Music,
-    Videos,
-    Library,
-    Settings,
-}
 
 #[derive(Props, Clone, PartialEq)]
 pub struct BottomNavigationProps {
@@ -23,88 +14,28 @@ pub fn BottomNavigation(props: BottomNavigationProps) -> Element {
     let selected = props.selected.cloned();
     let on_navigate = props.on_navigate;
     let destinations = [
-        (BottomDestination::Home, Route::Home {}, "icon-home", "Home"),
-        (
-            BottomDestination::Music,
-            Route::Music {},
-            "icon-music",
-            "Music",
-        ),
-        (
-            BottomDestination::Videos,
-            Route::Videos {},
-            "icon-video",
-            "Videos",
-        ),
-        (
-            BottomDestination::Library,
-            Route::Library {},
-            "icon-folder",
-            "Library",
-        ),
-        (
-            BottomDestination::Settings,
-            Route::Settings {},
-            "icon-settings",
-            "Settings",
-        ),
+        (Route::Home {}, "home", "Home"),
+        (Route::Library {}, "library", "Library"),
+        (Route::Playlists {}, "playlist", "Playlists"),
+        (Route::Search {}, "search", "Search"),
     ];
 
     rsx! {
         nav {
             class: "fz-bottom-nav",
             role: "navigation",
-            aria_label: "Bottom navigation",
-            for (destination, route, icon, label) in destinations {
-                BottomNavItem {
+            aria_label: "Primary navigation",
+            for (route, icon, label) in destinations {
+                button {
                     key: "{label}",
-                    destination,
-                    route: route.clone(),
-                    icon,
-                    label,
-                    selected: selected == route.clone(),
-                    on_navigate,
+                    class: if selected == route { "fz-bottom-nav-item active" } else { "fz-bottom-nav-item" },
+                    aria_label: "{label}",
+                    aria_current: if selected == route { "page" } else { "false" },
+                    onclick: move |_| on_navigate.call(route.clone()),
+                    AppIcon { name: icon, size: 21 }
+                    span { "{label}" }
                 }
             }
-        }
-    }
-}
-
-#[derive(Props, Clone, PartialEq)]
-struct BottomNavItemProps {
-    destination: BottomDestination,
-    route: Route,
-    icon: &'static str,
-    label: &'static str,
-    selected: bool,
-    on_navigate: EventHandler<Route>,
-}
-
-#[component]
-fn BottomNavItem(props: BottomNavItemProps) -> Element {
-    let navigator = use_navigator();
-    let route = props.route.clone();
-    let on_navigate = props.on_navigate;
-    let is_selected = props.selected;
-    let _destination = props.destination;
-
-    rsx! {
-        button {
-            class: if is_selected { "fz-bottom-nav-item active" } else { "fz-bottom-nav-item" },
-            role: "button",
-            "aria-selected": if is_selected { "true" } else { "false" },
-            tabindex: 0,
-            onclick: move |_| {
-                navigator.push(route.clone());
-                on_navigate.call(route.clone());
-            },
-            span {
-                class: "fz-icon",
-                width: 20,
-                height: 20,
-                use { href: format!("#{}", props.icon) }
-            }
-            span { "{props.label}" }
         }
     }
 }

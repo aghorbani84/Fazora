@@ -1,5 +1,6 @@
 //! Album page: large artwork, metadata, track listing, playback actions.
 
+use crate::components::branding::AppIcon;
 use crate::components::media::{Artwork, Metadata};
 use crate::components::primitives::{Badge, Button};
 use crate::models::{Album, Track};
@@ -123,7 +124,7 @@ pub fn Album(props: AlbumProps) -> Element {
                                     Button {
                                         variant: crate::components::primitives::ButtonVariant::Ghost,
                                         onclick: move |_| {},
-                                        svg { class: "fz-icon", width: 16, height: 16, use { href: "#icon-queue" } }
+                                        AppIcon { name: "queue", size: 16 }
                                     }
                                 }
                             }

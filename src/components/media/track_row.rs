@@ -1,5 +1,6 @@
 //! Track list row with multi-selection, playback actions and metadata.
 
+use crate::components::branding::AppIcon;
 use crate::components::primitives::IconButton;
 use crate::models::Track;
 use dioxus::prelude::*;
@@ -106,7 +107,7 @@ pub fn TrackRow(props: TrackRowProps) -> Element {
                         evt.stop_propagation();
                         on_add_queue.call(queue_track.clone());
                     },
-                    svg { class: "fz-icon", width: 16, height: 16, use { href: "#icon-queue" } }
+                    AppIcon { name: "queue", size: 16 }
                 }
             }
         }

@@ -2,6 +2,7 @@
 //! visual focus, waveform seekbar, queue and lyrics panels.
 
 use crate::components::audio::lyrics_view::LyricsView;
+use crate::components::branding::AppIcon;
 use crate::components::media::Artwork;
 use crate::components::player::playback_controls::PlaybackControls;
 use crate::components::player::timeline::Timeline;
@@ -38,7 +39,7 @@ pub fn NowPlaying() -> Element {
                         active: show_queue.cloned(),
                         title: "Queue",
                         onclick: move |_| { let mut signal = show_queue; let next = !*signal.read(); signal.set(next); },
-                        svg { class: "fz-icon", width: 18, height: 18, use { href: "#icon-queue" } }
+                        AppIcon { name: "queue", size: 18 }
                     }
                     crate::components::primitives::IconButton {
                         active: show_lyrics.cloned(),
@@ -48,7 +49,7 @@ pub fn NowPlaying() -> Element {
                             let next = !*signal.read();
                             signal.set(next);
                         },
-                        svg { class: "fz-icon", width: 18, height: 18, use { href: "#icon-lyrics" } }
+                        AppIcon { name: "lyrics", size: 18 }
                     }
                 }
             }
@@ -132,13 +133,13 @@ pub fn NowPlaying() -> Element {
                         active: false,
                         title: "Favorite",
                         onclick: move |_| {},
-                        svg { class: "fz-icon", width: 20, height: 20, use { href: "#icon-star" } }
+                        AppIcon { name: "star", size: 20 }
                     }
                     crate::components::primitives::IconButton {
                         active: false,
                         title: "Share",
                         onclick: move |_| {},
-                        svg { class: "fz-icon", width: 20, height: 20, use { href: "#icon-globe" } }
+                        AppIcon { name: "globe", size: 20 }
                     }
                 }
                 div {

@@ -1,5 +1,6 @@
 //! Volume control with mute toggle and slider.
 
+use crate::components::branding::AppIcon;
 use crate::components::primitives::{IconButton, Slider};
 use crate::playback::PlaybackService;
 use dioxus::prelude::*;
@@ -31,7 +32,7 @@ pub fn VolumeControl(props: VolumeControlProps) -> Element {
                 active: muted,
                 title: if muted { "Unmute" } else { "Mute" },
                 onclick: toggle_mute,
-                svg { class: "fz-icon", width: 18, height: 18, use { href: if muted { "#icon-volume-mute" } else { "#icon-volume" } } }
+                AppIcon { name: if muted { "volume-mute" } else { "volume" }, size: 18 }
             }
             Slider {
                 value: effective as f64,

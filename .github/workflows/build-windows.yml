@@ -35,7 +35,7 @@ jobs:
           targets: ${{ matrix.rust_target }}
 
       - name: Build release
-        run: cargo build --release --target ${{ matrix.rust_target }}
+        run: cargo build --release --features desktop --target ${{ matrix.rust_target }}
 
       - name: Create portable ZIP package
         run: |

@@ -28,7 +28,7 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec
       - name: Build
-        run: cargo build --release
+        run: cargo build --release --features desktop
       - name: Package and checksum
         run: |
           mkdir -p dist/fazora-linux-x86_64
@@ -56,7 +56,7 @@ jobs:
         with:
           targets: x86_64-pc-windows-msvc
       - name: Build
-        run: cargo build --release --target x86_64-pc-windows-msvc
+        run: cargo build --release --features desktop --target x86_64-pc-windows-msvc
       - name: Package and checksum
         shell: pwsh
         run: |

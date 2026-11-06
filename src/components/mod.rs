@@ -4,7 +4,6 @@
 pub mod audio;
 pub mod branding;
 pub mod layout;
-pub const ICONS: &str = include_str!("../../assets/icons.svg");
 pub mod media;
 pub mod player;
 pub mod primitives;
