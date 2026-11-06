@@ -42,7 +42,7 @@ impl LibraryService {
             library: use_signal(Library::default),
             stats: use_signal(LibraryStats::default),
             scan_status: use_signal(|| ScanStatus::Idle),
-            media_dirs: use_signal(|| Vec::new()),
+            media_dirs: use_signal(Vec::new),
             indexed: use_signal(|| false),
         }
     }
@@ -64,7 +64,7 @@ impl LibraryService {
     pub fn remove_media_dir(&self, path: &PathBuf) -> Result<(), crate::security::SecurityError> {
         let canonical = validate_media_dir(path)?;
         let mut media_dirs = self.media_dirs;
-        media_dirs.write().retain(|d| &d.path != &canonical);
+        media_dirs.write().retain(|d| d.path != canonical);
         Ok(())
     }
 
