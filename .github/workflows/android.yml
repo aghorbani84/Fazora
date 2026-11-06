@@ -126,12 +126,134 @@ jobs:
           keytool -genkeypair -v -keystore "$key" -storepass android -keypass android \
             -alias fazora-ci -keyalg RSA -keysize 2048 -validity 10000 \
             -dname "CN=FAZORA CI,O=FAZORA,C=US"
-          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -f -p 4 "$unsigned" "$aligned"
+          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -P 16 -f 4 "$unsigned" "$aligned"
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" sign \
             --ks "$key" --ks-key-alias fazora-ci \
             --ks-pass pass:android --key-pass pass:android \
             --out "$signed" "$aligned"
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$signed"
+          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -c -P 16 -v 4 "$signed"
+          extracted="$RUNNER_TEMP/fazora-apk-$abi"
+          mkdir -p "$extracted"
+          unzip -q "$signed" -d "$extracted"
+          llvm_objdump="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-objdump"
+          test -x "$llvm_objdump"
+          so_files="$(find "$extracted/lib" -type f -name '*.so' -print)"
+          test -n "$so_files" || { echo "No native shared libraries found in APK"; exit 1; }
+          while IFS= read -r so_file; do
+            alignments="$("$llvm_objdump" -p "$so_file" | awk '$1 == "LOAD" { print $NF }')"
+            test -n "$alignments" || { echo "No ELF LOAD segments found in $so_file"; exit 1; }
+            bad="$(printf '%s\\n' "$alignments" | grep -Ev '^2\\*\\*(1[4-9]|[2-9][0-9])
+          (cd dist && sha256sum "FAZORA-$abi.apk" > "FAZORA-$abi.apk.sha256")
+          bytes="$(stat -c '%s' "$signed")"
+          printf 'abi=%s\napplication_id=com.fazora.media\nrust_target=%s\napk_size_bytes=%s\n' \
+            "$abi" "${{ matrix.rust_target }}" "$bytes" > "dist/build-metadata.txt"
+          cat dist/build-time.txt >> dist/build-metadata.txt
+          echo "android_sdk=35" >> dist/build-metadata.txt
+          echo "android_build_tools=35.0.0" >> dist/build-metadata.txt
+          echo "android_ndk=r28c" >> dist/build-metadata.txt
+          java -version 2>&1 | sed -n '1p' >> dist/build-metadata.txt
+          rustc --version >> dist/build-metadata.txt
+          dx --version >> dist/build-metadata.txt
+          echo "apk_zip_alignment=16KiB_verified" >> dist/build-metadata.txt
+          echo "elf_load_alignment=16KiB_verified" >> dist/build-metadata.txt
+          du -h "$signed" | tee -a dist/build-metadata.txt
+
+      - name: Upload installable APK and checksum
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: FAZORA-Android-${{ matrix.abi }}
+          path: |
+            dist/FAZORA-${{ matrix.abi }}.apk
+            dist/FAZORA-${{ matrix.abi }}.apk.sha256
+            dist/build-metadata.txt
+          if-no-files-found: error
+          retention-days: 30
+
+  emulator-smoke:
+    name: x86_64 emulator install, launch and 60s logcat smoke
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    permissions:
+      contents: read
+    steps:
+      - name: Create evidence directory
+        run: mkdir -p smoke-evidence/screenshots
+
+      - name: Detect KVM and enable access when available
+        id: kvm
+        run: |
+          set -euo pipefail
+          if [ -e /dev/kvm ]; then
+            sudo apt-get update
+            sudo apt-get install -y cpu-checker
+            if sudo kvm-ok; then
+              echo "available=true" >> "$GITHUB_OUTPUT"
+              echo "KVM is available; hardware-accelerated emulator selected."
+              echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+              sudo udevadm control --reload-rules
+              sudo udevadm trigger --name-match=kvm
+              exit 0
+            fi
+          fi
+          echo "available=false" >> "$GITHUB_OUTPUT"
+          echo "::warning::KVM is not available on this runner; attempting software emulation. A larger GitHub runner or self-hosted Linux runner with KVM is the faster fallback if the emulator times out."
+
+      - name: Download x86_64 APK
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: FAZORA-Android-x86_64
+          path: dist
+
+      - name: Install, launch, wait 60 seconds and inspect logcat
+        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          emulator-boot-timeout: 1200
+          disable-linux-hw-accel: ${{ steps.kvm.outputs.available != 'true' }}
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          disable-animations: true
+          script: |
+            set -euo pipefail
+            app_id="com.fazora.media"
+            apk="dist/FAZORA-x86_64.apk"
+            test -s "$apk"
+            adb wait-for-device
+            adb shell getprop sys.boot_completed | grep -q 1
+            adb install -r "$apk"
+            adb logcat -c
+            adb shell monkey -p "$app_id" -c android.intent.category.LAUNCHER 1
+            sleep 60
+            adb exec-out screencap -p > smoke-evidence/screenshots/after-60-seconds.png
+            adb logcat -d -v threadtime > smoke-evidence/logcat.txt
+            adb shell dumpsys package "$app_id" > smoke-evidence/package.txt
+            adb shell pidof "$app_id" > smoke-evidence/process.txt
+            test -s smoke-evidence/process.txt
+            if grep -E 'FATAL EXCEPTION|panicked at' smoke-evidence/logcat.txt; then
+              echo "Crash signature found in logcat"
+              exit 1
+            fi
+            printf 'PASS: installed, launched, process alive after 60 seconds, no crash signatures found.\n' > smoke-evidence/result.txt
+
+      - name: Upload emulator logs and screenshot
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: FAZORA-Android-emulator-smoke
+          path: smoke-evidence/
+          if-no-files-found: warn
+          retention-days: 30
+ || true)"
+            if [ -n "$bad" ]; then
+              echo "ELF LOAD segment(s) below 16KiB alignment in $so_file:"
+              echo "$bad"
+              exit 1
+            fi
+          done <<< "$so_files"
           (cd dist && sha256sum "FAZORA-$abi.apk" > "FAZORA-$abi.apk.sha256")
           bytes="$(stat -c '%s' "$signed")"
           printf 'abi=%s\napplication_id=com.fazora.media\nrust_target=%s\napk_size_bytes=%s\n' \
