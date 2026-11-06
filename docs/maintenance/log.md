@@ -1,0 +1,3 @@
+# Maintenance log
+
+- 2026-11-06 — Audited `main@7ee2854`; GitHub compare from prior baseline `d62698c` shows 5 changed files (+540/−4). Main CI, Security, and ARM64/x86_64 APK builds passed; cargo audit emitted 5 allowed advisory warnings and cargo deny emitted duplicate-version warnings. `cargo outdated` and documentation-link checks were unavailable; local Cargo/repository checkout is absent, and `evals/golden-tasks.md` plus an eval harness are missing. `AGENTS.md` is ~1,129 estimated tokens but is not index-only; declared MSRV 1.78 is below Dioxus 0.7.10's published 1.83.0 MSRV; no `Cargo.lock` is tracked. The release workflow attempted `v0.1.1` and failed because that tag already exists; no new release was published. No instruction or eval criteria were changed.
