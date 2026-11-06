@@ -11,7 +11,7 @@ pub fn Home() -> Element {
     let state = use_context::<Signal<AppState>>();
     let app_state = state.read();
     let library_service = app_state.library.clone();
-    let stats = library_service.stats.clone();
+    let stats = library_service.stats;
 
     rsx! {
         div {
