@@ -47,6 +47,8 @@ pub fn App() -> Element {
     rsx! {
         style { {css::TOKENS_CSS} }
         style { {css::COMPONENTS_CSS} }
+        // Mount the SVG sprite once; all icon references share this local symbol set.
+        div { class: "fz-icon-sprite", dangerous_inner_html: crate::components::ICONS }
         Router::<Route> {}
     }
 }
