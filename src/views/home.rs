@@ -1,8 +1,7 @@
-//! Home dashboard — data-driven, hides sections without data.
-//! Quick actions: Open File, Open Folder, Scan Media, Create Playlist,
-//! Open URL, Resume Playback.
+//! Home dashboard — responsive, data-driven premium media overview.
 
-use crate::models::Playlist;
+use crate::models::{Library, Playlist};
+use crate::routing::Route;
 use crate::state::AppState;
 use dioxus::prelude::*;
 
@@ -11,125 +10,59 @@ pub fn Home() -> Element {
     let state = use_context::<Signal<AppState>>();
     let app_state = state.read();
     let library_service = app_state.library.clone();
-    let stats = library_service.stats.clone();
+    let library = library_service.library.read().clone();
+    let stats = library_service.stats.read().clone();
+    let navigator = use_navigator();
+    let open_library = navigator.clone();
 
     rsx! {
         div {
-            class: "fz-page",
-            style: "max-width: none;",
-            div {
-                style: "display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-8);",
+            class: "fz-page fz-home",
+            header {
+                class: "fz-home-hero",
                 div {
-                    h1 {
-                        style: "font-size: var(--text-4xl); font-weight: 700; color: var(--text-primary); letter-spacing: -0.02em;",
-                        "Home"
-                    }
-                    p {
-                        style: "font-size: var(--text-sm); color: var(--text-secondary); margin-top: var(--space-1);",
-                        "Your media, engineered."
-                    }
+                    h1 { class: "fz-home-title", "Your Library." }
+                    p { class: "fz-home-subtitle", "Your media, engineered." }
                 }
                 div {
-                    style: "display: flex; gap: var(--space-2);",
+                    class: "fz-home-actions",
                     crate::components::primitives::Button {
                         variant: crate::components::primitives::ButtonVariant::Primary,
-                        label: "Scan media",
+                        onclick: move |_| open_library.push(Route::Library {}),
+                        label: "Open library",
                     }
                     crate::components::primitives::Button {
                         variant: crate::components::primitives::ButtonVariant::Surface,
-                        label: "Open folder",
+                        onclick: move |_| navigator.push(Route::SettingsSection { section: "library".to_string() }),
+                        label: "Library settings",
                     }
                 }
             }
 
-            // Library statistics
             div {
-                style: "display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-4); margin-bottom: var(--space-10);",
-                StatCard {
-                    label: "Tracks",
-                    value: stats.read().track_count.to_string(),
-                    icon: "#icon-track",
-                }
-                StatCard {
-                    label: "Albums",
-                    value: stats.read().album_count.to_string(),
-                    icon: "#icon-album",
-                }
-                StatCard {
-                    label: "Artists",
-                    value: stats.read().artist_count.to_string(),
-                    icon: "#icon-artist",
-                }
-                StatCard {
-                    label: "Videos",
-                    value: stats.read().video_count.to_string(),
-                    icon: "#icon-video",
-                }
+                class: "fz-stat-grid",
+                StatCard { label: "Tracks", value: stats.track_count.to_string(), icon: "#icon-track" }
+                StatCard { label: "Albums", value: stats.album_count.to_string(), icon: "#icon-album" }
+                StatCard { label: "Artists", value: stats.artist_count.to_string(), icon: "#icon-artist" }
+                StatCard { label: "Videos", value: stats.video_count.to_string(), icon: "#icon-video" }
             }
 
-            // Continue Listening
             section {
-                class: "fz-section",
-                RecentlyPlayed { library: library_service.library.read().clone() }
+                class: "fz-home-section",
+                h2 { class: "fz-home-section-title", "Continue listening" }
+                RecentlyPlayed { library: library.clone() }
             }
 
-            // Recently Added
             section {
-                class: "fz-section",
-                RecentlyAdded { library: library_service.library.read().clone() }
+                class: "fz-home-section",
+                h2 { class: "fz-home-section-title", "Recently added" }
+                RecentlyAdded { library: library.clone() }
             }
 
-            // Your Favorites
             section {
-                class: "fz-section",
-                Favorites { playlists: library_service.library.read().playlists.clone() }
-            }
-
-            // Quick actions
-            section {
-                class: "fz-section",
-                div {
-                    class: "fz-section-header",
-                    h3 {
-                        style: "font-size: var(--text-lg); font-weight: 700; color: var(--text-primary);",
-                        "Quick actions"
-                    }
-                }
-                div {
-                    style: "display: flex; gap: var(--space-3); flex-wrap: wrap;",
-                    QuickAction {
-                        label: "Open file",
-                        icon: "#icon-folder",
-                        on_click: move |_| {},
-                    }
-                    QuickAction {
-                        label: "Open folder",
-                        icon: "#icon-folder",
-                        on_click: move |_| {},
-                    }
-                    QuickAction {
-                        label: "Scan media",
-                        icon: "#icon-clock",
-                        on_click: move |_| {
-                            library_service.request_scan();
-                        },
-                    }
-                    QuickAction {
-                        label: "Create playlist",
-                        icon: "#icon-playlist",
-                        on_click: move |_| {},
-                    }
-                    QuickAction {
-                        label: "Open URL",
-                        icon: "#icon-globe",
-                        on_click: move |_| {},
-                    }
-                    QuickAction {
-                        label: "Resume playback",
-                        icon: "#icon-play",
-                        on_click: move |_| {},
-                    }
-                }
+                class: "fz-home-section",
+                h2 { class: "fz-home-section-title", "Your playlists" }
+                Favorites { playlists: library.playlists.clone() }
             }
         }
     }
@@ -139,90 +72,55 @@ pub fn Home() -> Element {
 fn StatCard(label: &'static str, value: String, icon: &'static str) -> Element {
     rsx! {
         div {
-            class: "fz-card",
-            style: "padding: var(--space-5); display: flex; align-items: center; gap: var(--space-4);",
+            class: "fz-stat-card",
             div {
-                style: "width: 48px; height: 48px; background: var(--accent-muted); color: var(--accent); border-radius: var(--radius-medium); display: flex; align-items: center; justify-content: center;",
+                class: "fz-stat-icon",
                 svg {
                     class: "fz-icon",
-                    width: 22,
-                    height: 22,
+                    width: 21,
+                    height: 21,
+                    aria_hidden: "true",
                     use { href: icon }
                 }
             }
             div {
-                div {
-                    style: "font-size: var(--text-2xl); font-weight: 700; color: var(--text-primary); font-variant-numeric: tabular-nums;",
-                    "{value}"
-                }
-                div {
-                    style: "font-size: var(--text-xs); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;",
-                    "{label}"
-                }
+                div { class: "fz-stat-value", "{value}" }
+                div { class: "fz-stat-label", "{label}" }
             }
         }
     }
 }
 
 #[component]
-fn RecentlyPlayed(library: crate::models::Library) -> Element {
-    let _ = library;
-    library_section("Continue listening")
-}
+fn RecentlyPlayed(library: Library) -> Element {
+    let mut tracks = library.tracks.clone();
+    tracks.retain(|track| track.last_played.is_some());
+    tracks.sort_by_key(|track| std::cmp::Reverse(track.last_played.unwrap_or_default()));
+    tracks.truncate(4);
 
-#[component]
-fn RecentlyAdded(library: crate::models::Library) -> Element {
-    let _ = library;
-    library_section("Recently added")
-}
-
-fn library_section(title: &'static str) -> Element {
-    rsx! {
-        div {
-            class: "fz-section-header",
-            h3 {
-                style: "font-size: var(--text-lg); font-weight: 700; color: var(--text-primary);",
-                "{title}"
+    if tracks.is_empty() {
+        rsx! {
+            EmptyState {
+                icon: "#icon-music",
+                title: "Your listening journey starts here",
+                message: "Your recently played tracks will appear here."
             }
         }
-        div {
-            class: "fz-empty",
-            style: "height: auto; padding: var(--space-6);",
-            p { "No media yet." }
-        }
-    }
-}
-
-#[component]
-fn Favorites(playlists: Vec<Playlist>) -> Element {
-    rsx! {
-        div {
-            class: "fz-section-header",
-            h3 {
-                style: "font-size: var(--text-lg); font-weight: 700; color: var(--text-primary);",
-                "Your favorites"
-            }
-        }
-        if playlists.is_empty() {
+    } else {
+        rsx! {
             div {
-                class: "fz-empty",
-                style: "height: auto; padding: var(--space-6);",
-                p { "No favorite playlists yet." }
-            }
-        } else {
-            div {
-                class: "fz-grid",
-                for playlist in playlists {
+                class: "fz-recent-list",
+                for track in tracks {
                     div {
-                        class: "fz-card",
-                        style: "padding: var(--space-4);",
+                        key: "{track.id}",
+                        class: "fz-recent-item",
                         div {
-                            style: "font-size: var(--text-lg); font-weight: 700; color: var(--text-primary);",
-                            "{playlist.title}"
+                            class: "fz-recent-art",
+                            svg { class: "fz-icon", width: 19, height: 19, use { href: "#icon-music" } }
                         }
-                        p {
-                            style: "font-size: var(--text-sm); color: var(--text-secondary); margin-top: var(--space-1);",
-                            {format!("{} tracks", playlist.track_count())}
+                        div {
+                            div { class: "fz-recent-title", "{track.title}" }
+                            div { class: "fz-recent-subtitle", "{track.subtitle()}" }
                         }
                     }
                 }
@@ -232,14 +130,88 @@ fn Favorites(playlists: Vec<Playlist>) -> Element {
 }
 
 #[component]
-fn QuickAction(label: &'static str, icon: &'static str, on_click: EventHandler<()>) -> Element {
+fn RecentlyAdded(library: Library) -> Element {
+    let mut tracks = library.tracks.clone();
+    tracks.sort_by_key(|track| std::cmp::Reverse(track.added_at));
+    tracks.truncate(4);
+
+    if tracks.is_empty() {
+        rsx! {
+            EmptyState {
+                icon: "#icon-album",
+                title: "Nothing in your library yet",
+                message: "Open your library to start organizing your media."
+            }
+        }
+    } else {
+        rsx! {
+            div {
+                class: "fz-recent-list",
+                for track in tracks {
+                    div {
+                        key: "{track.id}",
+                        class: "fz-recent-item",
+                        div {
+                            class: "fz-recent-art",
+                            svg { class: "fz-icon", width: 19, height: 19, use { href: "#icon-music" } }
+                        }
+                        div {
+                            div { class: "fz-recent-title", "{track.title}" }
+                            div { class: "fz-recent-subtitle", "{track.subtitle()}" }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[component]
+fn EmptyState(icon: &'static str, title: &'static str, message: &'static str) -> Element {
     rsx! {
-        crate::components::primitives::Button {
-            variant: crate::components::primitives::ButtonVariant::Surface,
-            onclick: move |_| on_click.call(()),
-            style: "min-width: 150px; justify-content: flex-start; padding: var(--space-3) var(--space-4); gap: var(--space-3);",
-            svg { class: "fz-icon", width: 16, height: 16, use { href: icon } }
-            span { "{label}" }
+        div {
+            class: "fz-home-empty",
+            div {
+                class: "fz-home-empty-icon",
+                svg { class: "fz-icon", width: 22, height: 22, use { href: icon } }
+            }
+            div {
+                div { class: "fz-home-empty-title", "{title}" }
+                p { class: "fz-home-empty-copy", "{message}" }
+            }
+        }
+    }
+}
+
+#[component]
+fn Favorites(playlists: Vec<Playlist>) -> Element {
+    if playlists.is_empty() {
+        rsx! {
+            EmptyState {
+                icon: "#icon-playlist",
+                title: "No playlists yet",
+                message: "Your playlists will appear here when you create them."
+            }
+        }
+    } else {
+        rsx! {
+            div {
+                class: "fz-recent-list",
+                for playlist in playlists {
+                    div {
+                        key: "{playlist.id}",
+                        class: "fz-recent-item",
+                        div {
+                            class: "fz-recent-art",
+                            svg { class: "fz-icon", width: 19, height: 19, use { href: "#icon-playlist" } }
+                        }
+                        div {
+                            div { class: "fz-recent-title", "{playlist.title}" }
+                            div { class: "fz-recent-subtitle", "{playlist.track_count()} tracks" }
+                        }
+                    }
+                }
+            }
         }
     }
 }

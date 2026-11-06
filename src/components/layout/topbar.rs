@@ -31,7 +31,6 @@ pub fn Topbar(props: TopbarProps) -> Element {
             FazoraLogo { size: 20, compact: false }
             div {
                 class: "fz-topbar-spacer",
-                flex: "1",
                 Input {
                     placeholder: "Search artists, albums, tracks…",
                     aria_label: "Global search",
