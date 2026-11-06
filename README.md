@@ -61,7 +61,7 @@ Requires Rust 1.83+ (project toolchain pinned to Rust 1.99.1) and the appropriat
 sudo apt-get install libwebkit2gtk-4.1-dev libgtk-3-dev
 
 # Build
-cargo build --release
+cargo build --locked --release
 
 # Run
 cargo run --release
@@ -71,7 +71,7 @@ cargo run --release
 
 ```powershell
 # Build with MSVC toolchain
-cargo build --release
+cargo build --locked --release
 
 # Run
 cargo run --release
@@ -122,7 +122,7 @@ cd Fazora
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 # Format code
-cargo fmt
+cargo fmt --all -- --check
 
 # Run clippy
 cargo clippy --locked --workspace --all-targets -- -D warnings
@@ -131,23 +131,23 @@ cargo clippy --locked --workspace --all-targets -- -D warnings
 cargo test --locked --workspace
 
 # Build
-cargo build --release
+cargo build --locked --release
 ```
 
 ## Testing
 
 ```bash
 # Run all tests
-cargo test
+cargo test --locked --workspace
 
-# Run specific test module
-cargo test --locked --lib tests models
-cargo test --test fazora_tests playback
-cargo test --test fazora_tests queue
-cargo test --test fazora_tests library
-cargo test --test fazora_tests settings
-cargo test --test fazora_tests search
-cargo test --test fazora_tests audio
+# Run a specific test module
+cargo test --locked --lib tests::models
+cargo test --locked --lib tests::playback
+cargo test --locked --lib tests::queue
+cargo test --locked --lib tests::library
+cargo test --locked --lib tests::settings
+cargo test --locked --lib tests::search
+cargo test --locked --lib tests::audio
 ```
 
 See [TESTING.md](./TESTING.md) for details.
