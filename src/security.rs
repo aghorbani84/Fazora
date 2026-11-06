@@ -17,9 +17,11 @@ pub const MAX_RECENT_QUERIES: usize = 10;
 /// Allowed media directory root prefixes for path validation.
 /// Paths outside these roots are rejected to prevent access to
 /// sensitive system directories (e.g., /etc, /var, /root).
+#[allow(dead_code, reason = "consumed by the later platform media-directory adapter")]
 #[cfg(target_os = "linux")]
 pub const ALLOWED_MEDIA_ROOTS: [&str; 5] = ["/home", "/mnt", "/media", "/run/media", "/tmp"];
 
+#[allow(dead_code, reason = "consumed by the later platform media-directory adapter")]
 #[cfg(target_os = "android")]
 pub const ALLOWED_MEDIA_ROOTS: [&str; 4] = [
     "/storage/emulated/0",
@@ -28,12 +30,15 @@ pub const ALLOWED_MEDIA_ROOTS: [&str; 4] = [
     "/data/data",
 ];
 
+#[allow(dead_code, reason = "consumed by the later platform media-directory adapter")]
 #[cfg(target_os = "macos")]
 pub const ALLOWED_MEDIA_ROOTS: [&str; 3] = ["/Users", "/Volumes", "/tmp"];
 
+#[allow(dead_code, reason = "consumed by the later platform media-directory adapter")]
 #[cfg(target_os = "ios")]
 pub const ALLOWED_MEDIA_ROOTS: [&str; 2] = ["/var/mobile/Media", "/private/var/mobile/Media"];
 
+#[allow(dead_code, reason = "consumed by the later platform media-directory adapter")]
 #[cfg(target_os = "windows")]
 pub const ALLOWED_MEDIA_ROOTS: [&str; 3] = ["C:", "D:", "E:"];
 
@@ -45,6 +50,7 @@ pub const ALLOWED_MEDIA_ROOTS: [&str; 3] = ["C:", "D:", "E:"];
 /// - Does not resolve to an existing directory
 /// - Resolves outside an allowed root prefix
 /// - Is a symlink pointing outside an allowed root
+#[allow(dead_code, reason = "used by the P3 media-directory permission and scanning layer")]
 pub fn validate_media_dir(path: &Path) -> Result<PathBuf, SecurityError> {
     // Reject relative paths
     if !path.is_absolute() {
@@ -117,6 +123,7 @@ pub fn sanitize_query(query: &str) -> String {
 }
 
 /// Sanitize a recent query string for storage.
+#[allow(dead_code, reason = "reserved for P4 persisted search-history integration")]
 pub fn sanitize_recent_query(query: &str) -> String {
     sanitize_query(query)
 }
