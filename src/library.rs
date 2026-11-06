@@ -47,10 +47,12 @@ impl LibraryService {
         }
     }
 
+    #[allow(dead_code, reason = "reserved for the P3 scanner and persistence adapter; not wired in Phase 1")]
     pub fn track_count(&self) -> usize {
         self.library.read().tracks.len()
     }
 
+    #[allow(dead_code, reason = "reserved for the P3 scanner and persistence adapter; not wired in Phase 1")]
     pub fn add_media_dir(&self, path: PathBuf) -> Result<(), crate::security::SecurityError> {
         let canonical = validate_media_dir(&path)?;
         let mut media_dirs = self.media_dirs;
@@ -61,6 +63,7 @@ impl LibraryService {
         Ok(())
     }
 
+    #[allow(dead_code, reason = "reserved for the P3 scanner and persistence adapter; not wired in Phase 1")]
     pub fn remove_media_dir(&self, path: &PathBuf) -> Result<(), crate::security::SecurityError> {
         let canonical = validate_media_dir(path)?;
         let mut media_dirs = self.media_dirs;
@@ -74,6 +77,7 @@ impl LibraryService {
         // engine adapter performs the scan and calls `set_library` when done
     }
 
+    #[allow(dead_code, reason = "reserved for the P3 scanner and persistence adapter; not wired in Phase 1")]
     pub fn set_library(&self, library: Library) {
         let stats = LibraryStats {
             track_count: library.tracks.len(),
@@ -101,6 +105,7 @@ impl LibraryService {
         indexed.set(true);
     }
 
+    #[allow(dead_code, reason = "reserved for the P3 scanner and persistence adapter; not wired in Phase 1")]
     pub fn set_scan_error(&self, message: String) {
         let mut scan_status = self.scan_status;
         scan_status.set(ScanStatus::Error { message });
