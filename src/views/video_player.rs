@@ -2,7 +2,6 @@
 //! subtitles, audio tracks, speed and settings.
 
 use crate::components::primitives::Button;
-use crate::models::Video;
 use crate::state::AppState;
 use dioxus::prelude::*;
 
@@ -28,8 +27,8 @@ pub fn VideoPlayer(props: VideoPlayerProps) -> Element {
         None => return rsx! { div { class: "fz-empty", h2 { "Video not found" } } },
     };
 
-    let mut showing_controls = use_signal(|| true);
-    let mut showing_settings = use_signal(|| false);
+    let showing_controls = use_signal(|| true);
+    let showing_settings = use_signal(|| false);
 
     rsx! {
         div {
