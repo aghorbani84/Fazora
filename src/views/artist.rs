@@ -2,7 +2,7 @@
 
 use crate::components::media::{Artwork, Metadata};
 use crate::components::primitives::Button;
-use crate::models::{Album, Artist, Track};
+use crate::models::{Album, Track};
 use crate::state::AppState;
 use dioxus::prelude::*;
 
