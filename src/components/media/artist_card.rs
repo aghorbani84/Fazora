@@ -16,7 +16,7 @@ pub fn ArtistCard(props: ArtistCardProps) -> Element {
         id: props.artist.id.clone(),
     };
     let keyboard_target = click_target.clone();
-    let click_navigator = navigator.clone();
+    let click_navigator = navigator;
     let keyboard_navigator = navigator;
     let open_artist = move |_| {
         click_navigator.push(click_target.clone());
