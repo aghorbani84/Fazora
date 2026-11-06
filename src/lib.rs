@@ -7,7 +7,8 @@ mod app;
 mod audio;
 mod components;
 mod design;
-mod library;
+#[path = "library.rs"]
+mod library_service;
 mod models;
 mod playback;
 mod queue;
