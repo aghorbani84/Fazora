@@ -25,7 +25,7 @@ pub fn AlbumCard(props: AlbumCardProps) -> Element {
         id: props.album.id.clone(),
     };
     let keyboard_target = click_target.clone();
-    let click_navigator = navigator.clone();
+    let click_navigator = navigator;
     let keyboard_navigator = navigator;
     let on_play = props.on_play;
     let album_to_play = props.album.clone();
