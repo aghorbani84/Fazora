@@ -132,11 +132,13 @@ impl AudioService {
         state.write().enabled = enabled;
     }
 
+    #[allow(dead_code, reason = "reserved for later native output-device integration; Phase 1 is CI-only")]
     pub fn set_output_device(&self, device_id: &str) {
         let mut state = self.state;
         state.write().output_device = Some(device_id.to_string());
     }
 
+    #[allow(dead_code, reason = "preset persistence is a later audio feature; Phase 1 does not wire it")]
     pub fn save_preset(&self, _name: String) -> Playlist {
         Playlist {
             id: String::new(),
