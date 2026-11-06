@@ -30,7 +30,7 @@ adb install FAZORA-arm64-v8a.apk
 
 CI builds are signed with a temporary debug keystore generated for that workflow run. The key is deliberately not persisted in the repository or GitHub secrets. A later workflow run has a different signing identity, so Android rejects it as an in-place update. Uninstall the previous CI build before installing an APK from a different run; this removes that app's local data.
 
-These APKs are for testing and sideloading, not Play Store distribution. A production update channel requires one owner-controlled private signing key stored as GitHub Actions secrets.
+The build also verifies 16 KiB ZIP and ELF alignment for Android 15+ page-size compatibility. These APKs are for testing and sideloading, not Play Store distribution. A production update channel requires one owner-controlled private signing key stored as GitHub Actions secrets.
 
 ## Generate a private release keystore (do not commit it)
 
