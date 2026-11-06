@@ -154,26 +154,31 @@ jobs:
     name: x86_64 emulator install, launch and 60s logcat smoke
     needs: build
     runs-on: ubuntu-24.04
-    timeout-minutes: 35
+    timeout-minutes: 50
     permissions:
       contents: read
     steps:
       - name: Create evidence directory
         run: mkdir -p smoke-evidence/screenshots
 
-      - name: Verify KVM and grant emulator access
+      - name: Detect KVM and enable access when available
+        id: kvm
         run: |
           set -euo pipefail
-          if [ ! -e /dev/kvm ]; then
-            echo "::error::GitHub runner did not expose /dev/kvm; hardware-accelerated emulator smoke test cannot run."
-            exit 1
+          if [ -e /dev/kvm ]; then
+            sudo apt-get update
+            sudo apt-get install -y cpu-checker
+            if sudo kvm-ok; then
+              echo "available=true" >> "$GITHUB_OUTPUT"
+              echo "KVM is available; hardware-accelerated emulator selected."
+              echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+              sudo udevadm control --reload-rules
+              sudo udevadm trigger --name-match=kvm
+              exit 0
+            fi
           fi
-          sudo apt-get update
-          sudo apt-get install -y cpu-checker
-          sudo kvm-ok
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
+          echo "available=false" >> "$GITHUB_OUTPUT"
+          echo "::warning::KVM is not available on this runner; attempting software emulation. A larger GitHub runner or self-hosted Linux runner with KVM is the faster fallback if the emulator times out."
 
       - name: Download x86_64 APK
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
@@ -188,7 +193,8 @@ jobs:
           target: google_apis
           arch: x86_64
           profile: pixel_6
-          emulator-boot-timeout: 600
+          emulator-boot-timeout: 1200
+          disable-linux-hw-accel: ${{ steps.kvm.outputs.available != 'true' }}
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           disable-animations: true
           script: |
