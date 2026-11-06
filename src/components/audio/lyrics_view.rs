@@ -20,7 +20,7 @@ pub fn LyricsView(props: LyricsViewProps) -> Element {
         .as_ref()
         .and_then(|track| track.lyrics_synced.clone());
     let position_sec = props.position_sec;
-    let mut manual_offset = use_signal(|| 0.0_f64);
+    let manual_offset = use_signal(|| 0.0_f64);
     let mut highlighted = use_signal(|| None::<usize>);
     let effect_lines = lines.clone();
 
