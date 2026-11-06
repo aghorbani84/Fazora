@@ -11,7 +11,7 @@ runs:
     - name: Install pinned Android SDK platform and build tools
       shell: bash
       run: |
-        yes | sdkmanager --licenses
+        # setup-android has already accepted the SDK licenses.
         sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
     - name: Install pinned Android NDK
