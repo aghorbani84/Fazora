@@ -1,5 +1,5 @@
-//! Application shell: sidebar, topbar, main content and persistent player.
-
+//! Application shell: responsive navigation, content and persistent player.
+use crate::components::layout::bottom_navigation::BottomNavigation;
 use crate::components::layout::sidebar::Sidebar;
 use crate::components::layout::topbar::Topbar;
 use crate::components::player::{MiniPlayer, QueuePanel};
@@ -17,22 +17,22 @@ pub fn AppShell() -> Element {
     let mut selected_route = use_signal(|| Route::Home {});
 
     let toggle_sidebar = move |_| {
-        let mut open = sidebar_open;
-        let next = !*open.read();
-        open.set(next);
+        let next = !*sidebar_open.read();
+        sidebar_open.set(next);
     };
 
     let navigate = move |route: Route| {
         navigator.push(route.clone());
-        let mut selected = selected_route;
-        selected.set(route.clone());
-        let mut open = sidebar_open;
-        open.set(false);
+        selected_route.set(route);
+        sidebar_open.set(false);
+    };
+    let navigate_bottom = move |route: Route| {
+        selected_route.set(route);
+        sidebar_open.set(false);
     };
 
     rsx! {
-        div {
-            class: "fz-app-shell",
+        div { class: "fz-app-shell",
             Sidebar {
                 open: sidebar_open,
                 selected: selected_route,
@@ -41,35 +41,28 @@ pub fn AppShell() -> Element {
             if sidebar_open.cloned() {
                 div {
                     class: "fz-sidebar-overlay open",
-                    onclick: move |_| {
-                        let mut open = sidebar_open;
-                        open.set(false);
-                    },
+                    onclick: move |_| sidebar_open.set(false),
                 }
             }
-            div {
-                class: "fz-body",
+            div { class: "fz-body",
                 Topbar {
                     on_toggle_sidebar: toggle_sidebar,
-                    on_open_queue: move |_| {
-                        let mut open = secondary_open;
-                        open.set(true);
-                    },
+                    on_open_queue: move |_| secondary_open.set(true),
                 }
-                div {
-                    class: "fz-content",
+                div { class: "fz-content",
                     main { Outlet::<Route> {} }
                 }
                 QueuePanel {
                     queue: queue.clone(),
                     open: secondary_open,
-                    on_close: move |_| {
-                        let mut open = secondary_open;
-                        open.set(false);
-                    },
+                    on_close: move |_| secondary_open.set(false),
                 }
             }
             MiniPlayer {}
+            BottomNavigation {
+                selected: selected_route,
+                on_navigate: navigate_bottom,
+            }
         }
     }
 }
