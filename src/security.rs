@@ -36,15 +36,24 @@ pub const ALLOWED_MEDIA_ROOTS: [&str; 4] = [
     "/data/data",
 ];
 
-#[allow(dead_code, reason = "consumed by the later platform media-directory adapter")]
+#[allow(
+    dead_code,
+    reason = "consumed by the later platform media-directory adapter"
+)]
 #[cfg(target_os = "macos")]
 pub const ALLOWED_MEDIA_ROOTS: [&str; 3] = ["/Users", "/Volumes", "/tmp"];
 
-#[allow(dead_code, reason = "consumed by the later platform media-directory adapter")]
+#[allow(
+    dead_code,
+    reason = "consumed by the later platform media-directory adapter"
+)]
 #[cfg(target_os = "ios")]
 pub const ALLOWED_MEDIA_ROOTS: [&str; 2] = ["/var/mobile/Media", "/private/var/mobile/Media"];
 
-#[allow(dead_code, reason = "consumed by the later platform media-directory adapter")]
+#[allow(
+    dead_code,
+    reason = "consumed by the later platform media-directory adapter"
+)]
 #[cfg(target_os = "windows")]
 pub const ALLOWED_MEDIA_ROOTS: [&str; 3] = ["C:", "D:", "E:"];
 
