@@ -73,3 +73,20 @@ The test modules are compiled into the auto-discovered library target via `src/l
 [Theory] The x86_64 APK will install and remain alive for 60 seconds on API 35; only the exact workflow run can establish this.
 
 [Opinion] Full LTO and size optimization are suitable for a sideloadable test APK despite longer CI build times. Ephemeral debug signing is safer than storing a long-lived private key in Phase 1.
+
+
+## Follow-up CI repair cycle (owner-authorized, 2026-11-07)
+
+[Fact] The prior exact-head CI logs identified the binary crate root mismatch: `src/lib.rs` declared `library_service` through `#[path = "library.rs"]`, while `src/main.rs` still declared `mod library;`. The binary therefore could not resolve imports from `crate::library_service`.
+
+[Fact] The following narrowly scoped changes are committed on `ci/android-apk`:
+- `src/main.rs`: align the binary crate root with the library crate by declaring the same `library_service` path module.
+- `src/components/layout/bottom_navigation.rs`: explicitly document the currently unused destination enum as reserved metadata, silencing the dead-code lint without changing rendered markup.
+- `src/components/layout/topbar.rs`: remove the unnecessary clone of Copy `Navigator`.
+- `src/library.rs`: accept `&Path` instead of `&PathBuf`; retain `PathBuf` for owned directory paths.
+- `src/models/mod.rs`: preserve the existing SearchResults re-export and explicitly annotate its intended library-surface use.
+- `src/library.rs`, `src/search.rs`, `src/security.rs`, `src/state/app_state.rs`, and `src/tests/library.rs`: apply the rustfmt layout reported by the previous CI run.
+
+[Fact] These changes are source-reviewed through GitHub file and commit APIs. No local Rust toolchain is available in this execution environment, and no CI status/check run is currently visible for the new head SHA. Therefore formatting, Clippy, tests, cross-platform builds, Android APK creation, and emulator smoke remain **unverified** until CI runs on the new head.
+
+[Opinion] The repair is intentionally lint/build-only. No UI markup, layout, feature, release configuration, or signing material was changed in this cycle.
