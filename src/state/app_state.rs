@@ -1,8 +1,8 @@
 //! Aggregate state holder.
 
 use crate::{
-    audio::AudioService, library_service::LibraryService, playback::PlaybackService, queue::QueueService,
-    search::SearchService, settings::SettingsService,
+    audio::AudioService, library_service::LibraryService, playback::PlaybackService,
+    queue::QueueService, search::SearchService, settings::SettingsService,
 };
 
 /// Root application state. Every service lives here; views reach them through
