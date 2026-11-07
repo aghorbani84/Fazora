@@ -48,7 +48,10 @@ impl SearchService {
         current.loading = false;
     }
 
-    #[allow(dead_code, reason = "reserved for the P4 search engine integration; Phase 1 is CI-only")]
+    #[allow(
+        dead_code,
+        reason = "reserved for the P4 search engine integration; Phase 1 is CI-only"
+    )]
     pub fn set_loading(&self, loading: bool) {
         let mut state = self.state;
         state.write().loading = loading;
