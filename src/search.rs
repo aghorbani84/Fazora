@@ -37,7 +37,10 @@ impl SearchService {
         state.write().query = sanitize_query(&query);
     }
 
-    #[allow(dead_code, reason = "reserved for the P4 search engine integration; Phase 1 is CI-only")]
+    #[allow(
+        dead_code,
+        reason = "reserved for the P4 search engine integration; Phase 1 is CI-only"
+    )]
     pub fn set_results(&self, results: SearchResults) {
         let mut state = self.state;
         let mut current = state.write();
