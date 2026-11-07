@@ -4,7 +4,7 @@
 //! run inside a component scope, so each test mounts the service through the
 //! `VirtualDom` harness defined in `mod.rs`.
 
-use crate::library::{LibraryService, MediaDirectory, ScanStatus};
+use crate::library_service::{LibraryService, MediaDirectory, ScanStatus};
 use crate::models::{Album, Artist, Library, LibraryStats, Track, Video};
 use dioxus::prelude::*;
 use std::path::PathBuf;
@@ -37,18 +37,26 @@ fn library_add_remove_media_dir() {
     std::fs::create_dir(&dir1).expect("create music test directory");
     std::fs::create_dir(&dir2).expect("create video test directory");
 
-    library.add_media_dir(dir1.clone());
-    library.add_media_dir(dir2.clone());
+    library
+        .add_media_dir(dir1.clone())
+        .expect("add music test directory");
+    library
+        .add_media_dir(dir2.clone())
+        .expect("add video test directory");
 
     assert_eq!(library.media_dirs.read().len(), 2);
     assert!(library.media_dirs.read()[0].included);
     assert_eq!(library.media_dirs.read()[0].path, dir1);
 
-    library.remove_media_dir(&dir1);
+    library
+        .remove_media_dir(&dir1)
+        .expect("remove music test directory");
     assert_eq!(library.media_dirs.read().len(), 1);
     assert_eq!(library.media_dirs.read()[0].path, dir2);
 
-    library.remove_media_dir(&dir2);
+    library
+        .remove_media_dir(&dir2)
+        .expect("remove video test directory");
     assert!(library.media_dirs.read().is_empty());
 }
 

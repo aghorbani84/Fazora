@@ -31,11 +31,16 @@ impl SearchService {
         }
     }
 
+    #[allow(dead_code, reason = "P4 search engine integration will use this")]
     pub fn set_query(&self, query: String) {
         let mut state = self.state;
         state.write().query = sanitize_query(&query);
     }
 
+    #[allow(
+        dead_code,
+        reason = "reserved for the P4 search engine integration; Phase 1 is CI-only"
+    )]
     pub fn set_results(&self, results: SearchResults) {
         let mut state = self.state;
         let mut current = state.write();
@@ -43,6 +48,10 @@ impl SearchService {
         current.loading = false;
     }
 
+    #[allow(
+        dead_code,
+        reason = "reserved for the P4 search engine integration; Phase 1 is CI-only"
+    )]
     pub fn set_loading(&self, loading: bool) {
         let mut state = self.state;
         state.write().loading = loading;

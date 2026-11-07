@@ -7,7 +7,7 @@ use crate::models::{Library, LibraryStats};
 use crate::security::validate_media_dir;
 use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub enum ScanStatus {
@@ -42,15 +42,20 @@ impl LibraryService {
             library: use_signal(Library::default),
             stats: use_signal(LibraryStats::default),
             scan_status: use_signal(|| ScanStatus::Idle),
-            media_dirs: use_signal(|| Vec::new()),
+            media_dirs: use_signal(Vec::new),
             indexed: use_signal(|| false),
         }
     }
 
+    #[allow(dead_code, reason = "P3 scanner and persistence adapter will use this")]
     pub fn track_count(&self) -> usize {
         self.library.read().tracks.len()
     }
 
+    #[allow(
+        dead_code,
+        reason = "reserved for the P3 scanner and persistence adapter; not wired in Phase 1"
+    )]
     pub fn add_media_dir(&self, path: PathBuf) -> Result<(), crate::security::SecurityError> {
         let canonical = validate_media_dir(&path)?;
         let mut media_dirs = self.media_dirs;
@@ -61,10 +66,14 @@ impl LibraryService {
         Ok(())
     }
 
-    pub fn remove_media_dir(&self, path: &PathBuf) -> Result<(), crate::security::SecurityError> {
+    #[allow(
+        dead_code,
+        reason = "reserved for the P3 scanner and persistence adapter; not wired in Phase 1"
+    )]
+    pub fn remove_media_dir(&self, path: &Path) -> Result<(), crate::security::SecurityError> {
         let canonical = validate_media_dir(path)?;
         let mut media_dirs = self.media_dirs;
-        media_dirs.write().retain(|d| &d.path != &canonical);
+        media_dirs.write().retain(|d| d.path != canonical);
         Ok(())
     }
 
@@ -74,6 +83,10 @@ impl LibraryService {
         // engine adapter performs the scan and calls `set_library` when done
     }
 
+    #[allow(
+        dead_code,
+        reason = "reserved for the P3 scanner and persistence adapter; not wired in Phase 1"
+    )]
     pub fn set_library(&self, library: Library) {
         let stats = LibraryStats {
             track_count: library.tracks.len(),
@@ -101,6 +114,10 @@ impl LibraryService {
         indexed.set(true);
     }
 
+    #[allow(
+        dead_code,
+        reason = "reserved for the P3 scanner and persistence adapter; not wired in Phase 1"
+    )]
     pub fn set_scan_error(&self, message: String) {
         let mut scan_status = self.scan_status;
         scan_status.set(ScanStatus::Error { message });

@@ -1,6 +1,5 @@
 //! Timeline seekbar with buffered region and hover preview placeholder.
 
-use crate::components::primitives::Slider;
 use dioxus::prelude::*;
 
 #[derive(Props, Clone, PartialEq)]

@@ -2,7 +2,7 @@
 
 use crate::components::media::{AlbumCard, TrackRow};
 use crate::components::primitives::{Badge, Button, Input};
-use crate::models::{Album, Track};
+use crate::models::Album;
 use crate::state::AppState;
 use dioxus::prelude::*;
 
@@ -20,8 +20,8 @@ pub fn Music() -> Element {
     let albums = library_service.library.read().albums.clone();
     let tracks = library_service.library.read().tracks.clone();
 
-    let mut display_mode = use_signal(|| DisplayMode::Grid);
-    let mut query = use_signal(String::new);
+    let display_mode = use_signal(|| DisplayMode::Grid);
+    let query = use_signal(String::new);
     let query_value = query.cloned().to_lowercase();
 
     let filtered_albums: Vec<Album> = albums

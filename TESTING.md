@@ -16,25 +16,22 @@ FAZORA Media has automated tests covering:
 
 ```bash
 # Run all tests
-cargo test
+cargo test --locked --workspace
 
 # Run all tests with output
-cargo test -- --nocapture
+cargo test --locked --workspace -- --nocapture
 
-# Run a specific test binary
-cargo test --test fazora_tests
-
-# Run a specific test module
-cargo test --test fazora_tests models
-cargo test --test fazora_tests playback
-cargo test --test fazora_tests queue
-cargo test --test fazora_tests library
-cargo test --test fazora_tests settings
-cargo test --test fazora_tests search
-cargo test --test fazora_tests audio
+# Run a specific library test module
+cargo test --locked --lib tests::models
+cargo test --locked --lib tests::playback
+cargo test --locked --lib tests::queue
+cargo test --locked --lib tests::library
+cargo test --locked --lib tests::settings
+cargo test --locked --lib tests::search
+cargo test --locked --lib tests::audio
 
 # Run a specific test function
-cargo test test_track_formatted_duration
+cargo test --locked --lib tests::models::track_formatted_duration
 ```
 
 ## Test Structure

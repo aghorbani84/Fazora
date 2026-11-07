@@ -4,10 +4,10 @@
 
 | Component | Requirement |
 |-----------|-------------|
-| Rust | 1.78+ |
-| Linux | libwebkit2gtk-4.0-dev, libgtk-3-dev |
+| Rust | 1.83+ (pinned project toolchain: 1.99.1) |
+| Linux | libwebkit2gtk-4.1-dev, libgtk-3-dev |
 | Windows | MSVC toolchain |
-| Android | Android SDK, NDK r26b, JDK 17 |
+| Android | Android SDK platform 35, Build Tools 35.0.0, NDK r28c, JDK 17, Dioxus CLI 0.7.10 |
 
 ## Linux
 
@@ -16,7 +16,7 @@
 ```bash
 # Debian/Ubuntu
 sudo apt-get update
-sudo apt-get install libwebkit2gtk-4.0-dev libgtk-3-dev
+sudo apt-get install libwebkit2gtk-4.1-dev libgtk-3-dev
 
 # Fedora
 sudo dnf install webkit2gtk3-devel gtk3-devel
@@ -30,7 +30,7 @@ sudo pacman -S webkit2gtk gtk3
 ```bash
 git clone https://github.com/aghorbani84/Fazora.git
 cd Fazora
-cargo build --release
+cargo build --locked --release
 ```
 
 The binary is at `target/release/fazora`.
@@ -53,7 +53,7 @@ manually or via a package manager.
 ```bash
 git clone https://github.com/aghorbani84/Fazora.git
 cd Fazora
-cargo build --release
+cargo build --locked --release
 ```
 
 The binary is at `target/release/fazora.exe`.
@@ -63,7 +63,7 @@ The binary is at `target/release/fazora.exe`.
 ### Prerequisites
 
 - Android SDK (command-line tools)
-- Android NDK r26b
+- Android NDK r28c
 - JDK 17
 - Rust Android targets:
 
@@ -76,12 +76,12 @@ rustup target add aarch64-linux-android x86_64-linux-android
 ```bash
 git clone https://github.com/aghorbani84/Fazora.git
 cd Fazora
-cargo build --release --target aarch64-linux-android
+dx bundle --android --release --package-types apk --target aarch64-linux-android --out-dir dist --cargo-args=--locked
 ```
 
-The native library is at `target/aarch64-linux-android/release/libfazora.so`.
+The installable APK is produced under the Dioxus bundle output directory.
 
-APK packaging requires Dioxus mobile toolchain configuration.
+The Android workflow publishes a debug-signed APK and SHA-256 checksum as GitHub Actions artifacts. See INSTALL.md.
 
 ## Verification
 
@@ -101,7 +101,7 @@ The application window should open showing the FAZORA home dashboard.
 
 | Issue | Solution |
 |-------|----------|
-| `libwebkit2gtk-4.0 not found` | Install `libwebkit2gtk-4.0-dev` |
+| `libwebkit2gtk-4.0 not found` | Install `libwebkit2gtk-4.1-dev` |
 | `linker `cc` not found` | Install build-essential / gcc |
 | Android target not found | Run `rustup target add aarch64-linux-android` |
 | `cargo: command not found` | Install Rust from https://rustup.rs/ |

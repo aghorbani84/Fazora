@@ -52,7 +52,7 @@ Built with **Rust + Dioxus Labs**.
 
 ### From Source
 
-Requires Rust 1.78+ and the appropriate system dependencies.
+Requires Rust 1.83+ (project toolchain pinned to Rust 1.99.1) and the appropriate system dependencies.
 
 #### Linux
 
@@ -61,7 +61,7 @@ Requires Rust 1.78+ and the appropriate system dependencies.
 sudo apt-get install libwebkit2gtk-4.1-dev libgtk-3-dev
 
 # Build
-cargo build --release
+cargo build --locked --release
 
 # Run
 cargo run --release
@@ -71,7 +71,7 @@ cargo run --release
 
 ```powershell
 # Build with MSVC toolchain
-cargo build --release
+cargo build --locked --release
 
 # Run
 cargo run --release
@@ -84,7 +84,7 @@ Install Android SDK command-line tools, Android NDK r28c or newer, JDK 17, Rust,
 ```bash
 rustup target add aarch64-linux-android
 cargo install dioxus-cli --version 0.7.10 --locked
-dx bundle --android --release --package-types apk --target aarch64-linux-android
+dx bundle --android --release --package-types apk --target aarch64-linux-android --out-dir dist --cargo-args=--locked
 ```
 
 The Android GitHub Actions workflow builds installable APKs for `arm64-v8a` and `x86_64`, verifies their signatures, and uploads each APK with a SHA-256 checksum. CI uses a temporary signing key, so APKs from separate workflow runs have different signing identities; uninstall an older CI build before installing a new one. For production updates, configure a persistent private signing key in GitHub Actions secrets.
@@ -122,32 +122,32 @@ cd Fazora
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 # Format code
-cargo fmt
+cargo fmt --all -- --check
 
 # Run clippy
-cargo clippy --workspace --all-targets
+cargo clippy --locked --workspace --all-targets -- -D warnings
 
 # Run tests
-cargo test
+cargo test --locked --workspace
 
 # Build
-cargo build --release
+cargo build --locked --release
 ```
 
 ## Testing
 
 ```bash
 # Run all tests
-cargo test
+cargo test --locked --workspace
 
-# Run specific test module
-cargo test --test fazora_tests models
-cargo test --test fazora_tests playback
-cargo test --test fazora_tests queue
-cargo test --test fazora_tests library
-cargo test --test fazora_tests settings
-cargo test --test fazora_tests search
-cargo test --test fazora_tests audio
+# Run a specific test module
+cargo test --locked --lib tests::models
+cargo test --locked --lib tests::playback
+cargo test --locked --lib tests::queue
+cargo test --locked --lib tests::library
+cargo test --locked --lib tests::settings
+cargo test --locked --lib tests::search
+cargo test --locked --lib tests::audio
 ```
 
 See [TESTING.md](./TESTING.md) for details.
@@ -160,7 +160,7 @@ See [TESTING.md](./TESTING.md) for details.
 | [SECURITY.md](./SECURITY.md) | Security model and audit findings |
 | [CONTRIBUTING.md](./CONTRIBUTING.md) | Contribution guidelines |
 | [CHANGELOG.md](./CHANGELOG.md) | Release history |
-| [INSTALLATION.md](./INSTALLATION.md) | Installation instructions |
+| [INSTALL.md](./INSTALL.md) and [INSTALLATION.md](./INSTALLATION.md) | Installation instructions |
 | [BUILDING.md](./BUILDING.md) | Build instructions per platform |
 | [DEVELOPMENT.md](./DEVELOPMENT.md) | Development workflow |
 | [TESTING.md](./TESTING.md) | Testing guide |

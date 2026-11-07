@@ -11,10 +11,15 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: build-windows-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     name: Build Windows ${{ matrix.arch }}
-    runs-on: windows-latest
+    runs-on: windows-2025
+    timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
@@ -32,10 +37,11 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec
         with:
+          toolchain: 1.99.1
           targets: ${{ matrix.rust_target }}
 
       - name: Build release
-        run: cargo build --release --target ${{ matrix.rust_target }}
+        run: cargo build --locked --release --target ${{ matrix.rust_target }}
 
       - name: Create portable ZIP package
         run: |

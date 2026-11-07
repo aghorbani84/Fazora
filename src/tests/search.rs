@@ -4,7 +4,7 @@
 //! run inside a component scope, so each test mounts the service through the
 //! `VirtualDom` harness defined in `mod.rs`.
 
-use crate::models::{Album, Artist, SearchResults, Track, Video};
+use crate::models::{SearchResults, Track};
 use crate::search::SearchService;
 use dioxus::prelude::*;
 
