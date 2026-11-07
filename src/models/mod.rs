@@ -15,4 +15,5 @@ pub use playlist::Playlist;
 pub use track::{LyricLine, Track};
 pub use video::Video;
 
+#[allow(unused_imports, reason = "re-exported by the library crate's public model surface")]
 pub use crate::search::SearchResults;
