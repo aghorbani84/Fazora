@@ -17,11 +17,17 @@ pub const MAX_RECENT_QUERIES: usize = 10;
 /// Allowed media directory root prefixes for path validation.
 /// Paths outside these roots are rejected to prevent access to
 /// sensitive system directories (e.g., /etc, /var, /root).
-#[allow(dead_code, reason = "P3 platform media-directory adapter will use this")]
+#[allow(
+    dead_code,
+    reason = "P3 platform media-directory adapter will use this"
+)]
 #[cfg(target_os = "linux")]
 pub const ALLOWED_MEDIA_ROOTS: [&str; 5] = ["/home", "/mnt", "/media", "/run/media", "/tmp"];
 
-#[allow(dead_code, reason = "consumed by the later platform media-directory adapter")]
+#[allow(
+    dead_code,
+    reason = "consumed by the later platform media-directory adapter"
+)]
 #[cfg(target_os = "android")]
 pub const ALLOWED_MEDIA_ROOTS: [&str; 4] = [
     "/storage/emulated/0",
@@ -50,7 +56,10 @@ pub const ALLOWED_MEDIA_ROOTS: [&str; 3] = ["C:", "D:", "E:"];
 /// - Does not resolve to an existing directory
 /// - Resolves outside an allowed root prefix
 /// - Is a symlink pointing outside an allowed root
-#[allow(dead_code, reason = "P3 media-directory permission layer will use this")]
+#[allow(
+    dead_code,
+    reason = "P3 media-directory permission layer will use this"
+)]
 pub fn validate_media_dir(path: &Path) -> Result<PathBuf, SecurityError> {
     // Reject relative paths
     if !path.is_absolute() {
