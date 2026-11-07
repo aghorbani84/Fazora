@@ -7,7 +7,7 @@ use crate::models::{Library, LibraryStats};
 use crate::security::validate_media_dir;
 use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub enum ScanStatus {
@@ -52,7 +52,10 @@ impl LibraryService {
         self.library.read().tracks.len()
     }
 
-    #[allow(dead_code, reason = "reserved for the P3 scanner and persistence adapter; not wired in Phase 1")]
+    #[allow(
+        dead_code,
+        reason = "reserved for the P3 scanner and persistence adapter; not wired in Phase 1"
+    )]
     pub fn add_media_dir(&self, path: PathBuf) -> Result<(), crate::security::SecurityError> {
         let canonical = validate_media_dir(&path)?;
         let mut media_dirs = self.media_dirs;
@@ -64,7 +67,7 @@ impl LibraryService {
     }
 
     #[allow(dead_code, reason = "reserved for the P3 scanner and persistence adapter; not wired in Phase 1")]
-    pub fn remove_media_dir(&self, path: &PathBuf) -> Result<(), crate::security::SecurityError> {
+    pub fn remove_media_dir(&self, path: &Path) -> Result<(), crate::security::SecurityError> {
         let canonical = validate_media_dir(path)?;
         let mut media_dirs = self.media_dirs;
         media_dirs.write().retain(|d| d.path != canonical);
