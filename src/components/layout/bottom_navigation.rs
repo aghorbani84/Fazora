@@ -3,6 +3,7 @@
 use crate::routing::Route;
 use dioxus::prelude::*;
 
+#[allow(dead_code, reason = "destination enum is retained for the planned navigation analytics metadata")]
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum BottomDestination {
     Home,
