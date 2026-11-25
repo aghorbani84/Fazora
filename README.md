@@ -1,196 +1,130 @@
 # FAZORA Media
 
-Premium multimedia player for Linux, Windows, Android, and iOS.
-Built with **Rust + Dioxus Labs**.
+> **Sound. Motion. Precision.** — a multimedia player UI for desktop and mobile, built with Rust and Dioxus.
 
-> **Sound. Motion. Precision.**
+[![CI](https://github.com/aghorbani84/Fazora/actions/workflows/ci.yml/badge.svg)](https://github.com/aghorbani84/Fazora/actions/workflows/ci.yml)
+[![Latest release](https://img.shields.io/github/v/release/aghorbani84/Fazora)](https://github.com/aghorbani84/Fazora/releases)
+![Rust](https://img.shields.io/badge/Rust-1.78%2B-DEA584?logo=rust&logoColor=black)
+![Dioxus](https://img.shields.io/badge/Dioxus-0.7-FF4444)
+![Status](https://img.shields.io/badge/status-in%20development-orange)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-## Project Status
+## Overview
 
-| Component | Status |
-|-----------|--------|
-| UI/UX Design System | Complete |
-| Component Library | Complete |
-| Service Layer | Complete |
-| Desktop Views (Home, Music, Video, etc.) | Complete |
-| Android Views | Planned |
-| CI/CD (GitHub Actions) | Configured |
-| Automated Tests | Partial (service layer + models) |
-| Linux Build | Configured |
-| Windows Build | Configured |
-| Android Build | APK for ARM64 and x86_64 |
-| iOS Build | Unsigned ARM64 .app bundle |
+FAZORA is a music and video player application written in Rust with [Dioxus](https://dioxuslabs.com/), targeting Linux, Windows, Android and iOS from one codebase. The repository contains a complete design system, a component library, the application shell and views, and the state/service layer (playback, queue, library, search, audio settings) with unit tests.
+
+> [!NOTE]
+> **Project status:** the interface and service layer are implemented, but a **native media engine (decoding / audio output / video rendering) is not integrated yet** — the video surface is a placeholder and library scanning is not wired to disk. Treat current builds as a UI preview, not a working media player. See [Known limitations](#known-limitations).
 
 ## Features
 
-- **Premium design system** — Obsidian/Carbon/Champagne Gold color palette, Manrope typography, IBM Plex Mono for technical data, Vazirmatn for Persian/Arabic
-- **Application shell** — Collapsible sidebar, topbar, main content area, persistent player dock, optional secondary panel
-- **Music library** — Album/artist/track views, grid and list displays, search, filter, sort
-- **Video library** — Thumbnail grid, continue watching, favorites, metadata
-- **Now Playing** — Expanded player with artwork focus, waveform seekbar, queue and lyrics panels
-- **Persistent mini-player** — Dock at bottom with artwork, title, controls, progress, volume
-- **Queue management** — Add, remove, reorder, save as playlist, shuffle, repeat
-- **Global search** — Tracks, artists, albums, videos, playlists
-- **Equalizer (Soundstage)** — 10-band EQ, presets, preamp, DSP controls
-- **Lyrics** — Synchronised lyrics with current-line highlighting and auto-scroll
-- **Video player** — Immersive playback with subtitles, audio tracks, speed, aspect ratio
-- **Settings** — General, appearance, audio, video, library, playback, advanced, about
-- **Responsive design** — Desktop shell vs. mobile bottom navigation
-- **Accessibility** — Keyboard navigation, screen reader labels, focus indicators, reduced motion
-- **GitHub Actions CI/CD** — Format, clippy, tests, Linux/Windows/Android/iOS builds, security scans, automated releases
+**Implemented in the UI and state layer**
 
-## Supported Platforms
+- **Design system** — Obsidian / Carbon / Champagne Gold palette, Manrope and IBM Plex Mono typography, Vazirmatn for Persian/Arabic text
+- **App shell** — collapsible sidebar, top bar, content area, persistent mini-player dock; bottom navigation on narrow screens
+- **Views** — Home, Music library, Album, Artist, Video library, Video player, Now Playing, Queue, Playlists, Search and results, Equalizer, Settings
+- **Playback state** — play/pause, seek, volume and mute, repeat modes, shuffle
+- **Queue** — add, remove, reorder, shuffle and save as playlist
+- **Equalizer model** — 10-band EQ with presets (Flat, Bass Boost, Vocal, Classical, Electronic, Jazz, Rock, Custom), preamp, crossfade and gapless settings
+- **Now Playing** — artwork-focused layout with queue and lyrics panels
+- **Settings** — categorized settings persisted to disk with path validation
+- **Security helpers** — media-directory validation with path-traversal and symlink-escape protection
 
-| Platform | Target | Backend / Package |
-|----------|--------|-------------------|
-| Linux | x86_64-unknown-linux-gnu | WebKitGTK; TAR.GZ release package |
-| Windows | x86_64-pc-windows-msvc | WebView2; ZIP release package |
-| Android | aarch64-linux-android, x86_64-linux-android | Dioxus mobile; signed APKs |
-| iOS | aarch64-apple-ios | Dioxus mobile; unsigned .app bundle ZIP |
+**Not yet implemented** — real audio/video decoding and output, on-disk media scanning, and synced lyrics data.
 
-## Installation
+## Tech Stack
 
-### From Source
+| Area | Technology |
+| --- | --- |
+| Language | Rust (edition 2021, MSRV 1.78) |
+| UI framework | Dioxus 0.7 (desktop + mobile, router) |
+| Desktop renderer | WebKitGTK (Linux) · WebView2 (Windows) |
+| Async / utilities | Tokio, Serde, Chrono, UUID, tracing |
+| CI/CD | GitHub Actions — fmt, clippy, check, tests, per-platform builds, security scans, tagged releases |
 
-Requires Rust 1.78+ and the appropriate system dependencies.
+## Getting Started
 
-#### Linux
+### Prerequisites
 
-```bash
-# Install system dependencies
-sudo apt-get install libwebkit2gtk-4.1-dev libgtk-3-dev
+- Rust 1.78 or newer
+- **Linux:** `libwebkit2gtk-4.1-dev` and `libgtk-3-dev`
+- **Windows:** MSVC toolchain (WebView2 is preinstalled on Windows 10/11)
 
-# Build
-cargo build --release
-
-# Run
-cargo run --release
-```
-
-#### Windows
-
-```powershell
-# Build with MSVC toolchain
-cargo build --release
-
-# Run
-cargo run --release
-```
-
-#### Android
-
-Install Android SDK command-line tools, Android NDK r28c or newer, JDK 17, Rust, and the Dioxus CLI 0.7.10. Then build a real APK (not just a Rust shared library):
+### Run on desktop
 
 ```bash
-rustup target add aarch64-linux-android
-cargo install dioxus-cli --version 0.7.10 --locked
-dx bundle --android --release --package-types apk --target aarch64-linux-android
-```
-
-The Android GitHub Actions workflow builds installable APKs for `arm64-v8a` and `x86_64`, verifies their signatures, and uploads each APK with a SHA-256 checksum. CI uses a temporary signing key, so APKs from separate workflow runs have different signing identities; uninstall an older CI build before installing a new one. For production updates, configure a persistent private signing key in GitHub Actions secrets.
-
-#### iOS
-
-An iOS ARM64 app bundle is built on macOS with Xcode and Dioxus CLI 0.7.10:
-
-```bash
-rustup target add aarch64-apple-ios
-cargo install dioxus-cli --version 0.7.10 --locked
-dx bundle --ios --release --package-types app --target aarch64-apple-ios
-```
-
-The CI and Release workflows publish an unsigned .app bundle ZIP with a SHA-256 checksum. It is not directly installable on a physical iPhone or publishable to the App Store; Apple code signing and provisioning are required for distribution.
-
-### GitHub Releases
-
-Push a version tag matching `v*` (for example, `v0.1.0`) after the release workflow is merged into the default branch. GitHub Actions builds all platform packages and publishes them together in the repository's Releases page. Each package includes a SHA-256 checksum.
-
-Release assets:
-- Windows x86_64: ZIP
-- Linux x86_64: TAR.GZ (requires compatible WebKitGTK/GTK system libraries)
-- Android ARM64 and x86_64: APK
-- iOS ARM64: unsigned .app bundle ZIP
-
-## Development Setup
-
-```bash
-# Clone the repository
 git clone https://github.com/aghorbani84/Fazora.git
 cd Fazora
 
-# Install Rust toolchain
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+# Linux only
+sudo apt-get install libwebkit2gtk-4.1-dev libgtk-3-dev
 
-# Format code
-cargo fmt
-
-# Run clippy
-cargo clippy --workspace --all-targets
-
-# Run tests
-cargo test
-
-# Build
-cargo build --release
+cargo run --release
 ```
 
-## Testing
+### Mobile builds
+
+Mobile builds use the Dioxus CLI 0.7.10:
 
 ```bash
-# Run all tests
-cargo test
+cargo install dioxus-cli --version 0.7.10 --locked
 
-# Run specific test module
-cargo test --test fazora_tests models
-cargo test --test fazora_tests playback
-cargo test --test fazora_tests queue
-cargo test --test fazora_tests library
-cargo test --test fazora_tests settings
-cargo test --test fazora_tests search
-cargo test --test fazora_tests audio
+# Android (needs Android SDK, NDK r28c+, JDK 17)
+rustup target add aarch64-linux-android
+dx bundle --android --release --package-types apk --target aarch64-linux-android
+
+# iOS (needs macOS + Xcode) — produces an unsigned .app
+rustup target add aarch64-apple-ios
+dx bundle --ios --release --package-types app --target aarch64-apple-ios
 ```
 
-See [TESTING.md](./TESTING.md) for details.
+Pre-built Android APKs (arm64-v8a and x86_64, with SHA-256 checksums) are attached to [GitHub Releases](https://github.com/aghorbani84/Fazora/releases). CI signs them with a temporary key, so uninstall an older build before installing a newer one.
 
-## Documentation
+### Development
 
-| Document | Description |
-|----------|-------------|
-| [ARCHITECTURE.md](./ARCHITECTURE.md) | System architecture and component design |
-| [SECURITY.md](./SECURITY.md) | Security model and audit findings |
-| [CONTRIBUTING.md](./CONTRIBUTING.md) | Contribution guidelines |
-| [CHANGELOG.md](./CHANGELOG.md) | Release history |
-| [INSTALLATION.md](./INSTALLATION.md) | Installation instructions |
-| [BUILDING.md](./BUILDING.md) | Build instructions per platform |
-| [DEVELOPMENT.md](./DEVELOPMENT.md) | Development workflow |
-| [TESTING.md](./TESTING.md) | Testing guide |
-| [PLATFORM_SUPPORT.md](./PLATFORM_SUPPORT.md) | Platform compatibility matrix |
-| [ANDROID_STORAGE.md](./ANDROID_STORAGE.md) | Android storage access |
-| [FILE_OPERATIONS.md](./FILE_OPERATIONS.md) | File operation security |
-| [docs/DESIGN_SYSTEM.md](./docs/DESIGN_SYSTEM.md) | Design tokens and brand identity |
-| [docs/UI_UX_GUIDELINES.md](./docs/UI_UX_GUIDELINES.md) | UI/UX guidelines |
-| [docs/RESPONSIVE_DESIGN.md](./docs/RESPONSIVE_DESIGN.md) | Responsive design specifications |
-| [docs/ACCESSIBILITY.md](./docs/ACCESSIBILITY.md) | Accessibility requirements |
+```bash
+cargo fmt --all
+cargo clippy --workspace --all-targets
+cargo test                 # all unit tests
+cargo test playback        # filter, e.g. models, queue, library, settings, search, audio
+```
 
-## Security Model
+More detail: [BUILDING.md](BUILDING.md) · [DEVELOPMENT.md](DEVELOPMENT.md) · [TESTING.md](TESTING.md) · [PLATFORM_SUPPORT.md](PLATFORM_SUPPORT.md)
 
-- All media files and remote streams are treated as untrusted
-- No hardcoded credentials; secrets managed via GitHub environment secrets
-- Native engine resources released safely on shutdown
-- Path traversal and symlink escape protection for file operations
-- See [SECURITY.md](./SECURITY.md) for the full security policy
+## Project Structure
+
+```text
+Fazora/
+├── src/
+│   ├── main.rs, app.rs, routing.rs
+│   ├── design/          # Design tokens and generated CSS
+│   ├── components/      # Primitives, layout, media cards, player, audio, branding
+│   ├── views/           # Screens (home, music, video, now playing, settings…)
+│   ├── models/          # Track, album, artist, video, playlist, library
+│   ├── state/           # Global app state
+│   ├── playback.rs, queue.rs, library.rs, search.rs, audio.rs, settings.rs
+│   ├── security.rs      # Path validation helpers
+│   └── tests/           # Unit tests per service
+├── assets/              # Icon sprite
+├── docs/                # Design system, UI/UX, accessibility, decisions
+└── .github/workflows/   # CI, platform builds, security, release
+```
 
 ## Known Limitations
 
-- Rust toolchain required for building (not available in all sandboxes)
-- Native multimedia engines (libVLC, libmpv) integration pending validation
-- Android media scanning and native playback integrations still require device-level validation; CI confirms packaging and APK signature, not full playback functionality
-- iOS release bundle is unsigned and requires Apple signing/provisioning for device installation or App Store distribution
+- Native multimedia engine integration (e.g. libmpv / libVLC) is pending — no media is decoded or played yet
+- Library scanning and metadata indexing are not connected to the filesystem
+- Android/iOS builds confirm packaging only, not playback
+- The iOS bundle is unsigned and needs Apple signing/provisioning to install on a device
+
+## Documentation
+
+[ARCHITECTURE.md](ARCHITECTURE.md) · [SECURITY.md](SECURITY.md) · [CHANGELOG.md](CHANGELOG.md) · [CONTRIBUTING.md](CONTRIBUTING.md) · [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md) · [docs/ACCESSIBILITY.md](docs/ACCESSIBILITY.md)
 
 ## License
 
-MIT. See [LICENSE](./LICENSE) for the full license text.
+Released under the [MIT License](LICENSE).
 
-## Contributing
+## Author
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for contribution guidelines.
+Built by [@aghorbani84](https://github.com/aghorbani84).
